@@ -127,6 +127,18 @@ article.post ul, article.post ol { margin: 0 0 18px 22px; color: #cdd6e6; }
 article.post li { margin-bottom: 8px; }
 article.post blockquote { border-left: 3px solid var(--accent); padding: 8px 0 8px 18px; margin: 0 0 18px; color: var(--muted); }
 
+/* ---------- Blog images (hero / inline figures / card thumbnails) ---------- */
+.post-hero { margin: 4px 0 30px; }
+.post-hero img { width: 100%; height: auto; aspect-ratio: 1200 / 630; object-fit: cover;
+  border-radius: var(--radius); border: 1px solid var(--line); display: block; }
+.post-hero figcaption, article.post figure figcaption { color: var(--muted); font-size: .8rem; margin-top: 8px; }
+article.post img { max-width: 100%; height: auto; }
+article.post figure { margin: 28px 0; }
+article.post figure img { width: 100%; height: auto; border-radius: var(--radius); border: 1px solid var(--line); display: block; }
+.post-card .thumb { width: 100%; height: 200px; object-fit: cover; border-radius: 10px;
+  border: 1px solid var(--line); display: block; margin-bottom: 16px; }
+.post-card .thumb-link, .post-card .thumb-link:hover { text-decoration: none; display: block; }
+
 /* ---------- Footer ---------- */
 footer.site { padding: 46px 0; color: var(--muted); font-size: .9rem; }
 footer.site .row { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
