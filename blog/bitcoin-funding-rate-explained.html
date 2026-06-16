@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bitcoin Funding Rate Explained: The Signal Most Traders Miss | Bitcoin Daily</title>
+  <meta name="description" content="Bitcoin funding rate explained: what it is, how longs and shorts pay each other every 8 hours, and what a near-zero rate at the 16th percentile means right now." />
+  <link rel="canonical" href="https://bitcoin-daily.com/blog/bitcoin-funding-rate-explained.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Bitcoin Funding Rate Explained: The Signal Most Traders Miss" />
+  <meta property="og:description" content="The crowd is not paying a premium to be long. Here’s what the funding rate is telling you right now." />
+  <meta property="og:url" content="https://bitcoin-daily.com/blog/bitcoin-funding-rate-explained.html" />
+  <meta property="og:image" content="https://bitcoin-daily.com/assets/blog/bitcoin-funding-rate-explained.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="__TITLE__" />
+  <meta name="twitter:description" content="__OGDESC__" />
+  <meta name="twitter:image" content="https://bitcoin-daily.com/assets/blog/bitcoin-funding-rate-explained.png" />
+  <link rel="stylesheet" href="/styles.css?v=2" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Bitcoin Funding Rate Explained: The Signal Most Traders Miss",
+    "image": "https://bitcoin-daily.com/assets/blog/bitcoin-funding-rate-explained.png",
+    "description": "Bitcoin funding rate explained: what it is, how longs and shorts pay each other every 8 hours, and what a near-zero rate at the 16th percentile means right now.",
+    "datePublished": "2026-06-16",
+    "dateModified": "2026-06-16",
+    "mainEntityOfPage": "https://bitcoin-daily.com/blog/bitcoin-funding-rate-explained.html",
+    "author": { "@type": "Person", "@id": "https://joshmolnar.com/#person", "name": "Josh Molnar", "url": "https://joshmolnar.com/" },
+    "publisher": { "@id": "https://bitcoin-daily.com/#organization" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What is the Bitcoin funding rate?", "acceptedAnswer": {"@type": "Answer", "text": "A fee paid every eight hours between longs and shorts on Bitcoin perpetual futures contracts to keep the futures price anchored close to the spot price. When positive, longs pay shorts. When negative, shorts pay longs."}}, {"@type": "Question", "name": "What does a negative Bitcoin funding rate mean?", "acceptedAnswer": {"@type": "Answer", "text": "Shorts are paying longs to hold their positions. It signals that the crowd is positioned bearishly or fearfully, and that longs are being compensated for taking the other side of the trade."}}, {"@type": "Question", "name": "What is a high Bitcoin funding rate?", "acceptedAnswer": {"@type": "Answer", "text": "A rate well above zero, typically above 0.05% per eight-hour period, means longs are paying a heavy premium to stay long. It signals an overleveraged, crowded bullish trade that is vulnerable to a squeeze if price stalls."}}, {"@type": "Question", "name": "How often does the Bitcoin funding rate reset?", "acceptedAnswer": {"@type": "Answer", "text": "On most major exchanges including Binance and Bybit, the funding rate settles every eight hours, typically at 00:00, 08:00, and 16:00 UTC. Some exchanges use different intervals."}}, {"@type": "Question", "name": "Where can I check the Bitcoin funding rate?", "acceptedAnswer": {"@type": "Answer", "text": "CoinGlass provides real-time funding rates across exchanges with historical percentile context. Your exchange dashboard also shows the predicted next funding rate on any perpetual contract page."}}]}
+  </script>
+</head>
+<body>
+  <header class="site">
+    <div class="wrap nav">
+      <a class="brand" href="/">Bitcoin <span>Daily</span></a>
+      <button class="menu-toggle" aria-label="Menu" onclick="document.getElementById('nav').classList.toggle('open')">&#9776;</button>
+      <ul id="nav">
+        <li><a href="/blog/" class="active">Blog</a></li>
+        <li><a href="https://bitcoindaily.vip" rel="noopener">Community</a></li>
+        <li><a href="https://bitcoindaily.app" rel="noopener">Consulting</a></li>
+        <li><a href="https://joshmolnar.com/" rel="noopener">Founder</a></li>
+        <li><a class="cta" href="https://bitcoindaily.vip" rel="noopener">Join the Community</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+    <section class="block" style="border-bottom:none">
+      <div class="wrap">
+        <article class="post">
+          <h1>Bitcoin Funding Rate Explained: The Signal Most Traders Miss</h1>
+          <div class="meta">By <a href="https://joshmolnar.com/" rel="noopener">Josh Molnar</a> &middot; June 2026 &middot; 5 min read</div>
+
+          <figure class="post-hero">
+            <img src="/assets/blog/bitcoin-funding-rate-explained.png" alt="Bitcoin price chart on June 16 2026 showing the market context referenced in this Bitcoin funding rate breakdown" />
+          </figure>
+<p>Most traders have two numbers on their radar in a down market: price and the sentiment index. The <strong>Bitcoin funding rate</strong> is the number they skip, and right now it is sitting near zero at the 16th historical percentile. That single reading tells you something price alone cannot: which side of the market is paying to stay in the trade, and which side is not. Here is what it is and how to actually read it.</p>
+
+<h2>What is the Bitcoin funding rate?</h2>
+<p>Bitcoin perpetual futures never expire. Unlike a quarterly contract that automatically converges to spot at a settlement date, a perpetual needs a different mechanism to stay anchored to the real Bitcoin price. That mechanism is the funding rate.</p>
+<p>Every eight hours, one side of the trade pays the other:</p>
+<ul>
+<li><strong>Positive funding rate:</strong> longs pay shorts. The crowd is bullish and paying a premium to hold leveraged long positions. Demand for upside exposure is running hot.</li>
+<li><strong>Negative funding rate:</strong> shorts pay longs. The crowd is bearish and paying a premium to stay short. You are being paid, in effect, just to hold the other side.</li>
+<li><strong>Near-zero funding:</strong> neither side is paying a meaningful premium. Positioning is flat or uncertain.</li>
+</ul>
+<p>The rate is small in absolute terms each period, but extremes compound quickly. During the late 2020 and early 2021 bull run, positive funding on some exchanges annualized above 100%. Longs were paying more than their expected gain just to maintain the position. That is what a crowded trade looks like.</p>
+
+<h2>How the funding rate reveals crowd positioning</h2>
+<p>The raw number means little on its own. A 0.01% eight-hour rate sounds like rounding noise. Whether it is a signal depends entirely on where it sits against history.</p>
+<p>This is why systematic traders track the <strong>historical percentile</strong>, not just the absolute figure. When the funding rate is near zero at the 16th historical percentile, that context says: this level of funding has only been lower than this in 16% of all historical readings. The crowd is not paying a premium to be long. In some periods at this level, shorts are the ones bearing the cost.</p>
+<p>What this means in practice: the overleveraged optimists are not currently in this market. That is not automatically a buy signal. But it does mean the market is not priced for good news. If price moves up against a crowd positioned short or flat, those short positions need to cover, and that covering adds buying pressure. A crowd already long has already done its buying.</p>
+
+<h2>What the current reading actually tells traders</h2>
+<p>As of June 16, 2026, the eight-hour Bitcoin funding rate is near zero, sitting at the 16th percentile of all historical readings. Bitcoin is trading at $66,154, up 7.4% over the prior seven days but essentially flat on the day.</p>
+<p>The combination is worth noting. Price moved up 7.4% in a week while the funding rate stayed near the floor. The crowd did not pile in long to chase that move. Shorts did not cover aggressively enough to push funding higher. The weekly gain happened without the usual crowd confirmation that shows up as elevated positive funding.</p>
+<p>A systematic trader uses a reading like this as one input in a checklist, not a standalone trade trigger. Funding tells you about crowd positioning. It does not tell you when the trade resolves or in which direction. You still need to know where price is relative to structure, what the trend on your timeframe says, and where your stop goes. But understanding who is paying to stay in the trade is the kind of information that helps you avoid one of the most expensive moves in leveraged markets: being the crowded side when the squeeze comes.</p>
+<p>If you want to see how this fits into a full trading approach, the breakdown in <a href="/blog/how-to-make-money-in-a-bear-market.html">How to Make Money in a Crypto Bear Market</a> covers the other inputs, including trend structure and risk management rules, that go alongside a positioning read like this.</p>
+
+<h2>How to track the Bitcoin funding rate yourself</h2>
+<p>The funding rate is public data. Two reliable places to find it:</p>
+<ul>
+<li><strong>CoinGlass</strong> shows real-time funding rates across all major exchanges, with historical context so you can see where the current reading sits in the percentile range.</li>
+<li><strong>Your exchange dashboard</strong> (Binance, Bybit, OKX) displays the predicted next funding rate directly on any perpetual contract page, updated every few minutes.</li>
+</ul>
+<p>When you read it, look at three things: the sign (positive or negative), the magnitude, and the historical percentile. A -0.01% rate in isolation sounds trivial. Against the full history of that market, it might be an extreme reading that has preceded sharp reversals. That context is the signal. Strip it out and you are just reading a number.</p>
+<p>The Bitcoin funding rate will not tell you what happens next. Nothing will. What it does is tell you how the crowd is positioned right now, and that is one of the most honest reads in a market that runs on leverage.</p>
+          <h2>Common questions</h2>
+          <h3>What is the Bitcoin funding rate?</h3>
+          <p>A fee paid every eight hours between longs and shorts on Bitcoin perpetual futures contracts to keep the futures price anchored close to the spot price. When positive, longs pay shorts. When negative, shorts pay longs.</p>
+          <h3>What does a negative Bitcoin funding rate mean?</h3>
+          <p>Shorts are paying longs to hold their positions. It signals that the crowd is positioned bearishly or fearfully, and that longs are being compensated for taking the other side of the trade.</p>
+          <h3>What is a high Bitcoin funding rate?</h3>
+          <p>A rate well above zero, typically above 0.05% per eight-hour period, means longs are paying a heavy premium to stay long. It signals an overleveraged, crowded bullish trade that is vulnerable to a squeeze if price stalls.</p>
+          <h3>How often does the Bitcoin funding rate reset?</h3>
+          <p>On most major exchanges including Binance and Bybit, the funding rate settles every eight hours, typically at 00:00, 08:00, and 16:00 UTC. Some exchanges use different intervals.</p>
+          <h3>Where can I check the Bitcoin funding rate?</h3>
+          <p>CoinGlass provides real-time funding rates across exchanges with historical percentile context. Your exchange dashboard also shows the predicted next funding rate on any perpetual contract page.</p>
+          <h2>Keep reading</h2>
+          <ul>
+            <li><a href="/blog/how-to-make-money-in-a-bear-market.html">How to Make Money in a Crypto Bear Market</a></li>
+            <li><a href="/blog/bitcoin-dominance-explained.html">Bitcoin Dominance Explained: Why It Decides Altcoin Season</a></li>
+          </ul>
+          <p>We break down the market like this every day, free on <a href="https://www.instagram.com/bitcoin.daily/" rel="noopener">Instagram</a> and <a href="https://www.youtube.com/@BitcoinDailyTV" rel="noopener">YouTube</a>, and in depth inside the <a href="https://bitcoindaily.vip" rel="noopener">community</a>.</p>
+          <p><em>Education, not financial advice. Trading involves real risk.</em></p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site">
+    <div class="wrap row">
+      <div>&copy; 2026 Bitcoin Daily &middot; Founded by <a href="https://joshmolnar.com/" rel="noopener">Josh Molnar</a></div>
+      <div><a href="/blog/">Blog</a> &middot; <a href="https://bitcoindaily.vip" rel="noopener">Community</a> &middot; <a href="https://bitcoindaily.app" rel="noopener">Consulting</a> &middot; <a href="mailto:info@bitcoin-daily.com">info@bitcoin-daily.com</a></div>
+    </div>
+  </footer>
+</body>
+</html>
