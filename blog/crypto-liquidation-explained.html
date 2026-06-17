@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Crypto Liquidation Explained: What 272,000 Traders Missed | Bitcoin Daily</title>
+  <meta name="description" content="Crypto liquidation explained: what it is, why leverage turns a small move into a wipeout, and the one position-sizing rule that kept one account safe through 109 trades." />
+  <link rel="canonical" href="https://bitcoin-daily.com/blog/crypto-liquidation-explained.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Crypto Liquidation Explained: What 272,000 Traders Missed" />
+  <meta property="og:description" content="272,000 traders lost $1.57B in one morning. The mechanism that wiped them out is simple. So is the fix." />
+  <meta property="og:url" content="https://bitcoin-daily.com/blog/crypto-liquidation-explained.html" />
+  <meta property="og:image" content="https://bitcoin-daily.com/assets/blog/crypto-liquidation-explained.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="__TITLE__" />
+  <meta name="twitter:description" content="__OGDESC__" />
+  <meta name="twitter:image" content="https://bitcoin-daily.com/assets/blog/crypto-liquidation-explained.jpg" />
+  <link rel="stylesheet" href="/styles.css?v=2" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Crypto Liquidation Explained: What 272,000 Traders Missed",
+    "image": "https://bitcoin-daily.com/assets/blog/crypto-liquidation-explained.jpg",
+    "description": "Crypto liquidation explained: what it is, why leverage turns a small move into a wipeout, and the one position-sizing rule that kept one account safe through 109 trades.",
+    "datePublished": "2026-06-17",
+    "dateModified": "2026-06-17",
+    "mainEntityOfPage": "https://bitcoin-daily.com/blog/crypto-liquidation-explained.html",
+    "author": { "@type": "Person", "@id": "https://joshmolnar.com/#person", "name": "Josh Molnar", "url": "https://joshmolnar.com/" },
+    "publisher": { "@id": "https://bitcoin-daily.com/#organization" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What is crypto liquidation?", "acceptedAnswer": {"@type": "Answer", "text": "Crypto liquidation is when a leveraged position is automatically closed by the exchange because losses have eaten through the margin below the maintenance threshold. The exchange recovers the borrowed funds and the trader absorbs the remaining loss."}}, {"@type": "Question", "name": "How does crypto liquidation work?", "acceptedAnswer": {"@type": "Answer", "text": "When you trade with leverage, you borrow capital from the exchange. If the position moves against you and your equity falls below the required maintenance margin, the exchange closes the trade automatically to protect those borrowed funds, regardless of whether the price later recovers."}}, {"@type": "Question", "name": "How do I avoid crypto liquidation?", "acceptedAnswer": {"@type": "Answer", "text": "Size positions so your stop loss is reached long before the liquidation price. The practical rule: risk no more than 1% of your total account per trade, with a stop based on chart structure. At that size, the market would need to move far past your stop before a liquidation becomes possible."}}, {"@type": "Question", "name": "Why do crypto liquidations cascade?", "acceptedAnswer": {"@type": "Answer", "text": "When a wave of long positions is forcibly closed, the sell orders hit the order book and push price lower. That lower price triggers the next tier of leveraged longs, which creates more selling, which triggers more liquidations. A normal correction becomes a flush."}}, {"@type": "Question", "name": "What leverage is safe for crypto trading?", "acceptedAnswer": {"@type": "Answer", "text": "The question is not which leverage ratio is safe but whether your position size keeps potential losses within your risk limit. Traders using 5x leverage with an oversized position are more exposed than a trader using 20x with correct 1% sizing."}}]}
+  </script>
+</head>
+<body>
+  <header class="site">
+    <div class="wrap nav">
+      <a class="brand" href="/">Bitcoin <span>Daily</span></a>
+      <button class="menu-toggle" aria-label="Menu" onclick="document.getElementById('nav').classList.toggle('open')">&#9776;</button>
+      <ul id="nav">
+        <li><a href="/blog/" class="active">Blog</a></li>
+        <li><a href="https://bitcoindaily.vip" rel="noopener">Community</a></li>
+        <li><a href="https://bitcoindaily.app" rel="noopener">Consulting</a></li>
+        <li><a href="https://joshmolnar.com/" rel="noopener">Founder</a></li>
+        <li><a class="cta" href="https://bitcoindaily.vip" rel="noopener">Join the Community</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+    <section class="block" style="border-bottom:none">
+      <div class="wrap">
+        <article class="post">
+          <h1>Crypto Liquidation Explained: What 272,000 Traders Missed</h1>
+          <div class="meta">By <a href="https://joshmolnar.com/" rel="noopener">Josh Molnar</a> &middot; June 2026 &middot; 5 min read</div>
+
+          <figure class="post-hero">
+            <img src="/assets/blog/crypto-liquidation-explained.jpg" alt="Live Bitcoin price chart showing a sharp bear market move, illustrating the kind of swing that triggers crypto liquidation cascades" />
+          </figure>
+<p>On one Friday in June 2026, 272,000 traders were liquidated in the same morning. $1.57 billion in long positions closed automatically, not by choice. Bitcoin fell roughly 8% in 24 hours, and the leverage that was supposed to accelerate the gains became the mechanism that ended the trades.</p>
+
+<p>The math behind it is straightforward. Most of those traders probably expected the move to eventually come back in their favor. Some of it did. They never got to see it.</p>
+
+<h2>What crypto liquidation actually is</h2>
+<p>When you trade futures or margin on a crypto exchange, you put up a deposit called margin to control a position larger than your actual capital. 10x leverage on $1,000 gives you $10,000 of exposure. When a position moves against you and your losses eat into the margin below the <strong>maintenance margin</strong> threshold, the exchange closes your trade automatically. That is a liquidation.</p>
+<p>It is not a person pressing a button. It is the exchange protecting the borrowed funds by cutting your position before your account goes negative. The trade closes, the margin is gone, and you are out regardless of where the price goes next.</p>
+
+<h2>Why leverage turns a small move into a wipeout</h2>
+<p>At 10x leverage, a 10% adverse move wipes the position. At 20x, that threshold drops to 5%. Bitcoin&rsquo;s average daily range right now is roughly 2%, with implied volatility placing it around plus or minus 2% per day. A 5 to 8% correction, which is entirely normal in this market structure, is a liquidation event for anyone carrying significant leverage.</p>
+<p>The traders who got hit in June were not making irrational bets on a 50% move. They were making leveraged bets on a bounce in a bear market. The bounce came. The liquidation came faster.</p>
+
+<h2>Why the cascade makes it worse than the initial move</h2>
+<p>Crypto liquidation does not happen in isolation. When a price level breaks and long positions start closing automatically, the forced selling creates additional downward pressure. That pressure triggers the next tier of longs. Those trigger the next. A 4% dip can turn into 8% inside an hour because the liquidation waterfall is part of the move itself.</p>
+<p>This is why <a href="/blog/bitcoin-funding-rate-explained.html">funding rates</a> matter as a leading signal. When funding is elevated, the market is heavy with leveraged longs. A crowded, high-leverage long position is not just a risk for the people holding it. It is a loaded spring. The crowd makes the move bigger than the underlying news warrants.</p>
+
+<h2>The rule that kept my account intact through 109 trades</h2>
+<p>I have never been liquidated. Not because I have unusually sharp direction calls. Because I never put the exchange in a position to close my trade for me.</p>
+<p>The rule is 1% of total account capital at risk per trade. That means the distance from entry to stop loss, multiplied by position size, equals 1% of the account. Not 1% of the position. 1% of the total account.</p>
+<p>At that size, a position can move against me significantly before I reach the stop. I never get close to the maintenance margin. The exchange never gets a turn.</p>
+<p>Over 109 live trades in this bear market: 70% win rate, +34% return on the account, biggest single loss capped at 1R. The worst day I had cost me less than most traders lost in the June liquidation cascade in a single minute.</p>
+
+<h2>What correct position sizing actually looks like</h2>
+<p>The common approach is picking a contract size or a round number of coins. That is not position sizing. That is picking a number and hoping the market cooperates.</p>
+<p>Real sizing works backwards from the stop. You decide how much of your account you are willing to lose on this trade, 1% or less. You find your entry. You find your stop based on chart structure, not a fixed dollar amount. Then you calculate the size that makes the entry-to-stop distance equal your risk amount.</p>
+<p>If the stop is too far away, the position size gets smaller. That is the point. A wide stop on a volatile asset does not mean &ldquo;less risk per pip.&rdquo; It means the correct position size is smaller. Accepting that smaller size is the entire discipline.</p>
+<p>The traders who understand <a href="/blog/how-to-make-money-in-a-bear-market.html">how to make money in a bear market</a> already know this. The ones who get liquidated are usually sizing to &ldquo;make it worth it&rdquo; and treating the liquidation price as their effective stop, which is not a stop at all.</p>
+
+<h2>Crypto liquidation explained: the short version</h2>
+<ul>
+  <li>Liquidation closes your position automatically when losses eat through your margin. The exchange protects the borrowed funds; you absorb the loss.</li>
+  <li>Leverage compresses the distance between entry and wipeout. 10x leverage means a 10% adverse move ends the trade.</li>
+  <li>Cascades amplify the initial move. Forced selling from one liquidation tier triggers the next, turning a normal dip into a flush.</li>
+  <li>The fix is not better prediction. It is position sizing that keeps your stop far above the liquidation price, so the exchange never gets a chance to act.</li>
+</ul>
+          <h2>Common questions</h2>
+          <h3>What is crypto liquidation?</h3>
+          <p>Crypto liquidation is when a leveraged position is automatically closed by the exchange because losses have eaten through the margin below the maintenance threshold. The exchange recovers the borrowed funds and the trader absorbs the remaining loss.</p>
+          <h3>How does crypto liquidation work?</h3>
+          <p>When you trade with leverage, you borrow capital from the exchange. If the position moves against you and your equity falls below the required maintenance margin, the exchange closes the trade automatically to protect those borrowed funds, regardless of whether the price later recovers.</p>
+          <h3>How do I avoid crypto liquidation?</h3>
+          <p>Size positions so your stop loss is reached long before the liquidation price. The practical rule: risk no more than 1% of your total account per trade, with a stop based on chart structure. At that size, the market would need to move far past your stop before a liquidation becomes possible.</p>
+          <h3>Why do crypto liquidations cascade?</h3>
+          <p>When a wave of long positions is forcibly closed, the sell orders hit the order book and push price lower. That lower price triggers the next tier of leveraged longs, which creates more selling, which triggers more liquidations. A normal correction becomes a flush.</p>
+          <h3>What leverage is safe for crypto trading?</h3>
+          <p>The question is not which leverage ratio is safe but whether your position size keeps potential losses within your risk limit. Traders using 5x leverage with an oversized position are more exposed than a trader using 20x with correct 1% sizing.</p>
+          <h2>Keep reading</h2>
+          <ul>
+            <li><a href="/blog/bitcoin-funding-rate-explained.html">Bitcoin Funding Rate Explained: The Signal Most Traders Miss</a></li>
+            <li><a href="/blog/how-to-make-money-in-a-bear-market.html">How to Make Money in a Crypto Bear Market</a></li>
+          </ul>
+          <p>We break down the market like this every day, free on <a href="https://www.instagram.com/bitcoin.daily/" rel="noopener">Instagram</a> and <a href="https://www.youtube.com/@BitcoinDailyTV" rel="noopener">YouTube</a>, and in depth inside the <a href="https://bitcoindaily.vip" rel="noopener">community</a>.</p>
+          <p><em>Education, not financial advice. Trading involves real risk.</em></p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site">
+    <div class="wrap row">
+      <div>&copy; 2026 Bitcoin Daily &middot; Founded by <a href="https://joshmolnar.com/" rel="noopener">Josh Molnar</a></div>
+      <div><a href="/blog/">Blog</a> &middot; <a href="https://bitcoindaily.vip" rel="noopener">Community</a> &middot; <a href="https://bitcoindaily.app" rel="noopener">Consulting</a> &middot; <a href="mailto:info@bitcoin-daily.com">info@bitcoin-daily.com</a></div>
+    </div>
+  </footer>
+</body>
+</html>
