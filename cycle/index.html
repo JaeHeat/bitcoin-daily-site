@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Satoshi Clock: Live Bitcoin Halving Cycle Tracker | Bitcoin Daily</title>
+  <meta name="description" content="A live tracker of where Bitcoin sits in its four-year halving cycle: the power-law price corridor with buy and sell windows on the timeline, the cycle spiral, and pre-registered bottom (2026) and top (2029) windows from the research paper." />
+  <link rel="canonical" href="https://bitcoin-daily.com/cycle/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="The Satoshi Clock: Live Bitcoin Halving Cycle Tracker" />
+  <meta property="og:description" content="Where Bitcoin sits in its halving cycle, with buy and sell windows and pre-registered prediction windows. Built on the causal power-law model from the research paper." />
+  <meta property="og:url" content="https://bitcoin-daily.com/cycle/" />
+  <meta property="og:image" content="https://bitcoin-daily.com/assets/bitcoin-daily-pfp.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="The Satoshi Clock: Live Bitcoin Halving Cycle Tracker" />
+  <meta name="twitter:image" content="https://bitcoin-daily.com/assets/bitcoin-daily-pfp.png" />
+  <link rel="stylesheet" href="/styles.css?v=2" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "The Satoshi Clock",
+    "applicationCategory": "FinanceApplication",
+    "operatingSystem": "Web",
+    "url": "https://bitcoin-daily.com/cycle/",
+    "description": "Live tracker of Bitcoin's position in its four-year halving cycle: power-law corridor with buy and sell windows, cycle spiral, and pre-registered prediction windows.",
+    "isBasedOn": "https://github.com/BitcoinDaily/bitcoin-runs-on-a-clock",
+    "publisher": { "@type": "Organization", "name": "Bitcoin Daily", "url": "https://bitcoin-daily.com/" },
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <style>
+    .ct-hero { padding: 64px 0 8px; }
+    .ct-asof { color: var(--muted); font-size: .95rem; margin-top: 12px; }
+    .ct-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 32px 0 8px; }
+    .ct-stat { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; }
+    .ct-stat .l { color: var(--muted); font-size: .88rem; letter-spacing: .3px; }
+    .ct-stat .n { font-size: 2.4rem; font-weight: 700; margin-top: 6px; line-height: 1.05; }
+    .ct-stat .s { color: var(--muted); font-size: .85rem; margin-top: 5px; }
+    .ct-panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 28px; margin-top: 26px; }
+    .ct-panel h3 { font-size: 1.5rem; margin-bottom: 6px; letter-spacing: -.2px; }
+    .ct-panel .cap { color: var(--muted); font-size: 1rem; margin-bottom: 18px; max-width: 760px; }
+    .ct-legend { display: flex; flex-wrap: wrap; gap: 20px; font-size: .92rem; color: var(--muted); margin-bottom: 14px; }
+    .ct-legend span { display: flex; align-items: center; gap: 7px; }
+    .ct-sw { width: 16px; height: 16px; border-radius: 4px; display: inline-block; }
+    .ct-sw.line { height: 4px; border-radius: 2px; }
+    .ct-chart { position: relative; width: 100%; height: 520px; }
+    .ct-spiral { position: relative; width: 100%; height: 560px; }
+    .ct-preds { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 24px; }
+    .ct-pred { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; }
+    .ct-pred.live { border-color: var(--accent); border-width: 2px; }
+    .ct-pill { display: inline-block; font-size: .78rem; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; padding: 5px 13px; border-radius: 999px; }
+    .ct-pill.pending { background: rgba(247,147,26,.16); color: var(--accent); }
+    .ct-pill.dormant { background: rgba(154,167,189,.14); color: var(--muted); }
+    .ct-pred .win { font-size: 1.35rem; font-weight: 700; margin: 14px 0 10px; color: var(--text); }
+    .ct-pred p { color: var(--muted); font-size: 1rem; }
+    .ct-cta { background: linear-gradient(180deg, rgba(247,147,26,.10), transparent); border: 1px solid var(--line); border-radius: var(--radius); padding: 40px; text-align: center; }
+    .ct-cta h2 { border: 0; margin-bottom: 12px; }
+    .ct-cta p { color: var(--muted); max-width: 640px; margin: 0 auto 24px; font-size: 1.05rem; }
+    @media (max-width: 820px) {
+      .ct-cards { grid-template-columns: repeat(2,1fr); }
+      .ct-preds { grid-template-columns: 1fr; }
+      .ct-chart { height: 380px; } .ct-spiral { height: 380px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site">
+    <div class="wrap nav">
+      <a class="brand" href="/">Bitcoin <span>Daily</span></a>
+      <button class="menu-toggle" aria-label="Menu" onclick="document.getElementById('nav').classList.toggle('open')">&#9776;</button>
+      <ul id="nav">
+        <li><a href="/cycle/" class="active">Cycle</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="https://bitcoindaily.vip" rel="noopener">Community</a></li>
+        <li><a href="https://bitcoindaily.app" rel="noopener">Consulting</a></li>
+        <li><a href="https://joshmolnar.com/" rel="noopener">Founder</a></li>
+        <li><a class="cta" href="https://bitcoindaily.vip" rel="noopener">Join the Community</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+    <section class="block ct-hero">
+      <div class="wrap">
+        <div class="eyebrow" style="color:var(--accent);font-weight:600;letter-spacing:1.5px;text-transform:uppercase;font-size:.82rem">Live tracker</div>
+        <h1 style="font-size:clamp(2.4rem,5vw,3.8rem);line-height:1.08;margin:14px 0 16px;letter-spacing:-.5px">The Satoshi Clock</h1>
+        <p class="lead" style="font-size:1.25rem;color:var(--muted);max-width:720px">Bitcoin's cycle runs on a clock, not a price. Every halving resets a roughly four-year rhythm, and the mature cycle tops have landed 525, 546, and 534 days after their halvings. This tracker shows where we are right now, and the buy and sell windows we registered in advance.</p>
+        <p class="ct-asof" id="asof">Loading current reading...</p>
+        <div class="ct-cards" id="cards"></div>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="wrap">
+        <div class="ct-panel">
+          <h3>Price, the power-law corridor, and the cycle windows</h3>
+          <p class="cap">Bitcoin's price against its own causal power-law trend (log scale). The shaded bands are the historical and projected sell windows (525 to 546 days after each halving) and buy windows (364 to 406 days after each top). Dashed lines are the forward projection.</p>
+          <div class="ct-legend">
+            <span><span class="ct-sw line" style="background:#f7931a"></span>Price</span>
+            <span><span class="ct-sw line" style="background:#9aa7bd"></span>Fair value</span>
+            <span><span class="ct-sw line" style="background:#e2574a"></span>Overheated (+2 sigma)</span>
+            <span><span class="ct-sw line" style="background:#2dd4bf"></span>Undervalued (-1 sigma)</span>
+            <span><span class="ct-sw" style="background:rgba(247,147,26,.35)"></span>Sell window</span>
+            <span><span class="ct-sw" style="background:rgba(45,212,191,.30)"></span>Buy window</span>
+          </div>
+          <div class="ct-chart"><canvas id="corr" role="img" aria-label="Log-scale chart of Bitcoin price against its causal power-law corridor, with buy and sell cycle windows shaded on the timeline and a forward projection to 2029">Bitcoin price inside an expanding power-law corridor, with recurring buy and sell windows tied to the halving clock.</canvas></div>
+        </div>
+
+        <div class="ct-panel">
+          <h3>The cycle spiral</h3>
+          <p class="cap">A second view of the same data. Each loop is one halving cycle. Tops cluster at the same clock angle (the orange wedge) while their distance from the trend shrinks every cycle. The amplitude is dying. The clock is not.</p>
+          <div class="ct-legend">
+            <span><span class="ct-sw" style="background:#f7931a"></span>Cycle top</span>
+            <span><span class="ct-sw" style="background:#2dd4bf"></span>Cycle bottom</span>
+            <span><span class="ct-sw" style="background:#e8edf6;border-radius:50%"></span>Now</span>
+            <span><span class="ct-sw" style="background:rgba(247,147,26,.35)"></span>Top window</span>
+            <span><span class="ct-sw" style="background:rgba(45,212,191,.30)"></span>Bottom window</span>
+          </div>
+          <div class="ct-spiral"><canvas id="spiral" role="img" aria-label="Polar spiral of power-law deviation against days since halving; tops cluster at the same angle each cycle while their radius shrinks.">Tops recur at the same halving-clock angle each cycle at a shrinking distance from the trend.</canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="wrap">
+        <h2 style="font-size:clamp(1.7rem,3vw,2.3rem)">The pre-registered predictions</h2>
+        <p class="sub" style="color:var(--muted);max-width:660px;margin-bottom:8px;font-size:1.05rem">Stated before the outcome exists. This is the honest test of the clock, not the retrospective fit.</p>
+        <div class="ct-preds" id="preds"></div>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="wrap prose">
+        <h2>How to read this</h2>
+        <p>Two numbers place Bitcoin in its cycle. <strong>The clock</strong> is the number of days since the last halving: where we are in the four-year revolution. <strong>The spring</strong> is how far price has stretched from its long-run power-law trend, measured in standard deviations. Plot the spring against the clock across every cycle and Bitcoin traces a damped spiral: the angle of the turns stays fixed while the radius shrinks each cycle.</p>
+        <p>That shrinking radius is why the famous price indicators (Pi Cycle, MVRV, the Mayer Multiple) keep going quiet. Their thresholds were calibrated on cycles with far bigger swings. The timing, measured on the halving schedule, has held.</p>
+        <h2>The honest caveats</h2>
+        <p>This is a regularity measured on three mature cycles, not a law and not financial advice. The turns are dated after the fact by a fixed mechanical rule, so the past clusters describe how surprising the pattern is, not a forecasting record. The cycle bottom is the weaker call (bear-market durations are partly intrinsic to any crash). The next top is the sharp test. The full method, every number, and the falsifiers are open-source in the <a href="https://github.com/BitcoinDaily/bitcoin-runs-on-a-clock" rel="noopener">research paper and replication code</a>.</p>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="wrap">
+        <div class="ct-cta">
+          <h2>The clock is public. The live edge isn't.</h2>
+          <p>This tracker is free. Inside the community you get the live layer: alerts the moment price enters a cycle window, the daily desk note with the full reasoning, and the Satoshi Clock indicator running on your own TradingView charts.</p>
+          <a class="btn primary" href="https://bitcoindaily.vip" rel="noopener">Join the Community</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site">
+    <div class="wrap row">
+      <div>&copy; 2026 Bitcoin Daily &middot; Founded by <a href="https://joshmolnar.com/" rel="noopener">Josh Molnar</a></div>
+      <div><a href="/cycle/">Cycle</a> &middot; <a href="/blog/">Blog</a> &middot; <a href="https://bitcoindaily.vip" rel="noopener">Community</a> &middot; <a href="mailto:info@bitcoin-daily.com">info@bitcoin-daily.com</a></div>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <script>
+  const C={orange:'#f7931a',teal:'#2dd4bf',muted:'#9aa7bd',text:'#e8edf6',red:'#e2574a',line:'rgba(255,255,255,.10)'};
+  const fmtUSD=n=>'$'+Math.round(n).toLocaleString();
+  const fmtDate=s=>new Date(s+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  const rangeText=(a,b)=>new Date(a+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'})+' to '+fmtDate(b);
+
+  fetch('./clock_data.json',{cache:'no-store'}).then(r=>r.json()).then(D=>{
+    const cur=D.current, p=D.predictions;
+    document.getElementById('asof').textContent='Current reading as of '+fmtDate(D.as_of)+(D.frozen?' (seeded from the research dataset; live daily updates pending)':'');
+    const cards=[
+      ['Cycle clock', cur.clock+'d', 'since the Apr 2024 halving'],
+      ['Spring (power-law z)', (cur.spring>=0?'+':'−')+Math.abs(cur.spring).toFixed(2), cur.spring<0?'below the time-trend':'above the time-trend'],
+      ['Bitcoin price', fmtUSD(cur.price), 'as of '+fmtDate(D.as_of)],
+      ['Bottom window', p.bottom_2026.days_to_window_open>0?('opens in '+p.bottom_2026.days_to_window_open+'d'):'open now', rangeText(p.bottom_2026.window[0],p.bottom_2026.window[1])],
+    ];
+    document.getElementById('cards').innerHTML=cards.map(c=>'<div class="ct-stat"><div class="l">'+c[0]+'</div><div class="n">'+c[1]+'</div><div class="s">'+c[2]+'</div></div>').join('');
+
+    document.getElementById('preds').innerHTML=
+      '<div class="ct-pred live"><span class="ct-pill pending">Pending &middot; live</span>'
+      +'<div class="win">Cycle bottom: '+rangeText(p.bottom_2026.window[0],p.bottom_2026.window[1])+'</div>'
+      +'<p>Robust core '+rangeText(p.bottom_2026.robust_core[0],p.bottom_2026.robust_core[1])+'. Running cycle low so far: '+fmtUSD(cur.running_cycle_low)+' ('+fmtDate(cur.running_cycle_low_date)+'). Falsifier: '+p.bottom_2026.falsifier+'. The weaker of the two tests.</p></div>'
+      +'<div class="ct-pred"><span class="ct-pill dormant">Dormant</span>'
+      +'<div class="win">Next top: about '+rangeText(p.top_2029.window[0],p.top_2029.window[1])+'</div>'
+      +'<p>'+p.top_2029.rule+'. Falsifier: '+p.top_2029.falsifier+'. The sharp test.</p></div>';
+
+    const hist=D.series, proj=D.proj||[];
+    const labels=hist.map(d=>d.date).concat(proj.map(d=>d.date));
+    const nowIdx=hist.length-1;
+    const col=k=>hist.map(d=>d[k]).concat(proj.map(d=>d[k]));
+    const price=hist.map(d=>d.price).concat(proj.map(()=>null));
+    const lt=labels.map(s=>Date.parse(s));
+    function idx(ds){const t=Date.parse(ds);let b=0,bd=1e18;for(let i=0;i<lt.length;i++){const dd=Math.abs(lt[i]-t);if(dd<bd){bd=dd;b=i;}}return b;}
+    const fdash={borderDash:c=>c.p0DataIndex>=nowIdx?[5,4]:undefined};
+
+    const overlay={id:'ov',
+      beforeDatasetsDraw(ch){const a=ch.chartArea,x=ch.scales.x;if(!a)return;const g=ch.ctx;
+        (D.windows||[]).forEach(w=>{const p1=x.getPixelForValue(idx(w.start)),p2=x.getPixelForValue(idx(w.end));
+          g.save();g.fillStyle=w.type==='sell'?'rgba(247,147,26,.16)':'rgba(45,212,191,.15)';
+          g.fillRect(p1,a.top,Math.max(2.5,p2-p1),a.bottom-a.top);g.restore();});},
+      afterDatasetsDraw(ch){const a=ch.chartArea,x=ch.scales.x,y=ch.scales.y,g=ch.ctx;if(!a)return;
+        g.save();g.strokeStyle='rgba(255,255,255,.20)';g.lineWidth=1;g.setLineDash([3,4]);
+        (D.halvings||[]).forEach(h=>{const px=x.getPixelForValue(idx(h));g.beginPath();g.moveTo(px,a.top);g.lineTo(px,a.bottom);g.stroke();});g.restore();
+        const nx=x.getPixelForValue(nowIdx);g.save();g.strokeStyle=C.text;g.lineWidth=1.5;g.beginPath();g.moveTo(nx,a.top);g.lineTo(nx,a.bottom);g.stroke();
+        g.fillStyle=C.text;g.font='600 13px -apple-system,sans-serif';g.textAlign='center';g.fillText('now',nx,a.top-7);g.restore();
+        (D.turns||[]).forEach(t=>{const ix=idx(t.date);if(ix>=hist.length)return;const pv=hist[ix].price;const px=x.getPixelForValue(ix),py=y.getPixelForValue(pv);g.save();g.fillStyle=t.kind==='TOP'?C.orange:C.teal;g.beginPath();g.arc(px,py,5,0,7);g.fill();g.restore();});
+        (D.windows||[]).filter(w=>w.forward).forEach(w=>{const cxp=(x.getPixelForValue(idx(w.start))+x.getPixelForValue(idx(w.end)))/2;g.save();g.fillStyle=w.type==='sell'?C.orange:C.teal;g.font='700 12px -apple-system,sans-serif';g.textAlign='center';g.fillText(w.type==='sell'?'SELL':'BUY',cxp,a.bottom-8);g.restore();});}
+    };
+
+    new Chart(document.getElementById('corr'),{type:'line',data:{labels,datasets:[
+      {data:col('up2'),borderColor:C.red,borderWidth:1,borderDash:[2,3],pointRadius:0,tension:.25,segment:fdash},
+      {data:col('fair'),borderColor:C.muted,borderWidth:1.4,borderDash:[6,4],pointRadius:0,tension:.25},
+      {data:col('dn1'),borderColor:C.teal,borderWidth:1,borderDash:[2,3],pointRadius:0,tension:.25,segment:fdash},
+      {data:price,borderColor:C.orange,borderWidth:2.6,pointRadius:0,tension:.2,spanGaps:false},
+    ]},options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{
+      y:{type:'logarithmic',grid:{color:C.line},ticks:{color:C.muted,font:{size:13},callback:v=>[1,10,100,1000,10000,100000,1000000].includes(v)?(v>=1000?'$'+(v/1000)+'k':'$'+v):''}},
+      x:{grid:{display:false},ticks:{color:C.muted,font:{size:13},maxTicksLimit:10,autoSkip:true,callback:i=>labels[i]?labels[i].slice(0,4):''}}}},plugins:[overlay]});
+
+    const cv=document.getElementById('spiral');
+    function spiral(){
+      const dpr=window.devicePixelRatio||1,W=cv.clientWidth,H=cv.parentElement.clientHeight;
+      cv.width=W*dpr;cv.height=H*dpr;cv.style.height=H+'px';
+      const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);
+      const cx=W/2,cy=H/2,maxR=Math.min(W,H)/2-44,sMin=-2,sMax=4;
+      const ang=cl=>(-90+cl/1460*360)*Math.PI/180, rad=s=>30+(Math.max(sMin,Math.min(sMax,s))-sMin)/(sMax-sMin)*(maxR-30);
+      g.font='13px -apple-system,sans-serif';g.strokeStyle=C.line;g.lineWidth=0.8;
+      [-1,0,1,2,3].forEach(s=>{g.beginPath();g.arc(cx,cy,rad(s),0,2*Math.PI);g.stroke();});
+      const wedge=(a,b,f)=>{g.beginPath();g.moveTo(cx,cy);g.arc(cx,cy,maxR,ang(a),ang(b));g.closePath();g.fillStyle=f;g.fill();};
+      wedge(525,546,'rgba(247,147,26,.32)');wedge(889,924,'rgba(45,212,191,.24)');
+      let px=null,py=null;const S=hist;
+      for(let i=0;i<S.length;i++){const cl=S[i].clock;if(cl<0){px=null;continue;}const a=ang(cl),r=rad(S[i].spring),x=cx+r*Math.cos(a),y=cy+r*Math.sin(a),al=(0.16+0.84*i/(S.length-1)).toFixed(2);if(px!==null){g.beginPath();g.moveTo(px,py);g.lineTo(x,y);g.strokeStyle='rgba(247,147,26,'+al+')';g.lineWidth=2.2;g.stroke();}px=x;py=y;}
+      (D.turns||[]).forEach(t=>{const a=ang(t.clock),r=rad(t.spring),x=cx+r*Math.cos(a),y=cy+r*Math.sin(a);g.beginPath();g.arc(x,y,6,0,2*Math.PI);g.fillStyle=t.kind==='TOP'?C.orange:C.teal;g.fill();if(t.kind==='TOP'){g.fillStyle=C.orange;g.font='600 13px -apple-system,sans-serif';g.textAlign=x<cx?'right':'left';g.fillText("'"+t.date.slice(2,4),x+(x<cx?-9:9),y+4);}});
+      const a=ang(cur.clock),r=rad(cur.spring),x=cx+r*Math.cos(a),y=cy+r*Math.sin(a);
+      g.beginPath();g.arc(x,y,8,0,2*Math.PI);g.fillStyle=C.text;g.fill();g.lineWidth=3;g.strokeStyle=C.orange;g.stroke();
+      g.fillStyle=C.text;g.font='600 13px -apple-system,sans-serif';g.textAlign=x<cx?'right':'left';g.fillText('now',x+(x<cx?-12:12),y+4);
+      g.fillStyle=C.muted;g.textAlign='center';g.fillText('outer = overheated, inner = undervalued',cx,H-10);
+    }
+    spiral();new ResizeObserver(spiral).observe(cv.parentElement);
+  }).catch(e=>{document.getElementById('asof').textContent='Could not load the latest reading.';});
+  </script>
+</body>
+</html>
