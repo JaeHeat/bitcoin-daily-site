@@ -160,6 +160,7 @@
         <h2 style="font-size:clamp(1.7rem,3vw,2.3rem)">The pre-registered predictions</h2>
         <p class="sub" style="color:var(--muted);max-width:660px;margin-bottom:8px;font-size:1.05rem">Stated before the outcome exists. This is the honest test of the clock, not the retrospective fit.</p>
         <div class="ct-preds" id="preds"></div>
+        <p id="scorenote" style="color:var(--muted);font-size:.95rem;margin-top:18px;max-width:700px"></p>
       </div>
     </section>
 
@@ -217,6 +218,7 @@
       +'<div class="ct-pred"><span class="ct-pill dormant">Dormant</span>'
       +'<div class="win">Next top: about '+rangeText(p.top_2029.window[0],p.top_2029.window[1])+'</div>'
       +'<p>'+p.top_2029.rule+'. Falsifier: '+p.top_2029.falsifier+'. The sharp test.</p></div>';
+    if(D.scorecard){var sc=D.scorecard;document.getElementById('scorenote').innerHTML='Public record: this reading is logged every day, append-only, since '+fmtDate(sc.tracking_since)+'. '+sc.readings+' reading'+(sc.readings===1?'':'s')+' so far. <a href="./predictions_log.csv">Download the full log</a>.';}
 
     const hist=D.series, proj=D.proj||[];
     const labels=hist.map(d=>d.date).concat(proj.map(d=>d.date));
