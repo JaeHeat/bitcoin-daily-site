@@ -124,6 +124,7 @@
             <button class="ct-btn active" id="btnProj">Projection</button>
             <button class="ct-btn active" id="btnBands">Corridor bands</button>
             <button class="ct-btn" id="btnReset">Reset zoom</button>
+            <button class="ct-btn" id="btnSaveCorr">Save image</button>
           </div>
           <p class="ct-hint">Hover for details. Drag across the chart to zoom into a span; Reset zoom to go back.</p>
           <div class="ct-chart"><canvas id="corr" role="img" aria-label="Interactive log-scale chart of Bitcoin price against its causal power-law corridor, with buy and sell cycle windows shaded on the timeline and a forward projection to 2029">Bitcoin price inside an expanding power-law corridor, with recurring buy and sell windows tied to the halving clock.</canvas></div>
@@ -147,6 +148,7 @@
           <div class="ct-scrub">
             <button class="ct-play" id="btnPlay" aria-label="Play">&#9654;</button>
             <input type="range" id="scrub" min="0" max="100" value="100" step="1" aria-label="Time scrubber" />
+            <button class="ct-btn" id="btnSaveSpiral" style="flex-shrink:0">Save image</button>
             <div class="ct-read" id="scrubRead"></div>
           </div>
         </div>
@@ -330,6 +332,9 @@
     btnPlay.onclick=()=>{if(playing){stopPlay();return;}if(scrubIndex>=nowIdx)setScrub(0);playing=true;btnPlay.innerHTML='&#10073;&#10073;';
       timer=setInterval(()=>{if(scrubIndex>=nowIdx){stopPlay();return;}setScrub(scrubIndex+stepN);},55);};
 
+    function saveImg(src,title,fname){var dpr=window.devicePixelRatio||1,hH=Math.round(60*dpr),fH=Math.round(38*dpr),o=document.createElement('canvas');o.width=src.width;o.height=src.height+hH+fH;var g=o.getContext('2d');g.fillStyle='#0b0e14';g.fillRect(0,0,o.width,o.height);g.textBaseline='middle';g.textAlign='left';g.fillStyle='#f7931a';g.font='800 '+Math.round(21*dpr)+'px -apple-system,sans-serif';g.fillText('Bitcoin Daily',Math.round(20*dpr),hH/2);g.textAlign='right';g.fillStyle='#aeb6c4';g.font='600 '+Math.round(15*dpr)+'px -apple-system,sans-serif';g.fillText(title,o.width-Math.round(20*dpr),hH/2);g.drawImage(src,0,hH);var fy=src.height+hH+fH/2;g.textAlign='left';g.fillStyle='#6b7280';g.font='600 '+Math.round(13*dpr)+'px -apple-system,sans-serif';g.fillText('Education, not financial advice',Math.round(20*dpr),fy);g.textAlign='right';g.fillStyle='#9aa7bd';g.fillText('bitcoin-daily.com',o.width-Math.round(20*dpr),fy);var a=document.createElement('a');a.download=fname;a.href=o.toDataURL('image/png');a.click();}
+    document.getElementById('btnSaveCorr').onclick=()=>saveImg(document.getElementById('corr'),'The Satoshi Clock  |  Power-law cycle map','bitcoin-daily-cycle-map.png');
+    document.getElementById('btnSaveSpiral').onclick=()=>saveImg(cv,'The Satoshi Clock  |  Cycle spiral','bitcoin-daily-cycle-spiral.png');
     spiral(nowIdx);readout();
     new ResizeObserver(()=>spiral(scrubIndex)).observe(cv.parentElement);
   }).catch(e=>{document.getElementById('asof').textContent='Could not load the latest reading.';});
