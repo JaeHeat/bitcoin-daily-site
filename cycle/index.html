@@ -45,7 +45,8 @@
     .ct-sw { width: 16px; height: 16px; border-radius: 4px; display: inline-block; }
     .ct-sw.line { height: 4px; border-radius: 2px; }
     .ct-chart { position: relative; width: 100%; height: 520px; }
-    .ct-spiral { position: relative; width: 100%; height: 560px; }
+    .ct-spiral { position: relative; width: 100%; max-width: 600px; height: 560px; margin: 0 auto; }
+    #spiral { display: block; }
     .ct-preds { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 24px; }
     .ct-pred { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; }
     .ct-pred.live { border-color: var(--accent); border-width: 2px; }
@@ -218,8 +219,8 @@
 
     const cv=document.getElementById('spiral');
     function spiral(){
-      const dpr=window.devicePixelRatio||1,W=cv.clientWidth,H=cv.parentElement.clientHeight;
-      cv.width=W*dpr;cv.height=H*dpr;cv.style.height=H+'px';
+      const box=cv.parentElement,dpr=window.devicePixelRatio||1,W=box.clientWidth,H=box.clientHeight;
+      cv.style.width=W+'px';cv.style.height=H+'px';cv.width=W*dpr;cv.height=H*dpr;
       const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);
       const cx=W/2,cy=H/2,maxR=Math.min(W,H)/2-44,sMin=-2,sMax=4;
       const ang=cl=>(-90+cl/1460*360)*Math.PI/180, rad=s=>30+(Math.max(sMin,Math.min(sMax,s))-sMin)/(sMax-sMin)*(maxR-30);
