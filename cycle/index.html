@@ -234,7 +234,8 @@
       beforeDatasetsDraw(ch){const a=ch.chartArea,x=ch.scales.x;if(!a)return;const g=ch.ctx;
         (D.windows||[]).forEach(w=>{const p1=x.getPixelForValue(idx(w.start)),p2=x.getPixelForValue(idx(w.end));
           g.save();g.fillStyle=w.type==='sell'?'rgba(247,147,26,.16)':'rgba(45,212,191,.15)';
-          g.fillRect(p1,a.top,Math.max(2.5,p2-p1),a.bottom-a.top);g.restore();});},
+          g.fillRect(p1,a.top,Math.max(2.5,p2-p1),a.bottom-a.top);g.restore();});
+        g.save();g.globalAlpha=.07;g.fillStyle='#fff';g.font='800 58px -apple-system,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('Bitcoin Daily',(a.left+a.right)/2,(a.top+a.bottom)/2);g.restore();},
       afterDatasetsDraw(ch){const a=ch.chartArea,x=ch.scales.x,y=ch.scales.y,g=ch.ctx;if(!a)return;
         g.save();g.strokeStyle='rgba(255,255,255,.20)';g.lineWidth=1;g.setLineDash([3,4]);
         (D.halvings||[]).forEach(h=>{const px=x.getPixelForValue(idx(h));if(px>=a.left&&px<=a.right){g.beginPath();g.moveTo(px,a.top);g.lineTo(px,a.bottom);g.stroke();}});g.restore();
@@ -243,7 +244,8 @@
           g.fillStyle=C.text;g.font='600 13px -apple-system,sans-serif';g.textAlign=sx>a.right-40?'right':'center';g.fillText(scrubIndex>=nowIdx?'now':fmtDate(labels[scrubIndex]).replace(/, \d+$/,''),sx,a.top-7);g.restore();}
         (D.turns||[]).forEach(t=>{const ix=idx(t.date);if(ix>=hist.length)return;const pv=hist[ix].price,px=x.getPixelForValue(ix);if(px<a.left||px>a.right)return;const py=y.getPixelForValue(pv);g.save();g.fillStyle=t.kind==='TOP'?C.orange:C.teal;g.beginPath();g.arc(px,py,5,0,7);g.fill();g.restore();});
         if(projVisible)(D.windows||[]).filter(w=>w.forward).forEach(w=>{const cxp=(x.getPixelForValue(idx(w.start))+x.getPixelForValue(idx(w.end)))/2;if(cxp<a.left||cxp>a.right)return;g.save();g.fillStyle=w.type==='sell'?C.orange:C.teal;g.font='700 12px -apple-system,sans-serif';g.textAlign='center';g.fillText(w.type==='sell'?'SELL':'BUY',cxp,a.bottom-8);g.restore();});
-        const act=ch.getActiveElements();if(act&&act.length){const hx=act[0].element.x;if(Math.abs(hx-sx)>3){g.save();g.strokeStyle='rgba(255,255,255,.35)';g.lineWidth=1;g.setLineDash([2,3]);g.beginPath();g.moveTo(hx,a.top);g.lineTo(hx,a.bottom);g.stroke();g.restore();}}}
+        const act=ch.getActiveElements();if(act&&act.length){const hx=act[0].element.x;if(Math.abs(hx-sx)>3){g.save();g.strokeStyle='rgba(255,255,255,.35)';g.lineWidth=1;g.setLineDash([2,3]);g.beginPath();g.moveTo(hx,a.top);g.lineTo(hx,a.bottom);g.stroke();g.restore();}}
+        g.save();g.globalAlpha=.6;g.fillStyle=C.muted;g.font='600 12px -apple-system,sans-serif';g.textAlign='right';g.textBaseline='bottom';g.fillText('bitcoin-daily.com',a.right-6,a.bottom-6);g.restore();}
     };
 
     let projVisible=true;
@@ -297,6 +299,7 @@
       [-1,0,1,2,3].forEach(s=>{g.beginPath();g.arc(cx,cy,rad(s),0,2*Math.PI);g.stroke();});
       const wedge=(a,b,f)=>{g.beginPath();g.moveTo(cx,cy);g.arc(cx,cy,maxR,ang(a),ang(b));g.closePath();g.fillStyle=f;g.fill();};
       wedge(525,546,'rgba(247,147,26,.32)');wedge(889,924,'rgba(45,212,191,.24)');
+      g.save();g.globalAlpha=.06;g.fillStyle='#fff';g.font='800 42px -apple-system,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('Bitcoin Daily',cx,cy);g.restore();
       pts=[];let px=null,py=null;
       for(let i=0;i<hist.length;i++){const cl=hist[i].clock;if(cl<0){px=null;continue;}const a=ang(cl),r=rad(hist[i].spring),x=cx+r*Math.cos(a),y=cy+r*Math.sin(a);
         pts.push({x,y,i});
@@ -307,6 +310,7 @@
       g.beginPath();g.arc(x,y,11,0,2*Math.PI);g.fillStyle=C.text;g.fill();g.lineWidth=4;g.strokeStyle=C.orange;g.stroke();
       g.fillStyle=C.text;g.font='600 16px -apple-system,sans-serif';g.textAlign=x<cx?'right':'left';g.fillText(upTo>=nowIdx?'now':'',x+(x<cx?-15:15),y+5);
       g.fillStyle=C.muted;g.textAlign='center';g.font='13px -apple-system,sans-serif';g.fillText('outer = overheated, inner = undervalued',cx,H-10);
+      g.save();g.globalAlpha=.6;g.fillStyle=C.muted;g.font='600 12px -apple-system,sans-serif';g.textAlign='right';g.textBaseline='top';g.fillText('bitcoin-daily.com',W-6,6);g.restore();
     }
     cv.addEventListener('mousemove',e=>{const rect=cv.getBoundingClientRect(),mx=e.clientX-rect.left,my=e.clientY-rect.top;
       let best=null,bd=144;for(const pt of pts){const d=(pt.x-mx)**2+(pt.y-my)**2;if(d<bd){bd=d;best=pt;}}
