@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bitcoin Runs on a Clock: The Research | Bitcoin Daily</title>
+  <meta name="description" content="The data behind Bitcoin's cycle: why every famous price indicator stopped working, why the halving clock did not, and two pre-registered, falsifiable predictions." />
+  <link rel="canonical" href="https://bitcoin-daily.com/research/" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Bitcoin Runs on a Clock: The Research" />
+  <meta property="og:description" content="Why Bitcoin's famous top-and-bottom indicators all went silent at once, and the one thing that did not: the clock written into the code." />
+  <meta property="og:url" content="https://bitcoin-daily.com/research/" />
+  <meta property="og:image" content="https://bitcoin-daily.com/assets/bitcoin-daily-pfp.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Bitcoin Runs on a Clock: The Research" />
+  <meta name="twitter:description" content="The amplitude is dying; the clock is not. A causal study of Bitcoin's 15-year cycle, with pre-registered predictions." />
+  <meta name="twitter:image" content="https://bitcoin-daily.com/assets/bitcoin-daily-pfp.png" />
+  <link rel="stylesheet" href="/styles.css?v=2" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ScholarlyArticle",
+    "headline": "Bitcoin Runs on a Clock",
+    "description": "A causal study of Bitcoin's market cycle: short-horizon price indicators decay as the market matures, while the halving-relative timing of cycle tops persists. Includes two pre-registered, falsifiable predictions.",
+    "author": { "@type": "Person", "@id": "https://joshmolnar.com/#person", "name": "Josh Molnar", "url": "https://joshmolnar.com/" },
+    "publisher": { "@id": "https://bitcoin-daily.com/#organization" },
+    "mainEntityOfPage": "https://bitcoin-daily.com/research/",
+    "image": "https://bitcoin-daily.com/assets/bitcoin-daily-pfp.png",
+    "keywords": "Bitcoin, power law, market cycle, halving, market efficiency, MVRV, Mayer Multiple"
+  }
+  </script>
+</head>
+<body>
+  <header class="site">
+    <div class="wrap nav">
+      <a class="brand" href="/">Bitcoin <span>Daily</span></a>
+      <button class="menu-toggle" aria-label="Menu" onclick="document.getElementById('nav').classList.toggle('open')">&#9776;</button>
+      <ul id="nav">
+        <li><a href="/cycle/">Cycle</a></li>
+        <li><a href="/research/" class="active">Research</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="https://bitcoindaily.vip" rel="noopener">Community</a></li>
+        <li><a href="https://bitcoindaily.app" rel="noopener">Consulting</a></li>
+        <li><a href="https://joshmolnar.com/" rel="noopener">Founder</a></li>
+        <li><a class="cta" href="https://bitcoindaily.vip" rel="noopener">Join the Community</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" style="padding-bottom:40px">
+      <div class="wrap">
+        <div class="eyebrow">Research</div>
+        <h1>Bitcoin Runs on a Clock</h1>
+        <p class="lead">In October 2025 Bitcoin set its highest price in history, and not one of the famous "the top is in" indicators fired. This is the study of why, by Bitcoin Daily founder Josh Molnar. The short version: the size of Bitcoin's swings is dying, but the timing is not.</p>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="wrap prose">
+        <h2>The puzzle</h2>
+        <p>For roughly a decade, a handful of indicators called Bitcoin's cycle tops, sometimes to the day: the Pi Cycle, MVRV, the Mayer Multiple, the 200-week moving average, RSI. At the biggest top in Bitcoin's history, in October 2025, every single one of them stayed silent. This work asks a simple question: was that bad luck, or was it inevitable?</p>
+
+        <h2>The finding: the amplitude is dying, the clock is not</h2>
+        <p>Two things were measured across Bitcoin's full 15-year history, using two independent price sources that agree with each other. First, a long-term trend fit to price as Bitcoin ages, a power law, but built <strong>causally</strong>: at every point in time the model sees only past data and never peeks at the future. That is the flaw in the popular power-law and stock-to-flow charts, which fit their line using the whole history at once and look far more accurate than they ever were in real time. The exponent that describes the honest, causal curve settled near <strong>5.6</strong> and stayed there.</p>
+        <p>Second, the timing of the tops. Bitcoin's cycle peaks keep landing roughly <strong>525 to 546 days after each halving</strong> (a supply event scheduled in Bitcoin's code). They cluster within about 2% of each other in halving-relative time. Tested against the hypothesis that this is just random, the odds of a grouping that tight come out somewhere between <strong>1 in 1,000 and 1 in a million</strong>, depending on how generous you are to chance.</p>
+
+        <h2>Why the famous indicators died</h2>
+        <p>They did not fail randomly. They died for the same structural reason: Bitcoin's swings shrink every cycle, and these indicators are essentially lines drawn at a fixed height. MVRV peaked at 5.88, then 4.72, then 3.96, then 2.74. The Mayer Multiple went from 8.26 to 1.52. As the waves get smaller, they stop reaching the trigger line, so the indicator never fires. The Pi Cycle can no longer mathematically reach its own signal level. "It never missed before" was never skill. It was the wave still being big enough to touch the line.</p>
+
+        <h2>The part most analysis skips: policing its own statistics</h2>
+        <p>The honest catch is built into the method. When the per-cycle "wins" were stress-tested by shuffling the data thousands of times, the standard statistics that practitioners normally rely on did not hold up at this sample size; they cry "significant" far too often. So those p-values were thrown out and not leaned on. The only patterns trusted here are the ones that survive the simple test: the direction never flips, and the result repeats on a second data source and on a second asset, Ethereum (which shows the same pattern with a different trend curve). The study polices itself harder than a critic would.</p>
+
+        <h2>"Isn't it just the money printer?"</h2>
+        <p>The most common objection, checked directly. Money supply (M2) and interest rates flip which way they matter from cycle to cycle and miss Bitcoin's tops by hundreds of days, while the halving clock holds to about 2%. The clincher: through 2024 to 2026 the money supply was still expanding, the macro picture said "keep going," and Bitcoin topped on schedule and fell anyway. Price followed the clock, not the liquidity. (With only three to four cycles, this is strong evidence, not proof, and the study says so.)</p>
+
+        <h2>The Satoshi Clock</h2>
+        <p>The whole thesis reduces to two numbers: how many days it has been since the last halving (where you are in the four-year cycle), and how stretched price is above or below its causal trend. Plotted together, Bitcoin's history is a spiral that gets smaller each loop (the swings dying) but turns at the same place each time (the clock holding). You can watch the live version on the <a href="/cycle/">Bitcoin Cycle tracker</a>.</p>
+
+        <h2>The predictions, on the record</h2>
+        <p>A real theory of timing has to name dates before they happen. Two are staked:</p>
+        <ul>
+          <li>A <strong>cycle bottom between roughly October 5 and November 16, 2026.</strong> This is flagged as the <em>weaker</em> bet, because bottoms are less reliable than tops in the data.</li>
+          <li>A <strong>cycle top 525 to 546 days after the next halving</strong>, which at the current estimate lands in roughly late 2029. It is stated as days-after-halving rather than a fixed calendar date, because the halving's exact day still drifts, and it will be sharpened as the halving approaches. This is the stronger test.</li>
+        </ul>
+        <p>For the record: in January 2025, nine months ahead, this framework called an October 2025 top. The timing was right (the top came in October). The price guess was wrong (the call was $150,000 to $200,000; Bitcoin reached about $126,000). Right on <em>when</em>, wrong on <em>how much</em>, is the entire thesis playing out in real time.</p>
+
+        <h2>What this does not claim</h2>
+        <p>The limitations are stated openly, because the honest version is the credible one:</p>
+        <ul>
+          <li>Only three to four cycles exist. It is a small sample, and it cannot prove the halving <em>causes</em> the cycle.</li>
+          <li>The pattern was found looking backward. The real test is the forward predictions above.</li>
+          <li>The conventional significance statistics do not pass the strict test, which is stated plainly and which undercuts not just this work but most indicator studies of the same kind.</li>
+          <li>The economy moves on a roughly four-year rhythm too, and with this few cycles it cannot be fully separated from the clock.</li>
+          <li>Bottoms are weaker than tops. The timing edge is real for tops and softer for bottoms.</li>
+        </ul>
+
+        <h2>Read it and reproduce it</h2>
+        <p>The full methodology, the frozen dataset, and the code that reproduces every number are openly available, so anyone can rerun it and get the identical result. A formal preprint is under review at SSRN and arXiv (q-fin.ST) and will be linked here when it is live.</p>
+        <p><a class="btn primary" href="https://github.com/BitcoinDaily/bitcoin-runs-on-a-clock" rel="noopener">Code &amp; data on GitHub</a> <a class="btn ghost" href="/cycle/">See the live cycle tracker</a></p>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="wrap prose">
+        <p style="color:var(--muted,#8a93a5);font-size:.95rem">Bitcoin Daily publishes free daily market analysis on <a href="https://www.instagram.com/bitcoin.daily/" rel="noopener">Instagram</a> and <a href="https://www.youtube.com/@BitcoinDailyTV" rel="noopener">YouTube</a>. Nothing here is financial advice.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site">
+    <div class="wrap row">
+      <div>&copy; 2026 Bitcoin Daily &middot; Founded by <a href="https://joshmolnar.com/" rel="noopener">Josh Molnar</a></div>
+      <div><a href="/cycle/">Cycle</a> &middot; <a href="/research/">Research</a> &middot; <a href="/blog/">Blog</a> &middot; <a href="mailto:info@bitcoin-daily.com">info@bitcoin-daily.com</a></div>
+    </div>
+  </footer>
+</body>
+</html>
