@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bitcoin Is Not A Stock - Free Guide | Bitcoin Daily</title>
+  <meta name="description" content="Why Bitcoin keeps decoupling from the S&P and Nasdaq, and what actually drives it. Free guide from Bitcoin Daily. Enter your email and we'll send the PDF." />
+  <link rel="canonical" href="https://bitcoin-daily.com/not-a-stock" />
+  <meta name="robots" content="index,follow" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Bitcoin Is Not A Stock - Free Guide" />
+  <meta property="og:description" content="Why Bitcoin keeps decoupling from the stock market, and what actually drives it. Free PDF from Bitcoin Daily." />
+  <meta property="og:url" content="https://bitcoin-daily.com/not-a-stock" />
+  <meta property="og:image" content="https://bitcoin-daily.com/assets/bitcoin-daily-pfp.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="stylesheet" href="/styles.css?v=2" />
+  <style>
+    /* scoped bits for the opt-in form - everything else reuses the site design system */
+    .lp { padding: 80px 0 64px; background: radial-gradient(1200px 400px at 70% -10%, rgba(247,147,26,.10), transparent 60%); }
+    .lp h1 { font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.1; letter-spacing: -.5px; margin: 14px 0 16px; max-width: 720px; }
+    .lp .lead { font-size: 1.15rem; color: var(--muted); max-width: 600px; }
+    .optin { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+             padding: 26px; margin-top: 34px; max-width: 460px; box-shadow: var(--shadow); }
+    .optin label { display: block; font-size: .9rem; color: var(--muted); margin-bottom: 8px; }
+    .optin input[type=email], .optin input[type=text] {
+      width: 100%; padding: 13px 15px; border-radius: 10px; border: 1px solid var(--line);
+      background: var(--bg-soft); color: var(--text); font-size: 1rem; margin-bottom: 12px; }
+    .optin input:focus { outline: none; border-color: var(--accent); }
+    .optin button { width: 100%; border: 0; cursor: pointer; }
+    .optin .fine { font-size: .78rem; color: var(--muted); margin-top: 12px; line-height: 1.5; }
+    .optin .fine a { color: var(--muted); text-decoration: underline; }
+    .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+    .msg { margin-top: 14px; font-size: .95rem; display: none; }
+    .msg.show { display: block; }
+    .msg.ok { color: var(--accent-2); }
+    .msg.err { color: #ff6b6b; }
+    .checklist { list-style: none; margin: 22px 0 0; padding: 0; max-width: 560px; }
+    .checklist li { color: #cdd6e6; padding: 6px 0 6px 28px; position: relative; }
+    .checklist li::before { content: "✓"; color: var(--accent-2); position: absolute; left: 0; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <header class="site">
+    <div class="wrap nav">
+      <a class="brand" href="/">Bitcoin <span>Daily</span></a>
+      <button class="menu-toggle" aria-label="Menu" onclick="document.getElementById('nav').classList.toggle('open')">&#9776;</button>
+      <ul id="nav">
+        <li><a href="/cycle/">Cycle</a></li>
+        <li><a href="/research/">Research</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="https://bitcoindaily.vip" rel="noopener">Community</a></li>
+        <li><a href="https://bitcoindaily.app" rel="noopener">Consulting</a></li>
+        <li><a class="cta" href="https://bitcoindaily.vip" rel="noopener">Join the Community</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+    <section class="lp">
+      <div class="wrap">
+        <div class="eyebrow" style="color:var(--accent);font-weight:600;letter-spacing:1.5px;text-transform:uppercase;font-size:.78rem">Free guide</div>
+        <h1>Bitcoin is not a stock.</h1>
+        <p class="lead">Every time the market panics, the headlines say Bitcoin is "just a risk asset." Then it decouples and goes its own way. This free guide breaks down why, in plain English, no jargon.</p>
+
+        <ul class="checklist">
+          <li>Why the "Bitcoin = Nasdaq" correlation keeps breaking</li>
+          <li>What actually moves Bitcoin when stocks don't</li>
+          <li>How to think about it in your own portfolio</li>
+        </ul>
+
+        <form class="optin" id="optin" novalidate>
+          <input type="hidden" name="keyword" value="SPX" />
+          <!-- honeypot: hidden from humans, bots fill it -->
+          <div class="hp"><label>Company<input type="text" name="company" tabindex="-1" autocomplete="off" /></label></div>
+
+          <label for="email">Where should we send the PDF?</label>
+          <input type="email" id="email" name="email" placeholder="you@email.com" required autocomplete="email" />
+          <button type="submit" class="btn primary" id="submitBtn">Send me the guide</button>
+
+          <div class="msg ok" id="msgOk">Check your inbox - the guide is on its way. (Add us to your contacts so it doesn't hide in spam.)</div>
+          <div class="msg err" id="msgErr"></div>
+
+          <p class="fine">You'll also get our free daily Bitcoin analysis. No spam, unsubscribe anytime in one click. We never sell your email. By signing up you agree to receive emails from Bitcoin Daily.</p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site">
+    <div class="wrap row">
+      <div>&copy; 2026 Bitcoin Daily &middot; Founded by <a href="https://joshmolnar.com/" rel="noopener">Josh Molnar</a></div>
+      <div><a href="/blog/">Blog</a> &middot; <a href="https://bitcoindaily.vip" rel="noopener">Community</a> &middot; <a href="mailto:info@bitcoin-daily.com">info@bitcoin-daily.com</a></div>
+    </div>
+  </footer>
+
+  <script>
+    // Direct PDF as the always-works fallback (also what the ManyChat DM links to today).
+    var PDF_URL = "https://bitcoin-daily.com/guides/bitcoin-is-not-a-stock.pdf";
+    var form = document.getElementById('optin');
+    var btn = document.getElementById('submitBtn');
+    var okEl = document.getElementById('msgOk');
+    var errEl = document.getElementById('msgErr');
+
+    function show(el, text) { if (text) el.textContent = text; el.classList.add('show'); }
+    function hide(el) { el.classList.remove('show'); }
+
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      hide(okEl); hide(errEl);
+      var email = form.email.value.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { show(errEl, 'Please enter a valid email.'); return; }
+      btn.disabled = true; btn.textContent = 'Sending...';
+
+      try {
+        var r = await fetch('/.netlify/functions/subscribe', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ email: email, keyword: form.keyword.value, company: form.company.value })
+        });
+        if (r.ok) {
+          form.reset();
+          show(okEl);
+          btn.textContent = 'Sent ✓';
+          // Also open the PDF directly so they get it instantly, no waiting on email.
+          setTimeout(function () { window.open(PDF_URL, '_blank', 'noopener'); }, 600);
+          return;
+        }
+        // Function not wired yet (503) or any error: degrade to the direct download so no lead is lost.
+        show(okEl, "Here's your guide - opening it now.");
+        btn.textContent = 'Get the guide';
+        window.open(PDF_URL, '_blank', 'noopener');
+      } catch (_) {
+        show(okEl, "Here's your guide - opening it now.");
+        window.open(PDF_URL, '_blank', 'noopener');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

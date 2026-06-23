@@ -1,5 +1,13 @@
 [build]
   publish = "."
   command = ""
+  functions = "netlify/functions"
 
 # Static site — no build step. Netlify serves the repo root as-is.
+# One serverless function: netlify/functions/subscribe.js (email capture -> Brevo).
+# It needs env vars set in Netlify (Site settings -> Environment variables):
+#   BREVO_API_KEY  (required)   BREVO_LISTS  (optional JSON map keyword->listId)
+# Until BREVO_API_KEY is set the function returns 503 and /not-a-stock falls back to the direct PDF.
+
+[functions]
+  node_bundler = "esbuild"
