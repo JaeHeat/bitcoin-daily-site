@@ -156,3 +156,31 @@ footer.site a { color: var(--muted); }
   .nav ul li { padding: 14px 22px; border-top: 1px solid var(--line); }
   .menu-toggle { display: block; }
 }
+
+/* ---------- Blog: category filter chips + search + topic tags (added 2026-06-28) ---------- */
+.blog-controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 14px; max-width: 760px; margin-bottom: 26px; }
+.blog-filter { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; background: var(--panel);
+  border: 1px solid var(--line); color: var(--muted); padding: 7px 14px; border-radius: 999px;
+  font-size: .88rem; font-weight: 500; line-height: 1; cursor: pointer; font-family: inherit;
+  transition: border-color .15s, color .15s, background .15s; }
+.chip:hover { color: var(--text); border-color: var(--muted); text-decoration: none; }
+.chip.is-active { background: var(--accent); border-color: var(--accent); color: #1a1206; }
+.chip-n { font-size: .76rem; opacity: .7; }
+.chip.is-active .chip-n { opacity: .9; }
+.blog-search { background: var(--bg-soft); border: 1px solid var(--line); color: var(--text);
+  padding: 9px 15px; border-radius: 999px; font-size: .9rem; font-family: inherit;
+  flex: 1 1 200px; min-width: 180px; max-width: 280px; }
+.blog-search::placeholder { color: var(--muted); }
+.blog-search:focus { outline: none; border-color: var(--accent); }
+.blog-empty { color: var(--muted); max-width: 760px; padding: 6px 2px 20px; }
+.post-card[hidden] { display: none; }
+.cat-tag { color: var(--accent); font-weight: 600; }
+.cat-tag:hover { text-decoration: underline; }
+.eyebrow a { color: inherit; }
+.eyebrow a:hover { text-decoration: underline; }
+@media (max-width: 560px) {
+  .blog-controls { flex-direction: column; align-items: stretch; }
+  .blog-search { max-width: none; }
+}
