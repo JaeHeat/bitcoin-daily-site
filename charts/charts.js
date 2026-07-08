@@ -27,6 +27,12 @@
       g.save(); g.strokeStyle='rgba(226,87,74,.7)'; g.lineWidth=1; g.setLineDash([3,3]); g.beginPath(); g.moveTo(px,a.top); g.lineTo(px,a.bottom); g.stroke();
       g.setLineDash([]); g.fillStyle=C.red; g.font='700 10px -apple-system,sans-serif'; g.textAlign='center'; g.fillText(labels?labels[i]:'top',px,a.top+11); g.restore(); }); } });
 
+  // shade the background green where two series move the same direction, red where opposite (agree flag)
+  const agreeShade = series => ({ id:'agree', beforeDatasetsDraw(ch){ const a=ch.chartArea,x=ch.scales.x,g=ch.ctx; if(!a) return;
+    for(let i=1;i<series.length;i++){ const ag=series[i].agree; if(ag==null) continue;
+      const x0=x.getPixelForValue(i-1), x1=x.getPixelForValue(i);
+      g.save(); g.fillStyle = ag ? 'rgba(78,201,122,.14)' : 'rgba(226,87,74,.16)'; g.fillRect(x0,a.top,Math.max(1,x1-x0),a.bottom-a.top); g.restore(); } } });
+
   const baseOpts = extra => Object.assign({
     responsive:true, maintainAspectRatio:false, animation:false, interaction:{ mode:'index', intersect:false },
     plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#0b0e14', borderColor:'rgba(255,255,255,.12)', borderWidth:1, padding:10 } },
@@ -45,15 +51,23 @@
   const setRead = (html, up) => { const e=$('read'); if(e){ e.className='ch-read'+(up?' up':''); e.innerHTML=html; } };
   const logY = cb => ({ type:'logarithmic', grid:{color:C.line}, ticks:{color:C.muted,font:{size:12},callback:cb||logTick} });
 
-  // generic oscillator (single series + threshold lines + optional colored segments)
+  // right-axis BTC price overlay (thin, muted, log) so any oscillator shows what price did at the time
+  const priceOverlay = data => ({ label:'BTC price', data, borderColor:'rgba(154,167,189,.5)', borderWidth:1,
+    pointRadius:0, tension:.15, yAxisID:'y2', order:2 });
+  const priceAxis = () => ({ type:'logarithmic', position:'right', grid:{display:false},
+    ticks:{ color:'rgba(154,167,189,.7)', font:{size:11}, callback:logTick } });
+
+  // generic oscillator (indicator on the left axis + BTC price overlaid on a right log axis)
   function oscillator(D, key, o){ const s=D.charts[key].series, labels=s.map(d=>d.date), vals=s.map(d=>d[o.field]);
     const th=[]; if(o.hot!=null) th.push({v:o.hot,c:C.red,t:o.hotLabel}); if(o.cheap!=null) th.push({v:o.cheap,c:C.teal,t:o.cheapLabel});
     (o.extraLines||[]).forEach(L=>th.push(L));
     return new Chart($('chart'), { type:'line',
-      data:{ labels, datasets:[{ data:vals, borderColor:C.orange, borderWidth:1.8, pointRadius:0, tension:.15,
-        segment:{ borderColor:c => (o.hot!=null && c.p1.parsed.y>=o.hot)?C.red:((o.cheap!=null && c.p1.parsed.y<=o.cheap)?C.teal:C.orange) } }] },
-      options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]), label:it=>o.name+' '+it.parsed.y.toFixed(2) } } },
-        scales:{ x:baseOpts().scales.x, y:{ grid:{color:C.line}, ticks:{color:C.muted,font:{size:12}}, suggestedMin:o.min, suggestedMax:o.max } } }),
+      data:{ labels, datasets:[ priceOverlay(s.map(d=>d.price)),
+        { label:o.name, data:vals, borderColor:C.orange, borderWidth:2, pointRadius:0, tension:.15, yAxisID:'y', order:1,
+          segment:{ borderColor:c => (o.hot!=null && c.p1.parsed.y>=o.hot)?C.red:((o.cheap!=null && c.p1.parsed.y<=o.cheap)?C.teal:C.orange) } }] },
+      options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]),
+        label:it=> it.datasetIndex===0 ? 'BTC '+fmtUSD(it.parsed.y) : o.name+' '+it.parsed.y.toFixed(2) } } },
+        scales:{ x:baseOpts().scales.x, y:{ grid:{color:C.line}, ticks:{color:C.muted,font:{size:12}}, suggestedMin:o.min, suggestedMax:o.max }, y2:priceAxis() } }),
       plugins:[watermark, thresholds(th)] }); }
 
   const R = {};
@@ -87,10 +101,12 @@
   R.nupl = D => { const o=D.charts.nupl, s=o.series, labels=s.map(d=>d.date);
     const zoneLines=[{v:0,c:C.teal,t:'0 = break-even'},{v:0.25,c:C.muted,t:'hope / fear'},{v:0.5,c:C.muted,t:'optimism / anxiety'},{v:0.75,c:C.red,t:'belief / denial -> euphoria'}];
     const ch=new Chart($('chart'), { type:'line',
-      data:{ labels, datasets:[{ data:s.map(d=>d.nupl), borderColor:C.orange, borderWidth:1.8, pointRadius:0, tension:.15,
-        segment:{ borderColor:c=>{const y=c.p1.parsed.y; return y>=0.75?C.red:y>=0.5?'#f4a259':y>=0.25?C.orange:y>=0?'#c6e08b':C.blue;} } }] },
-      options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]), label:it=>'NUPL '+it.parsed.y.toFixed(3) } } },
-        scales:{ x:baseOpts().scales.x, y:{ grid:{color:C.line}, ticks:{color:C.muted,font:{size:12}}, suggestedMin:-0.25, suggestedMax:0.9 } } }), plugins:[watermark, thresholds(zoneLines)] });
+      data:{ labels, datasets:[ priceOverlay(s.map(d=>d.price)),
+        { label:'NUPL', data:s.map(d=>d.nupl), borderColor:C.orange, borderWidth:2, pointRadius:0, tension:.15, yAxisID:'y', order:1,
+          segment:{ borderColor:c=>{const y=c.p1.parsed.y; return y>=0.75?C.red:y>=0.5?'#f4a259':y>=0.25?C.orange:y>=0?'#c6e08b':C.blue;} } }] },
+      options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]),
+        label:it=> it.datasetIndex===0 ? 'BTC '+fmtUSD(it.parsed.y) : 'NUPL '+it.parsed.y.toFixed(3) } } },
+        scales:{ x:baseOpts().scales.x, y:{ grid:{color:C.line}, ticks:{color:C.muted,font:{size:12}}, suggestedMin:-0.25, suggestedMax:0.9 }, y2:priceAxis() } }), plugins:[watermark, thresholds(zoneLines)] });
     setRead('Now at <b>'+o.latest.toFixed(2)+'</b>, the <b>'+o.current_zone+'</b> zone. Below zero means the market as a whole is underwater, which has marked bottoms.', o.latest<0.25); return ch; };
 
   R.pi_cycle = D => { const s=D.charts.pi_cycle.series, labels=s.map(d=>d.date);
@@ -116,9 +132,11 @@
   R.rainbow = D => { const o=D.charts.rainbow, s=o.series, labels=s.map(d=>d.date), center=s.map(d=>d.center);
     const bandSets = o.bands.map((b,i)=>({ label:b.label, data:center.map(c=>c*b.mult), borderColor:'rgba(255,255,255,.14)', borderWidth:1, pointRadius:0,
       fill: i===0?'origin':'-1', backgroundColor:b.color+'cc', tension:.2 }));
-    bandSets.push({ label:'Price', data:s.map(d=>d.price), borderColor:'#0b0e14', borderWidth:2.4, pointRadius:0, tension:.2 });
+    // price as a white line with a dark halo underneath, so it reads on light and dark bands alike
+    bandSets.push({ label:'pxshadow', data:s.map(d=>d.price), borderColor:'rgba(0,0,0,.6)', borderWidth:5, pointRadius:0, tension:.2 });
+    bandSets.push({ label:'Price', data:s.map(d=>d.price), borderColor:'#ffffff', borderWidth:2.4, pointRadius:0, tension:.2 });
     const ch=new Chart($('chart'), { type:'line', data:{ labels, datasets:bandSets },
-      options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ filter:it=>it.datasetIndex===o.bands.length, callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]), label:it=>'Price '+fmtUSD(it.parsed.y) } } },
+      options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ filter:it=>it.dataset.label==='Price', callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]), label:it=>'Price '+fmtUSD(it.parsed.y) } } },
         scales:{ x:baseOpts().scales.x, y:logY() } }), plugins:[watermark] });
     setRead('Bitcoin is in the <b>"'+o.current_band+'"</b> band today. The rainbow is a fun, illustrative log-regression, not a model. Treat the colors as mood, not a signal.');
     const bl=$('bands'); if(bl) bl.innerHTML=o.bands.slice().reverse().map(b=>'<span class="ch-assume" style="border-color:'+b.color+'">'+b.label+'</span>').join(''); return ch; };
@@ -143,8 +161,8 @@
         { label:'BTC', data:s.map(d=>d.btc), borderColor:C.orange, borderWidth:2, pointRadius:0, tension:.25, yAxisID:'y' } ]},
       options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]),
         label:it=>it.datasetIndex===1?'BTC '+fmtUSD(it.parsed.y):'M2 $'+(it.parsed.y/1000).toFixed(1)+'T' } } },
-        scales:{ x:baseOpts().scales.x, y:logY(), y2:{ position:'right', grid:{display:false}, ticks:{color:C.teal,font:{size:12},callback:v=>'$'+(v/1000).toFixed(0)+'T'} } } }), plugins:[watermark] });
-    setRead('US M2 is about <b>$'+D.charts.m2_vs_btc.m2_latest_t+' trillion</b>. Year-over-year the two move together with a correlation of '+D.charts.m2_vs_btc.corr_yoy+', a real but loose link.'); return ch; };
+        scales:{ x:baseOpts().scales.x, y:logY(), y2:{ position:'right', grid:{display:false}, ticks:{color:C.teal,font:{size:12},callback:v=>'$'+(v/1000).toFixed(0)+'T'} } } }), plugins:[watermark, agreeShade(s)] });
+    setRead('US M2 is about <b>$'+D.charts.m2_vs_btc.m2_latest_t+' trillion</b>. Green shading marks months they moved the same direction, red marks opposite. Year-over-year correlation is '+D.charts.m2_vs_btc.corr_yoy+', a real but loose link.'); return ch; };
 
   R.pmi_vs_btc = D => { const s=D.charts.pmi_vs_btc.series, labels=s.map(d=>d.date);
     const ch=new Chart($('chart'), { type:'line',
@@ -156,8 +174,8 @@
         scales:{ x:baseOpts().scales.x, y:logY(), y2:{ position:'right', grid:{display:false}, min:33, max:66, ticks:{color:C.blue,font:{size:12}} } } }),
       plugins:[watermark, { id:'pmi50', beforeDatasetsDraw(ch){ const ar=ch.chartArea, y2=ch.scales.y2, g=ch.ctx; if(!ar) return; const py=y2.getPixelForValue(50);
         g.save(); g.strokeStyle='rgba(255,255,255,.25)'; g.lineWidth=1; g.setLineDash([4,4]); g.beginPath(); g.moveTo(ar.left,py); g.lineTo(ar.right,py); g.stroke();
-        g.setLineDash([]); g.fillStyle=C.muted; g.font='600 10px -apple-system,sans-serif'; g.textAlign='right'; g.fillText('PMI 50 = flat',ar.right-6,py-3); g.restore(); } }] });
-    setRead('The correlation of monthly moves is <b>'+D.charts.pmi_vs_btc.corr_mom+'</b>, effectively zero. Bitcoin\'s cycles do not follow the business cycle.'); return ch; };
+        g.setLineDash([]); g.fillStyle=C.muted; g.font='600 10px -apple-system,sans-serif'; g.textAlign='right'; g.fillText('PMI 50 = flat',ar.right-6,py-3); g.restore(); } }, agreeShade(s)] });
+    setRead('Green shading marks months Bitcoin and PMI moved the same direction, red marks opposite. Notice how often it flips. The correlation of monthly moves is <b>'+D.charts.pmi_vs_btc.corr_mom+'</b>, effectively zero.'); return ch; };
 
   R.sp500_vs_btc = D => { const y=D.charts.sp500_vs_btc.years, labels=y.map(d=>String(d.year)), vals=y.map(d=>d.corr);
     const ch=new Chart($('chart'), { type:'bar', data:{ labels, datasets:[{ data:vals, backgroundColor:y.map(d=>d.year<2020?C.teal:C.orange), borderRadius:3 }] },
@@ -167,6 +185,7 @@
     setRead('The full-period average correlation is <b>'+D.charts.sp500_vs_btc.full_avg+'</b>, not the 0.87 people quote. It even goes negative in some years.'); return ch; };
 
   R.halving = D => { const hv=D.charts.halving_eta; const cap=$('halving_cap');
+    const dateEl=$('halving_date'); if(dateEl) dateEl.innerHTML='Estimated <b>'+fmtDate(hv.eta_date)+'</b>';
     if(cap && hv.height) cap.textContent='Block '+hv.height.toLocaleString()+' of '+hv.next_block.toLocaleString()+'. Estimated at roughly one block every ten minutes.';
     const bar=$('halving_bar'); if(bar) bar.style.width=(hv.progress_pct||0)+'%';
     const note=$('halving_note'); if(note) note.innerHTML='The block reward falls from '+hv.reward_now+' to '+hv.reward_after+' BTC. The last halving was '+fmtDate(hv.last_halving)+'.'+(hv.progress_pct?' This epoch is '+hv.progress_pct+'% complete.':'');
