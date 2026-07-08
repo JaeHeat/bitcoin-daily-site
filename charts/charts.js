@@ -33,6 +33,18 @@
       const x0=x.getPixelForValue(i-1), x1=x.getPixelForValue(i);
       g.save(); g.fillStyle = ag ? 'rgba(78,201,122,.14)' : 'rgba(226,87,74,.16)'; g.fillRect(x0,a.top,Math.max(1,x1-x0),a.bottom-a.top); g.restore(); } } });
 
+  // vertical markers at the dated cycle tops (orange) and bottoms (teal), so any indicator can be
+  // read against where price actually turned. Subtle white line + colored TOP/BOT label (reads on any bg).
+  const cycleMarks = D => ({ id:'cyc', afterDatasetsDraw(ch){ if(!D.cycle) return; const a=ch.chartArea,x=ch.scales.x,g=ch.ctx; if(!a) return;
+    const labels=ch.data.labels; if(!labels||!labels.length) return;
+    const t0=Date.parse(labels[0]), t1=Date.parse(labels[labels.length-1]), WK=6048e5;
+    const nearest=ds=>{ const t=Date.parse(ds); let bi=0,bd=1e18; for(let i=0;i<labels.length;i++){ const dd=Math.abs(Date.parse(labels[i])-t); if(dd<bd){bd=dd;bi=i;} } return bi; };
+    const draw=(dates,color,tag)=>(dates||[]).forEach(ds=>{ const t=Date.parse(ds); if(t<t0-WK||t>t1+WK) return;
+      const px=x.getPixelForValue(nearest(ds)); if(px<a.left||px>a.right) return;
+      g.save(); g.strokeStyle='rgba(255,255,255,.30)'; g.lineWidth=1; g.setLineDash([4,3]); g.beginPath(); g.moveTo(px,a.top); g.lineTo(px,a.bottom); g.stroke();
+      g.setLineDash([]); g.fillStyle=color; g.font='700 9px -apple-system,sans-serif'; g.textAlign='center'; g.textBaseline='top'; g.fillText(tag,px,a.top+2); g.restore(); });
+    draw(D.cycle.tops, C.orange, 'TOP'); draw(D.cycle.bottoms, C.teal, 'BOT'); } });
+
   const baseOpts = extra => Object.assign({
     responsive:true, maintainAspectRatio:false, animation:false, interaction:{ mode:'index', intersect:false },
     plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#0b0e14', borderColor:'rgba(255,255,255,.12)', borderWidth:1, padding:10 } },
@@ -68,7 +80,7 @@
       options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]),
         label:it=> it.datasetIndex===0 ? 'BTC '+fmtUSD(it.parsed.y) : o.name+' '+it.parsed.y.toFixed(2) } } },
         scales:{ x:baseOpts().scales.x, y:{ grid:{color:C.line}, ticks:{color:C.muted,font:{size:12}}, suggestedMin:o.min, suggestedMax:o.max }, y2:priceAxis() } }),
-      plugins:[watermark, thresholds(th)] }); }
+      plugins:[watermark, thresholds(th), cycleMarks(D)] }); }
 
   const R = {};
 
@@ -78,7 +90,7 @@
         { label:'Avg holder paid', data:s.map(d=>d.realized), borderColor:C.teal, borderWidth:1.6, pointRadius:0, tension:.2, spanGaps:true },
         { label:'Price', data:s.map(d=>d.price), borderColor:C.orange, borderWidth:2.2, pointRadius:0, tension:.2, fill:0, backgroundColor:'rgba(45,212,191,.10)' } ]},
       options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]),
-        label:it=>(it.datasetIndex===1?'Price ':'Avg holder paid ')+fmtUSD(it.parsed.y) } } }, scales:{ x:baseOpts().scales.x, y:logY() } }), plugins:[watermark] });
+        label:it=>(it.datasetIndex===1?'Price ':'Avg holder paid ')+fmtUSD(it.parsed.y) } } }, scales:{ x:baseOpts().scales.x, y:logY() } }), plugins:[watermark, cycleMarks(D)] });
     const l=rp.latest;
     setRead(up ? 'Price is about '+Math.abs(l.over_under_pct)+'% <b>below</b> the '+fmtUSD(l.realized)+' the average holder paid. Every past bottom printed here.'
                : 'The average holder is <b>in profit</b>, price about '+l.over_under_pct+'% above the '+fmtUSD(l.realized)+' they paid. That has never been true at a cycle bottom.', up);
@@ -106,7 +118,7 @@
           segment:{ borderColor:c=>{const y=c.p1.parsed.y; return y>=0.75?C.red:y>=0.5?'#f4a259':y>=0.25?C.orange:y>=0?'#c6e08b':C.blue;} } }] },
       options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]),
         label:it=> it.datasetIndex===0 ? 'BTC '+fmtUSD(it.parsed.y) : 'NUPL '+it.parsed.y.toFixed(3) } } },
-        scales:{ x:baseOpts().scales.x, y:{ grid:{color:C.line}, ticks:{color:C.muted,font:{size:12}}, suggestedMin:-0.25, suggestedMax:0.9 }, y2:priceAxis() } }), plugins:[watermark, thresholds(zoneLines)] });
+        scales:{ x:baseOpts().scales.x, y:{ grid:{color:C.line}, ticks:{color:C.muted,font:{size:12}}, suggestedMin:-0.25, suggestedMax:0.9 }, y2:priceAxis() } }), plugins:[watermark, thresholds(zoneLines), cycleMarks(D)] });
     setRead('Now at <b>'+o.latest.toFixed(2)+'</b>, the <b>'+o.current_zone+'</b> zone. Below zero means the market as a whole is underwater, which has marked bottoms.', o.latest<0.25); return ch; };
 
   R.pi_cycle = D => { const s=D.charts.pi_cycle.series, labels=s.map(d=>d.date);
@@ -117,7 +129,7 @@
         { label:'2x 350-day', data:s.map(d=>d.ma350x2), borderColor:C.teal, borderWidth:2, pointRadius:0, tension:.2 } ]},
       options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]),
         label:it=>['Price','111-day avg','2x 350-day avg'][it.datasetIndex]+' '+fmtUSD(it.parsed.y) } } }, scales:{ x:baseOpts().scales.x, y:logY() } }),
-      plugins:[watermark, verticals(D.charts.pi_cycle.crosses)] });
+      plugins:[watermark, verticals(D.charts.pi_cycle.crosses), cycleMarks(D)] });
     setRead('Fired at '+D.charts.pi_cycle.crosses.length+' past tops. The 111-day average now sits about <b>'+Math.abs(D.charts.pi_cycle.gap_pct)+'% below</b> the trigger, so no top signal is close.'); return ch; };
 
   R.ma200w = D => { const s=D.charts.ma200w.series, labels=s.map(d=>d.date);
@@ -126,7 +138,7 @@
         { label:'200-week', data:s.map(d=>d.ma200w), borderColor:C.teal, borderWidth:2, pointRadius:0, tension:.2 },
         { label:'Price', data:s.map(d=>d.price), borderColor:C.orange, borderWidth:2, pointRadius:0, tension:.2 } ]},
       options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]),
-        label:it=>(it.datasetIndex===1?'Price ':'200-week avg ')+fmtUSD(it.parsed.y) } } }, scales:{ x:baseOpts().scales.x, y:logY() } }), plugins:[watermark] });
+        label:it=>(it.datasetIndex===1?'Price ':'200-week avg ')+fmtUSD(it.parsed.y) } } }, scales:{ x:baseOpts().scales.x, y:logY() } }), plugins:[watermark, cycleMarks(D)] });
     const l=D.charts.ma200w.latest; setRead('Price is <b>'+l.mult.toFixed(2)+'x</b> its 200-week average of '+fmtUSD(l.ma200w)+'. '+(l.mult<1.3?'That is close to the floor Bitcoin has only broken at deep bear-market lows.':'Room above the long-term floor.'), l.mult<1.3); return ch; };
 
   R.rainbow = D => { const o=D.charts.rainbow, s=o.series, labels=s.map(d=>d.date), center=s.map(d=>d.center);
@@ -137,7 +149,7 @@
     bandSets.push({ label:'Price', data:s.map(d=>d.price), borderColor:'#ffffff', borderWidth:2.4, pointRadius:0, tension:.2 });
     const ch=new Chart($('chart'), { type:'line', data:{ labels, datasets:bandSets },
       options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ filter:it=>it.dataset.label==='Price', callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]), label:it=>'Price '+fmtUSD(it.parsed.y) } } },
-        scales:{ x:baseOpts().scales.x, y:logY() } }), plugins:[watermark] });
+        scales:{ x:baseOpts().scales.x, y:logY() } }), plugins:[watermark, cycleMarks(D)] });
     setRead('Bitcoin is in the <b>"'+o.current_band+'"</b> band today. The rainbow is a fun, illustrative log-regression, not a model. Treat the colors as mood, not a signal.');
     const bl=$('bands'); if(bl) bl.innerHTML=o.bands.slice().reverse().map(b=>'<span class="ch-assume" style="border-color:'+b.color+'">'+b.label+'</span>').join(''); return ch; };
 
@@ -149,7 +161,7 @@
         { label:'Estimated cost', data:s.map(d=>d.cost), borderColor:C.teal, borderWidth:2, pointRadius:0, tension:.2 },
         { label:'Price', data:s.map(d=>d.price), borderColor:C.orange, borderWidth:2, pointRadius:0, tension:.2 } ]},
       options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ filter:it=>it.datasetIndex>=2, callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]),
-        label:it=>(it.datasetIndex===3?'Price ':'Est. cost ')+fmtUSD(it.parsed.y) } } }, scales:{ x:baseOpts().scales.x, y:logY() } }), plugins:[watermark] });
+        label:it=>(it.datasetIndex===3?'Price ':'Est. cost ')+fmtUSD(it.parsed.y) } } }, scales:{ x:baseOpts().scales.x, y:logY() } }), plugins:[watermark, cycleMarks(D)] });
     const l=D.charts.miner_cost.latest;
     setRead('Estimated cost to mine one Bitcoin is about <b>'+fmtUSD(l.cost)+'</b>, so price is roughly '+l.price_to_cost.toFixed(2)+'x the electricity cost.');
     const as=$('assume'); if(as) as.innerHTML='<span class="ch-assume">Efficiency '+a.efficiency_j_th+' J/TH (range '+a.eff_band[0]+' to '+a.eff_band[1]+')</span><span class="ch-assume">Power $'+a.electricity_usd_kwh+'/kWh (range $'+a.elec_band[0]+' to $'+a.elec_band[1]+')</span>'; return ch; };
@@ -161,7 +173,7 @@
         { label:'BTC', data:s.map(d=>d.btc), borderColor:C.orange, borderWidth:2, pointRadius:0, tension:.25, yAxisID:'y' } ]},
       options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]),
         label:it=>it.datasetIndex===1?'BTC '+fmtUSD(it.parsed.y):'M2 $'+(it.parsed.y/1000).toFixed(1)+'T' } } },
-        scales:{ x:baseOpts().scales.x, y:logY(), y2:{ position:'right', grid:{display:false}, ticks:{color:C.teal,font:{size:12},callback:v=>'$'+(v/1000).toFixed(0)+'T'} } } }), plugins:[watermark, agreeShade(s)] });
+        scales:{ x:baseOpts().scales.x, y:logY(), y2:{ position:'right', grid:{display:false}, ticks:{color:C.teal,font:{size:12},callback:v=>'$'+(v/1000).toFixed(0)+'T'} } } }), plugins:[watermark, agreeShade(s), cycleMarks(D)] });
     setRead('US M2 is about <b>$'+D.charts.m2_vs_btc.m2_latest_t+' trillion</b>. Green shading marks months they moved the same direction, red marks opposite. Year-over-year correlation is '+D.charts.m2_vs_btc.corr_yoy+', a real but loose link.'); return ch; };
 
   R.pmi_vs_btc = D => { const s=D.charts.pmi_vs_btc.series, labels=s.map(d=>d.date);
@@ -174,7 +186,7 @@
         scales:{ x:baseOpts().scales.x, y:logY(), y2:{ position:'right', grid:{display:false}, min:33, max:66, ticks:{color:C.blue,font:{size:12}} } } }),
       plugins:[watermark, { id:'pmi50', beforeDatasetsDraw(ch){ const ar=ch.chartArea, y2=ch.scales.y2, g=ch.ctx; if(!ar) return; const py=y2.getPixelForValue(50);
         g.save(); g.strokeStyle='rgba(255,255,255,.25)'; g.lineWidth=1; g.setLineDash([4,4]); g.beginPath(); g.moveTo(ar.left,py); g.lineTo(ar.right,py); g.stroke();
-        g.setLineDash([]); g.fillStyle=C.muted; g.font='600 10px -apple-system,sans-serif'; g.textAlign='right'; g.fillText('PMI 50 = flat',ar.right-6,py-3); g.restore(); } }, agreeShade(s)] });
+        g.setLineDash([]); g.fillStyle=C.muted; g.font='600 10px -apple-system,sans-serif'; g.textAlign='right'; g.fillText('PMI 50 = flat',ar.right-6,py-3); g.restore(); } }, agreeShade(s), cycleMarks(D)] });
     setRead('Green shading marks months Bitcoin and PMI moved the same direction, red marks opposite. Notice how often it flips. The correlation of monthly moves is <b>'+D.charts.pmi_vs_btc.corr_mom+'</b>, effectively zero.'); return ch; };
 
   R.sp500_vs_btc = D => { const y=D.charts.sp500_vs_btc.years, labels=y.map(d=>String(d.year)), vals=y.map(d=>d.corr);
