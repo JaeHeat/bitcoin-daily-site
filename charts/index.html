@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bitcoin Indicators: Live Cycle, On-Chain and Macro Charts | Bitcoin Daily</title>
+  <meta name="description" content="Free live Bitcoin indicator charts: realized price (what the average holder paid), MVRV, Mayer Multiple, Pi Cycle Top, the 200-week moving average, Puell Multiple, estimated miner production cost, M2 money supply, PMI and S&P 500 correlation, plus the next halving countdown. Every line is reproducible from public data." />
+  <link rel="canonical" href="https://bitcoin-daily.com/charts/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Bitcoin Indicators: Live Cycle, On-Chain and Macro Charts" />
+  <meta property="og:description" content="The classic Bitcoin top and bottom signals plus the macro overlays, all live and all reproducible from public data. Realized price, MVRV, Mayer, Pi Cycle, 200-week MA, miner cost, M2, PMI, S&P 500, and the next halving countdown." />
+  <meta property="og:url" content="https://bitcoin-daily.com/charts/" />
+  <meta property="og:image" content="https://bitcoin-daily.com/assets/bitcoin-daily-pfp.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Bitcoin Indicators: Live Cycle and Macro Charts" />
+  <meta name="twitter:image" content="https://bitcoin-daily.com/assets/bitcoin-daily-pfp.png" />
+  <link rel="stylesheet" href="/styles.css?v=2" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "Bitcoin Indicators: Live Cycle and Macro Charts",
+    "url": "https://bitcoin-daily.com/charts/",
+    "description": "Live Bitcoin cycle, on-chain and macro indicator charts, each reproducible from public data.",
+    "isPartOf": { "@type": "WebSite", "name": "Bitcoin Daily", "url": "https://bitcoin-daily.com/" },
+    "publisher": { "@id": "https://bitcoin-daily.com/#organization" }
+  }
+  </script>
+  <style>
+    .ch-hero { padding: 64px 0 8px; }
+    .ch-asof { color: var(--muted); font-size: .95rem; margin-top: 12px; }
+    .ch-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 30px 0 6px; }
+    .ch-stat { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; }
+    .ch-stat .l { color: var(--muted); font-size: .84rem; letter-spacing: .3px; }
+    .ch-stat .n { font-size: 2rem; font-weight: 700; margin-top: 6px; line-height: 1.05; }
+    .ch-stat .s { color: var(--muted); font-size: .82rem; margin-top: 5px; }
+    .ch-stat .n.up { color: var(--accent-2); } .ch-stat .n.down { color: var(--accent); }
+
+    .ch-jump { display: flex; flex-wrap: wrap; gap: 10px; margin: 26px 0 0; }
+    .ch-jump a { background: transparent; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 7px 15px; font-size: .85rem; font-weight: 600; }
+    .ch-jump a:hover { color: var(--text); border-color: var(--muted); text-decoration: none; }
+
+    .ch-grouphead { margin: 12px 0 2px; }
+    .ch-grouphead h2 { font-size: clamp(1.5rem,3vw,2rem); letter-spacing:-.3px; margin-bottom: 6px; }
+    .ch-grouphead p { color: var(--muted); max-width: 720px; }
+
+    .ch-panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px; margin-top: 22px; scroll-margin-top: 80px; }
+    .ch-panel h3 { font-size: 1.35rem; margin-bottom: 6px; letter-spacing: -.2px; }
+    .ch-panel .cap { color: var(--muted); font-size: .98rem; margin-bottom: 16px; max-width: 780px; }
+    .ch-read { font-size: .98rem; color: var(--text); margin: 4px 0 16px; }
+    .ch-read b { color: var(--accent); }
+    .ch-read.up b { color: var(--accent-2); }
+    .ch-legend { display: flex; flex-wrap: wrap; gap: 18px; font-size: .9rem; color: var(--muted); margin-bottom: 12px; }
+    .ch-legend span { display: flex; align-items: center; gap: 7px; }
+    .ch-sw { width: 15px; height: 15px; border-radius: 4px; display: inline-block; }
+    .ch-sw.line { height: 4px; border-radius: 2px; }
+    .ch-controls { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 14px; }
+    .ch-btn { background: transparent; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .82rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .ch-btn:hover { color: var(--text); border-color: var(--muted); }
+    .ch-btn.active { background: var(--accent); color: #1a1206; border-color: var(--accent); }
+    .ch-chart { position: relative; width: 100%; height: 420px; }
+    .ch-chart.tall { height: 460px; }
+
+    .ch-table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: .92rem; }
+    .ch-table th, .ch-table td { text-align: right; padding: 9px 10px; border-bottom: 1px solid var(--line); color: var(--text); }
+    .ch-table th { color: var(--muted); font-weight: 600; }
+    .ch-table td:first-child, .ch-table th:first-child { text-align: left; }
+    .ch-table tr:last-child td { border-bottom: 0; }
+
+    .ch-count { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; max-width: 560px; margin: 6px 0 16px; }
+    .ch-count div { background: var(--bg-soft); border: 1px solid var(--line); border-radius: 12px; padding: 16px 10px; text-align: center; }
+    .ch-count .cn { font-size: 2rem; font-weight: 700; color: var(--accent); line-height: 1; }
+    .ch-count .cl { color: var(--muted); font-size: .8rem; margin-top: 6px; letter-spacing: .4px; text-transform: uppercase; }
+    .ch-prog { height: 12px; border-radius: 999px; background: var(--bg-soft); border: 1px solid var(--line); overflow: hidden; max-width: 560px; }
+    .ch-prog > i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+    .ch-note { color: var(--muted); font-size: .84rem; margin-top: 12px; max-width: 780px; }
+    .ch-assume { display: inline-block; background: var(--bg-soft); border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; font-size: .82rem; color: var(--muted); margin: 0 6px 8px 0; }
+
+    .ch-cta { background: linear-gradient(180deg, rgba(247,147,26,.10), transparent); border: 1px solid var(--line); border-radius: var(--radius); padding: 40px; text-align: center; }
+    .ch-cta h2 { border: 0; margin-bottom: 12px; }
+    .ch-cta p { color: var(--muted); max-width: 640px; margin: 0 auto 24px; font-size: 1.05rem; }
+
+    @media (max-width: 820px) {
+      .ch-cards { grid-template-columns: repeat(2,1fr); }
+      .ch-count { grid-template-columns: repeat(4,1fr); }
+      .ch-chart { height: 320px; } .ch-chart.tall { height: 340px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site">
+    <div class="wrap nav">
+      <a class="brand" href="/">Bitcoin <span>Daily</span></a>
+      <button class="menu-toggle" aria-label="Menu" onclick="document.getElementById('nav').classList.toggle('open')">&#9776;</button>
+      <ul id="nav">
+        <li><a href="/cycle/">Cycle</a></li>
+        <li><a href="/charts/" class="active">Charts</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="https://bitcoindaily.vip" rel="noopener">Community</a></li>
+        <li><a href="https://bitcoindaily.app" rel="noopener">Consulting</a></li>
+        <li><a href="https://joshmolnar.com/" rel="noopener">Founder</a></li>
+        <li><a class="cta" href="https://bitcoindaily.vip" rel="noopener">Join the Community</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+    <section class="block ch-hero">
+      <div class="wrap">
+        <div class="eyebrow" style="color:var(--accent);font-weight:600;letter-spacing:1.5px;text-transform:uppercase;font-size:.82rem">Live indicators</div>
+        <h1 style="font-size:clamp(2.2rem,5vw,3.4rem);line-height:1.08;margin:14px 0 16px;letter-spacing:-.5px">Bitcoin indicator charts</h1>
+        <p class="lead" style="font-size:1.2rem;color:var(--muted);max-width:740px">The signals people actually use to call tops and bottoms, plus the macro charts everyone argues about. Each one is live and each one is reproducible from public data. We show you what the number is, and we are honest about what it does and does not tell you.</p>
+        <p class="ch-asof" id="asof">Loading the latest readings...</p>
+        <div class="ch-cards" id="cards"></div>
+        <div class="ch-jump">
+          <a href="#bottoms">Top and bottom signals</a>
+          <a href="#macro">Macro and cross-asset</a>
+          <a href="#halving">Next halving</a>
+          <a href="/cycle/">The Satoshi Clock</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="wrap">
+        <div class="ch-grouphead" id="bottoms">
+          <h2>Top and bottom signals</h2>
+          <p>The on-chain and moving-average tools that have marked past cycle extremes. They mark zones, not exact days, and their thresholds keep going quiet as each cycle swings less than the last. Read them together, never alone.</p>
+        </div>
+
+        <div class="ch-panel" id="realized">
+          <h3>Realized price: are we above or below what the average holder paid</h3>
+          <p class="cap">The realized price is roughly the average price every coin last moved at, so it is a fair proxy for what the typical holder paid. Price above the line means the average holder is in profit. Every one of the last four cycle bottoms printed below it.</p>
+          <div class="ch-read" id="realized_read"></div>
+          <div class="ch-legend">
+            <span><span class="ch-sw line" style="background:#f7931a"></span>Price</span>
+            <span><span class="ch-sw line" style="background:#2dd4bf"></span>What the average holder paid</span>
+          </div>
+          <div class="ch-controls"><button class="ch-btn active" data-log="realized_c">Log scale</button><button class="ch-btn" data-save="realized_c">Save image</button></div>
+          <div class="ch-chart"><canvas id="realized_c"></canvas></div>
+          <table class="ch-table" id="realized_tbl"></table>
+          <p class="ch-note">The undercut shrinks every cycle (58, 44, 31, 25 percent below the line). That is the same maturation you see everywhere in Bitcoin: smaller swings each time. The honest caveat is that price has spent long stretches below this line without it being the bottom, so it marks a value zone, not a day.</p>
+        </div>
+
+        <div class="ch-panel" id="mvrv">
+          <h3>MVRV: price versus the market's cost basis</h3>
+          <p class="cap">MVRV is price divided by that same average cost basis. Below 1 means the average holder is underwater, which has clustered around bottoms. High readings have marked froth, though the level that counts as high keeps falling.</p>
+          <div class="ch-read" id="mvrv_read"></div>
+          <div class="ch-controls"><button class="ch-btn" data-save="mvrv_c">Save image</button></div>
+          <div class="ch-chart"><canvas id="mvrv_c"></canvas></div>
+        </div>
+
+        <div class="ch-panel" id="mayer">
+          <h3>Mayer Multiple: price versus the 200-day average</h3>
+          <p class="cap">Price divided by its 200-day moving average. Historically, readings under 1 have been good long-term value and readings above about 2.4 have been overheated. A simple, durable temperature gauge.</p>
+          <div class="ch-read" id="mayer_read"></div>
+          <div class="ch-controls"><button class="ch-btn" data-save="mayer_c">Save image</button></div>
+          <div class="ch-chart"><canvas id="mayer_c"></canvas></div>
+        </div>
+
+        <div class="ch-panel" id="puell">
+          <h3>Puell Multiple: how well miners are being paid</h3>
+          <p class="cap">Daily miner income in dollars divided by its own one-year average. Low readings mean miners are earning far less than usual, which has lined up with bottoms. High readings mean unusually rich pay, which has lined up with tops.</p>
+          <div class="ch-read" id="puell_read"></div>
+          <div class="ch-controls"><button class="ch-btn" data-save="puell_c">Save image</button></div>
+          <div class="ch-chart"><canvas id="puell_c"></canvas></div>
+        </div>
+
+        <div class="ch-panel" id="picycle">
+          <h3>Pi Cycle Top: the classic top-catcher</h3>
+          <p class="cap">When the 111-day average crosses above twice the 350-day average, it has landed within days of the 2013, 2017 and 2021 tops. Notice it did not fire in 2025. The swings are shrinking, so this tool is going quiet.</p>
+          <div class="ch-read" id="picycle_read"></div>
+          <div class="ch-legend">
+            <span><span class="ch-sw line" style="background:#9aa7bd"></span>Price</span>
+            <span><span class="ch-sw line" style="background:#f7931a"></span>111-day average</span>
+            <span><span class="ch-sw line" style="background:#2dd4bf"></span>2x 350-day average</span>
+          </div>
+          <div class="ch-controls"><button class="ch-btn" data-save="picycle_c">Save image</button></div>
+          <div class="ch-chart"><canvas id="picycle_c"></canvas></div>
+        </div>
+
+        <div class="ch-panel" id="ma200w">
+          <h3>The 200-week moving average: Bitcoin's long-term floor</h3>
+          <p class="cap">The average price over the last 200 weeks. Bitcoin has only closed below it at the deepest points of past bear markets, so it acts as a rising floor. How far price sits above it tells you how stretched or how cheap the market is.</p>
+          <div class="ch-read" id="ma200w_read"></div>
+          <div class="ch-legend">
+            <span><span class="ch-sw line" style="background:#f7931a"></span>Price</span>
+            <span><span class="ch-sw line" style="background:#2dd4bf"></span>200-week average</span>
+          </div>
+          <div class="ch-controls"><button class="ch-btn active" data-log="ma200w_c">Log scale</button><button class="ch-btn" data-save="ma200w_c">Save image</button></div>
+          <div class="ch-chart"><canvas id="ma200w_c"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="wrap">
+        <div class="ch-grouphead" id="macro">
+          <h2>Macro and cross-asset</h2>
+          <p>Does Bitcoin follow the money supply, the business cycle, or the stock market? These are the charts behind those debates. Two of them mostly say no, and being honest about that is the point.</p>
+        </div>
+
+        <div class="ch-panel" id="m2">
+          <h3>M2 money supply versus Bitcoin</h3>
+          <p class="cap">The liquidity story. When central banks expand the money supply (M2), the argument goes, Bitcoin rises. Over the long run the two do broadly move together, but the link is loose and it breaks for months at a time.</p>
+          <div class="ch-read" id="m2_read"></div>
+          <div class="ch-legend">
+            <span><span class="ch-sw line" style="background:#f7931a"></span>Bitcoin (log, left)</span>
+            <span><span class="ch-sw line" style="background:#2dd4bf"></span>US M2 money supply (right)</span>
+          </div>
+          <div class="ch-controls"><button class="ch-btn" data-save="m2_c">Save image</button></div>
+          <div class="ch-chart"><canvas id="m2_c"></canvas></div>
+        </div>
+
+        <div class="ch-panel" id="miner">
+          <h3>Estimated miner production cost</h3>
+          <p class="cap">Roughly what it costs in electricity to mine one Bitcoin, estimated from network hashrate and the daily coin issuance. Miners tend to defend this level because selling below it for long is unsustainable, so it has acted as a soft floor. This is a model, not a measured number, so treat it as a band.</p>
+          <div class="ch-read" id="miner_read"></div>
+          <div id="miner_assume"></div>
+          <div class="ch-legend">
+            <span><span class="ch-sw line" style="background:#f7931a"></span>Price</span>
+            <span><span class="ch-sw line" style="background:#2dd4bf"></span>Estimated electricity cost</span>
+            <span><span class="ch-sw" style="background:rgba(45,212,191,.22)"></span>Cost range</span>
+          </div>
+          <div class="ch-controls"><button class="ch-btn active" data-log="miner_c">Log scale</button><button class="ch-btn" data-save="miner_c">Save image</button></div>
+          <div class="ch-chart"><canvas id="miner_c"></canvas></div>
+          <p class="ch-note">The estimate scales two assumptions: how efficient the average miner is (joules per terahash) and what they pay for power (dollars per kilowatt-hour). The shaded band walks both to their optimistic and pessimistic ends, so the real cost almost certainly sits inside it.</p>
+        </div>
+
+        <div class="ch-panel" id="pmi">
+          <h3>PMI versus Bitcoin: the business cycle test</h3>
+          <p class="cap">The ISM Manufacturing PMI is the classic read on whether the economy is expanding (above 50) or contracting (below 50). If Bitcoin were a bet on growth, its cycles would track it. They do not. Bitcoin ran a full bull market straight through a long PMI contraction.</p>
+          <div class="ch-read" id="pmi_read"></div>
+          <div class="ch-legend">
+            <span><span class="ch-sw line" style="background:#f7931a"></span>Bitcoin (log, left)</span>
+            <span><span class="ch-sw line" style="background:#2f6fb0"></span>ISM Manufacturing PMI (right)</span>
+          </div>
+          <div class="ch-controls"><button class="ch-btn" data-save="pmi_c">Save image</button></div>
+          <div class="ch-chart"><canvas id="pmi_c"></canvas></div>
+        </div>
+
+        <div class="ch-panel" id="sp500">
+          <h3>S&amp;P 500 correlation: is Bitcoin just tech stocks</h3>
+          <p class="cap">You often hear that Bitcoin trades in lockstep with the stock market. Here is the year-by-year correlation of daily moves. It swings from strongly positive to negative and averages far below the headline number people quote. The relationship is real in stress moments and mostly noise the rest of the time.</p>
+          <div class="ch-read" id="sp500_read"></div>
+          <div class="ch-controls"><button class="ch-btn" data-save="sp500_c">Save image</button></div>
+          <div class="ch-chart"><canvas id="sp500_c"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="wrap">
+        <div class="ch-grouphead" id="halving">
+          <h2>Next halving countdown</h2>
+          <p>Every 210,000 blocks, roughly every four years, the new supply of Bitcoin is cut in half. It is the metronome the whole cycle runs on.</p>
+        </div>
+        <div class="ch-panel">
+          <h3>Time to the next halving</h3>
+          <p class="cap" id="halving_cap">Estimated from the current block height at roughly one block every ten minutes.</p>
+          <div class="ch-count" id="halving_count"></div>
+          <div class="ch-prog"><i id="halving_bar" style="width:0%"></i></div>
+          <p class="ch-note" id="halving_note"></p>
+          <p class="ch-note">Want the timing edge that this schedule creates, mapped onto price? That is the <a href="/cycle/">Satoshi Clock</a>.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="wrap prose">
+        <h2>How to read these charts</h2>
+        <p>No single indicator calls a top or a bottom. Each one here has been early, late, or flat-out wrong at least once. What has held up is reading them as a group and asking whether they agree. When the average holder is underwater, miners are barely paid, and price is pressing on its 200-week floor all at the same time, that is the kind of cheap that has mattered before.</p>
+        <p>The other honest theme is that the swings are shrinking. The old top signals were calibrated on cycles that ran ten times hotter than today. As Bitcoin matures, those thresholds fire later or not at all, while the timing on the halving schedule has held. That is the whole idea behind the <a href="/cycle/">Satoshi Clock</a>.</p>
+        <h2>Where the numbers come from</h2>
+        <p>Price and the on-chain series come from Coin Metrics community data. The money supply is US M2 from the Federal Reserve. The PMI is the ISM Manufacturing index. The S&amp;P 500 is public market data. The miner cost is our own estimate with its assumptions shown on the chart. Everything updates automatically. This is education, not financial advice.</p>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="wrap">
+        <div class="ch-cta">
+          <h2>The charts are public. The read is the edge.</h2>
+          <p>These indicators are free for everyone. Inside the community you get the daily desk note that ties them together, alerts when price enters a cycle window, and the Satoshi Clock running on your own charts.</p>
+          <a class="btn primary" href="https://bitcoindaily.vip" rel="noopener">Join the Community</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site">
+    <div class="wrap row">
+      <div>&copy; 2026 Bitcoin Daily &middot; Founded by <a href="https://joshmolnar.com/" rel="noopener">Josh Molnar</a></div>
+      <div><a href="/cycle/">Cycle</a> &middot; <a href="/charts/">Charts</a> &middot; <a href="/blog/">Blog</a> &middot; <a href="https://bitcoindaily.vip" rel="noopener">Community</a> &middot; <a href="mailto:info@bitcoin-daily.com">info@bitcoin-daily.com</a></div>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <script>
+  const C = { orange:'#f7931a', teal:'#2dd4bf', muted:'#9aa7bd', text:'#e8edf6', red:'#e2574a', blue:'#2f6fb0', line:'rgba(255,255,255,.09)' };
+  const fmtUSD = n => n>=1000 ? '$'+Math.round(n).toLocaleString() : '$'+n.toFixed(n<10?2:0);
+  const fmtDate = s => new Date(s+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  const logTick = v => [0.001,0.01,0.1,1,10,100,1000,10000,100000,1000000].includes(v) ? (v>=1000?'$'+(v/1000)+'k':'$'+v) : '';
+  const charts = {};   // id -> Chart instance
+
+  // faint brand watermark + url, applied to every chart
+  const watermark = { id:'wm',
+    beforeDatasetsDraw(ch){ const a=ch.chartArea; if(!a) return; const g=ch.ctx;
+      g.save(); g.globalAlpha=.06; g.fillStyle='#fff'; g.font='800 46px -apple-system,sans-serif';
+      g.textAlign='center'; g.textBaseline='middle'; g.fillText('Bitcoin Daily',(a.left+a.right)/2,(a.top+a.bottom)/2); g.restore(); },
+    afterDraw(ch){ const a=ch.chartArea; if(!a) return; const g=ch.ctx;
+      g.save(); g.globalAlpha=.6; g.fillStyle=C.muted; g.font='600 11px -apple-system,sans-serif';
+      g.textAlign='right'; g.textBaseline='bottom'; g.fillText('bitcoin-daily.com',a.right-6,a.bottom-6); g.restore(); } };
+
+  // horizontal threshold lines (e.g. MVRV=1, Mayer=2.4) drawn behind the series
+  function thresholds(lines){ return { id:'th', beforeDatasetsDraw(ch){ const a=ch.chartArea,y=ch.scales.y,g=ch.ctx; if(!a) return;
+    lines.forEach(L=>{ const py=y.getPixelForValue(L.v); if(py<a.top||py>a.bottom) return;
+      g.save(); g.strokeStyle=L.c; g.lineWidth=1.2; g.setLineDash([5,4]); g.beginPath(); g.moveTo(a.left,py); g.lineTo(a.right,py); g.stroke();
+      g.setLineDash([]); g.fillStyle=L.c; g.font='600 11px -apple-system,sans-serif'; g.textAlign='left'; g.textBaseline='bottom'; g.fillText(L.t,a.left+6,py-3); g.restore(); }); } }; }
+
+  // vertical date markers (Pi Cycle crosses)
+  function verticals(dates,labels){ return { id:'vt', afterDatasetsDraw(ch){ const a=ch.chartArea,x=ch.scales.x,g=ch.ctx; if(!a) return;
+    dates.forEach((d,i)=>{ const px=x.getPixelForValue(d); if(px==null||px<a.left||px>a.right) return;
+      g.save(); g.strokeStyle='rgba(226,87,74,.7)'; g.lineWidth=1; g.setLineDash([3,3]); g.beginPath(); g.moveTo(px,a.top); g.lineTo(px,a.bottom); g.stroke();
+      g.setLineDash([]); g.fillStyle=C.red; g.font='700 10px -apple-system,sans-serif'; g.textAlign='center'; g.fillText(labels?labels[i]:'top',px,a.top+11); g.restore(); }); } }; }
+
+  const baseOpts = extra => Object.assign({
+    responsive:true, maintainAspectRatio:false, animation:false,
+    interaction:{ mode:'index', intersect:false },
+    plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#0b0e14', borderColor:'rgba(255,255,255,.12)', borderWidth:1, padding:10 } },
+    scales:{ x:{ grid:{display:false}, ticks:{ color:C.muted, font:{size:12}, maxTicksLimit:9, autoSkip:true, callback:function(i){ const l=this.getLabelForValue(i); return l?String(l).slice(0,4):''; } } },
+             y:{ grid:{color:C.line}, ticks:{ color:C.muted, font:{size:12} } } }
+  }, extra||{});
+
+  function saveImg(canvasId, title){ const src=document.getElementById(canvasId); const dpr=window.devicePixelRatio||1;
+    const hH=Math.round(58*dpr), fH=Math.round(36*dpr), o=document.createElement('canvas'); o.width=src.width; o.height=src.height+hH+fH;
+    const g=o.getContext('2d'); g.fillStyle='#0b0e14'; g.fillRect(0,0,o.width,o.height); g.textBaseline='middle'; g.textAlign='left';
+    g.fillStyle='#f7931a'; g.font='800 '+Math.round(20*dpr)+'px -apple-system,sans-serif'; g.fillText('Bitcoin Daily',Math.round(20*dpr),hH/2);
+    g.textAlign='right'; g.fillStyle='#aeb6c4'; g.font='600 '+Math.round(14*dpr)+'px -apple-system,sans-serif'; g.fillText(title,o.width-Math.round(20*dpr),hH/2);
+    g.drawImage(src,0,hH); const fy=src.height+hH+fH/2; g.textAlign='left'; g.fillStyle='#6b7280'; g.font='600 '+Math.round(12*dpr)+'px -apple-system,sans-serif';
+    g.fillText('Education, not financial advice',Math.round(20*dpr),fy); g.textAlign='right'; g.fillStyle='#9aa7bd'; g.fillText('bitcoin-daily.com',o.width-Math.round(20*dpr),fy);
+    const a=document.createElement('a'); a.download='bitcoin-daily-'+canvasId.replace('_c','')+'.png'; a.href=o.toDataURL('image/png'); a.click(); }
+
+  fetch('./charts_data.json',{cache:'no-store'}).then(r=>r.json()).then(D=>{
+    const K = D.charts;
+    document.getElementById('asof').textContent = 'Live readings as of '+fmtDate(D.as_of)+'. Bitcoin at '+fmtUSD(D.price)+'.';
+
+    // ---------- hero stat cards ----------
+    const rp = K.realized_price, hv = K.halving_eta;
+    const ouUp = rp && rp.latest.over_under_pct >= 0;
+    const cards = [
+      ['Bitcoin price', fmtUSD(D.price), 'as of '+fmtDate(D.as_of), ''],
+      rp ? ['Vs average holder cost', (ouUp?'+':'')+rp.latest.over_under_pct+'%', ouUp?'above what they paid':'below what they paid', ouUp?'down':'up'] : null,
+      K.mayer ? ['Mayer Multiple', K.mayer.latest.toFixed(2), K.mayer.latest<1?'below the 200-day avg':'above the 200-day avg', ''] : null,
+      hv ? ['Next halving', hv.days_remaining+'d', 'around '+fmtDate(hv.eta_date), ''] : null,
+    ].filter(Boolean);
+    document.getElementById('cards').innerHTML = cards.map(c=>'<div class="ch-stat"><div class="l">'+c[0]+'</div><div class="n '+(c[3]||'')+'">'+c[1]+'</div><div class="s">'+c[2]+'</div></div>').join('');
+
+    // ---------- realized price ----------
+    if(rp){
+      const s=rp.series, labels=s.map(d=>d.date);
+      charts.realized_c = new Chart(document.getElementById('realized_c'), { type:'line',
+        data:{ labels, datasets:[
+          { label:'What the average holder paid', data:s.map(d=>d.realized), borderColor:C.teal, borderWidth:1.6, pointRadius:0, tension:.2, spanGaps:true, fill:false },
+          { label:'Price', data:s.map(d=>d.price), borderColor:C.orange, borderWidth:2.2, pointRadius:0, tension:.2, spanGaps:false, fill:0, backgroundColor:'rgba(45,212,191,.10)' },
+        ]},
+        options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{
+          title:it=>fmtDate(labels[it[0].dataIndex]),
+          label:it=>(it.datasetIndex===1?'Price ':'Avg holder paid ')+fmtUSD(it.parsed.y) } } },
+          scales:{ x:baseOpts().scales.x, y:{ type:'logarithmic', grid:{color:C.line}, ticks:{color:C.muted,font:{size:12},callback:logTick } } } }),
+        plugins:[watermark] });
+      const l=rp.latest;
+      document.getElementById('realized_read').className='ch-read'+(ouUp?'':' up');
+      document.getElementById('realized_read').innerHTML = ouUp
+        ? 'Today the average holder is <b>in profit</b>, price about '+l.over_under_pct+'% above the '+fmtUSD(l.realized)+' they paid. That has never been true at a cycle bottom.'
+        : 'Today price is about '+Math.abs(l.over_under_pct)+'% <b>below</b> the '+fmtUSD(l.realized)+' the average holder paid. Every past bottom printed here.';
+      document.getElementById('realized_tbl').innerHTML =
+        '<tr><th>Past cycle bottom</th><th>Price</th><th>Avg holder paid</th><th>How far under</th></tr>'+
+        rp.bottoms.map(b=>'<tr><td>'+fmtDate(b.date)+'</td><td>'+fmtUSD(b.price)+'</td><td>'+fmtUSD(b.realized)+'</td><td>'+b.undercut_pct+'%</td></tr>').join('');
+    }
+
+    // ---------- oscillators: mvrv, mayer, puell ----------
+    function oscillator(id, key, opt){ const o=K[key]; if(!o) return; const s=o.series, labels=s.map(d=>d.date), vals=s.map(d=>d[opt.field]);
+      const th=[]; if(opt.hot!=null) th.push({v:opt.hot,c:C.red,t:opt.hotLabel}); if(opt.cheap!=null) th.push({v:opt.cheap,c:C.teal,t:opt.cheapLabel});
+      charts[id] = new Chart(document.getElementById(id), { type:'line',
+        data:{ labels, datasets:[{ data:vals, borderColor:C.orange, borderWidth:1.8, pointRadius:0, tension:.15,
+          segment:{ borderColor: c => (opt.hot!=null && c.p1.parsed.y>=opt.hot)?C.red:((opt.cheap!=null && c.p1.parsed.y<=opt.cheap)?C.teal:C.orange) } }] },
+        options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{
+          title:it=>fmtDate(labels[it[0].dataIndex]), label:it=>opt.name+' '+it.parsed.y.toFixed(2) } } },
+          scales:{ x:baseOpts().scales.x, y:{ grid:{color:C.line}, ticks:{color:C.muted,font:{size:12}}, beginAtZero:true, suggestedMax:opt.max } } }),
+        plugins:[watermark, thresholds(th)] });
+      if(opt.readEl){ const v=o.latest; const el=document.getElementById(opt.readEl);
+        const hot=opt.hot!=null&&v>=opt.hot, cheap=opt.cheap!=null&&v<=opt.cheap;
+        el.className='ch-read'+(cheap?' up':''); el.innerHTML='Now at <b>'+v.toFixed(2)+'</b>. '+(hot?opt.hotSay:cheap?opt.cheapSay:opt.midSay); } }
+
+    oscillator('mvrv_c','mvrv',{ field:'mvrv', name:'MVRV', hot:3.2, cheap:1.0, max:5, hotLabel:'froth zone', cheapLabel:'cost basis (1.0)', readEl:'mvrv_read',
+      hotSay:'well above the market cost basis, the historically frothy zone.', cheapSay:'below the market cost basis, the average holder is underwater. This zone has clustered around bottoms.', midSay:'above the market cost basis but not frothy.' });
+    oscillator('mayer_c','mayer',{ field:'mayer', name:'Mayer', hot:2.4, cheap:1.0, max:3.5, hotLabel:'overheated (2.4)', cheapLabel:'value (1.0)', readEl:'mayer_read',
+      hotSay:'overheated versus the 200-day average.', cheapSay:'below the 200-day average, historically a long-term value zone.', midSay:'above the 200-day average but not overheated.' });
+    oscillator('puell_c','puell',{ field:'puell', name:'Puell', hot:4.0, cheap:0.5, max:6, hotLabel:'miners overpaid (4.0)', cheapLabel:'miners starved (0.5)', readEl:'puell_read',
+      hotSay:'miners are being paid unusually well, which has marked tops.', cheapSay:'miners are earning far less than usual, which has marked bottoms.', midSay:'miner pay is near its one-year normal.' });
+
+    // ---------- pi cycle ----------
+    if(K.pi_cycle){ const s=K.pi_cycle.series, labels=s.map(d=>d.date);
+      charts.picycle_c = new Chart(document.getElementById('picycle_c'), { type:'line',
+        data:{ labels, datasets:[
+          { label:'Price', data:s.map(d=>d.price), borderColor:C.muted, borderWidth:1, pointRadius:0, tension:.2 },
+          { label:'111-day', data:s.map(d=>d.ma111), borderColor:C.orange, borderWidth:2, pointRadius:0, tension:.2 },
+          { label:'2x 350-day', data:s.map(d=>d.ma350x2), borderColor:C.teal, borderWidth:2, pointRadius:0, tension:.2 },
+        ]},
+        options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]),
+          label:it=>[ 'Price','111-day avg','2x 350-day avg'][it.datasetIndex]+' '+fmtUSD(it.parsed.y) } } },
+          scales:{ x:baseOpts().scales.x, y:{ type:'logarithmic', grid:{color:C.line}, ticks:{color:C.muted,font:{size:12},callback:logTick } } } }),
+        plugins:[watermark, verticals(K.pi_cycle.crosses)] });
+      document.getElementById('picycle_read').innerHTML = 'Fired at '+K.pi_cycle.crosses.length+' past tops. The 111-day average now sits about <b>'+Math.abs(K.pi_cycle.gap_pct)+'% below</b> the trigger, so no top signal is close.';
+    }
+
+    // ---------- 200-week MA ----------
+    if(K.ma200w){ const s=K.ma200w.series, labels=s.map(d=>d.date);
+      charts.ma200w_c = new Chart(document.getElementById('ma200w_c'), { type:'line',
+        data:{ labels, datasets:[
+          { label:'200-week', data:s.map(d=>d.ma200w), borderColor:C.teal, borderWidth:2, pointRadius:0, tension:.2, fill:false },
+          { label:'Price', data:s.map(d=>d.price), borderColor:C.orange, borderWidth:2, pointRadius:0, tension:.2 },
+        ]},
+        options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]),
+          label:it=>(it.datasetIndex===1?'Price ':'200-week avg ')+fmtUSD(it.parsed.y) } } },
+          scales:{ x:baseOpts().scales.x, y:{ type:'logarithmic', grid:{color:C.line}, ticks:{color:C.muted,font:{size:12},callback:logTick } } } }),
+        plugins:[watermark] });
+      const l=K.ma200w.latest;
+      document.getElementById('ma200w_read').innerHTML = 'Price is <b>'+l.mult.toFixed(2)+'x</b> its 200-week average of '+fmtUSD(l.ma200w)+'. '+(l.mult<1.3?'That is close to the floor Bitcoin has only broken at deep bear-market lows.':'Room above the long-term floor.');
+    }
+
+    // ---------- M2 vs BTC (dual axis) ----------
+    if(K.m2_vs_btc){ const s=K.m2_vs_btc.series, labels=s.map(d=>d.date);
+      charts.m2_c = new Chart(document.getElementById('m2_c'), { type:'line',
+        data:{ labels, datasets:[
+          { label:'M2', data:s.map(d=>d.m2), borderColor:C.teal, borderWidth:2, pointRadius:0, tension:.25, yAxisID:'y2' },
+          { label:'BTC', data:s.map(d=>d.btc), borderColor:C.orange, borderWidth:2, pointRadius:0, tension:.25, yAxisID:'y' },
+        ]},
+        options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]),
+          label:it=>it.datasetIndex===1?'BTC '+fmtUSD(it.parsed.y):'M2 $'+(it.parsed.y/1000).toFixed(1)+'T' } } },
+          scales:{ x:baseOpts().scales.x,
+            y:{ type:'logarithmic', position:'left', grid:{color:C.line}, ticks:{color:C.muted,font:{size:12},callback:logTick } },
+            y2:{ position:'right', grid:{display:false}, ticks:{color:C.teal,font:{size:12},callback:v=>'$'+(v/1000).toFixed(0)+'T' } } } }),
+        plugins:[watermark] });
+      document.getElementById('m2_read').innerHTML = 'US M2 is about <b>$'+K.m2_vs_btc.m2_latest_t+' trillion</b>. Year-over-year, the two move together with a correlation of '+K.m2_vs_btc.corr_yoy+', a real but loose link.';
+    }
+
+    // ---------- miner cost ----------
+    if(K.miner_cost){ const s=K.miner_cost.series, labels=s.map(d=>d.date), a=K.miner_cost.assumptions;
+      charts.miner_c = new Chart(document.getElementById('miner_c'), { type:'line',
+        data:{ labels, datasets:[
+          { label:'hi', data:s.map(d=>d.hi), borderColor:'transparent', pointRadius:0, fill:'+1', backgroundColor:'rgba(45,212,191,.16)' },
+          { label:'lo', data:s.map(d=>d.lo), borderColor:'transparent', pointRadius:0 },
+          { label:'Estimated cost', data:s.map(d=>d.cost), borderColor:C.teal, borderWidth:2, pointRadius:0, tension:.2 },
+          { label:'Price', data:s.map(d=>d.price), borderColor:C.orange, borderWidth:2, pointRadius:0, tension:.2 },
+        ]},
+        options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ filter:it=>it.datasetIndex>=2, callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]),
+          label:it=>(it.datasetIndex===3?'Price ':'Est. cost ')+fmtUSD(it.parsed.y) } } },
+          scales:{ x:baseOpts().scales.x, y:{ type:'logarithmic', grid:{color:C.line}, ticks:{color:C.muted,font:{size:12},callback:logTick } } } }),
+        plugins:[watermark] });
+      const l=K.miner_cost.latest;
+      document.getElementById('miner_read').innerHTML = 'Estimated cost to mine one Bitcoin is about <b>'+fmtUSD(l.cost)+'</b>, so price is roughly '+l.price_to_cost.toFixed(2)+'x the electricity cost.';
+      document.getElementById('miner_assume').innerHTML =
+        '<span class="ch-assume">Efficiency '+a.efficiency_j_th+' J/TH (range '+a.eff_band[0]+' to '+a.eff_band[1]+')</span>'+
+        '<span class="ch-assume">Power $'+a.electricity_usd_kwh+'/kWh (range $'+a.elec_band[0]+' to $'+a.elec_band[1]+')</span>';
+    }
+
+    // ---------- PMI vs BTC (dual axis, 50 line) ----------
+    if(K.pmi_vs_btc){ const s=K.pmi_vs_btc.series, labels=s.map(d=>d.date);
+      charts.pmi_c = new Chart(document.getElementById('pmi_c'), { type:'line',
+        data:{ labels, datasets:[
+          { label:'PMI', data:s.map(d=>d.pmi), borderColor:C.blue, borderWidth:2, pointRadius:0, tension:.25, yAxisID:'y2' },
+          { label:'BTC', data:s.map(d=>d.btc), borderColor:C.orange, borderWidth:2, pointRadius:0, tension:.25, yAxisID:'y' },
+        ]},
+        options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]),
+          label:it=>it.datasetIndex===1?'BTC '+fmtUSD(it.parsed.y):'PMI '+it.parsed.y.toFixed(1) } } },
+          scales:{ x:baseOpts().scales.x,
+            y:{ type:'logarithmic', position:'left', grid:{color:C.line}, ticks:{color:C.muted,font:{size:12},callback:logTick } },
+            y2:{ position:'right', grid:{display:false}, min:33, max:66, ticks:{color:C.blue,font:{size:12}} } } }),
+        plugins:[watermark, { id:'pmi50', beforeDatasetsDraw(ch){ const ar=ch.chartArea, y2=ch.scales.y2, g=ch.ctx; if(!ar) return; const py=y2.getPixelForValue(50);
+          g.save(); g.strokeStyle='rgba(255,255,255,.25)'; g.lineWidth=1; g.setLineDash([4,4]); g.beginPath(); g.moveTo(ar.left,py); g.lineTo(ar.right,py); g.stroke();
+          g.setLineDash([]); g.fillStyle=C.muted; g.font='600 10px -apple-system,sans-serif'; g.textAlign='right'; g.fillText('PMI 50 = flat',ar.right-6,py-3); g.restore(); } }] });
+      document.getElementById('pmi_read').innerHTML = 'The correlation of monthly moves is <b>'+K.pmi_vs_btc.corr_mom+'</b>, effectively zero. Bitcoin\'s cycles do not follow the business cycle.';
+    }
+
+    // ---------- S&P 500 correlation bars ----------
+    if(K.sp500_vs_btc){ const y=K.sp500_vs_btc.years, labels=y.map(d=>String(d.year)), vals=y.map(d=>d.corr);
+      charts.sp500_c = new Chart(document.getElementById('sp500_c'), { type:'bar',
+        data:{ labels, datasets:[{ data:vals, backgroundColor:y.map(d=>d.year<2020?C.teal:C.orange), borderRadius:3 }] },
+        options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>it[0].label, label:it=>'Correlation '+it.parsed.y.toFixed(2) } } },
+          scales:{ x:{ grid:{display:false}, ticks:{color:C.muted,font:{size:12}} },
+                   y:{ grid:{color:C.line}, ticks:{color:C.muted,font:{size:12}}, suggestedMin:-0.25, suggestedMax:1 } } }),
+        plugins:[watermark, thresholds([{v:K.sp500_vs_btc.claim,c:C.red,t:'the "0.87" claim'},{v:K.sp500_vs_btc.full_avg,c:C.muted,t:'full-period average '+K.sp500_vs_btc.full_avg}])] });
+      document.getElementById('sp500_read').innerHTML = 'The full-period average correlation is <b>'+K.sp500_vs_btc.full_avg+'</b>, not the 0.87 people quote. It even goes negative in some years.';
+    }
+
+    // ---------- halving countdown ----------
+    if(hv){ const cap=document.getElementById('halving_cap');
+      if(hv.height){ cap.textContent = 'Block '+hv.height.toLocaleString()+' of '+hv.next_block.toLocaleString()+'. Estimated at roughly one block every ten minutes.'; }
+      document.getElementById('halving_bar').style.width = (hv.progress_pct||0)+'%';
+      document.getElementById('halving_note').innerHTML = 'The block reward falls from '+hv.reward_now+' to '+hv.reward_after+' BTC. The last halving was '+fmtDate(hv.last_halving)+'.'+(hv.progress_pct?' This epoch is '+hv.progress_pct+'% complete.':'');
+      const target = new Date(hv.eta_date+'T00:00:00').getTime();
+      function tick(){ const now=Date.now(); let s=Math.max(0,Math.floor((target-now)/1000));
+        const d=Math.floor(s/86400); s-=d*86400; const h=Math.floor(s/3600); s-=h*3600; const m=Math.floor(s/60); s-=m*60;
+        document.getElementById('halving_count').innerHTML =
+          [[d,'days'],[h,'hours'],[m,'minutes'],[s,'seconds']].map(x=>'<div><div class="cn">'+x[0]+'</div><div class="cl">'+x[1]+'</div></div>').join(''); }
+      tick(); setInterval(tick,1000);
+    }
+
+    // ---------- wire log toggles + save buttons ----------
+    document.querySelectorAll('[data-log]').forEach(b=>b.onclick=()=>{ const ch=charts[b.dataset.log]; if(!ch) return;
+      const log=ch.options.scales.y.type==='logarithmic'; ch.options.scales.y.type=log?'linear':'logarithmic';
+      ch.options.scales.y.ticks.callback = log ? (v=>v>=1000?'$'+(v/1000)+'k':'$'+v) : logTick;
+      b.textContent=log?'Linear scale':'Log scale'; b.classList.toggle('active',!log); ch.update(); });
+    document.querySelectorAll('[data-save]').forEach(b=>b.onclick=()=>saveImg(b.dataset.save, document.querySelector('#'+b.dataset.save).closest('.ch-panel').querySelector('h3').textContent));
+  }).catch(e=>{ document.getElementById('asof').textContent='Could not load the latest readings.'; console.error(e); });
+  </script>
+</body>
+</html>
