@@ -66,7 +66,7 @@
   // right-axis BTC price overlay (thin, muted, log) so any oscillator shows what price did at the time
   const priceOverlay = data => ({ label:'BTC price', data, borderColor:'rgba(154,167,189,.5)', borderWidth:1,
     pointRadius:0, tension:.15, yAxisID:'y2', order:2 });
-  const priceAxis = () => ({ type:'logarithmic', position:'left', grid:{display:false},
+  const priceAxis = () => ({ type:'logarithmic', position:'right', grid:{display:false},
     ticks:{ color:'rgba(154,167,189,.7)', font:{size:11}, callback:logTick } });
 
   // generic oscillator (indicator on the left axis + BTC price overlaid on a right log axis)
