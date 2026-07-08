@@ -66,7 +66,7 @@
   // right-axis BTC price overlay (thin, muted, log) so any oscillator shows what price did at the time
   const priceOverlay = data => ({ label:'BTC price', data, borderColor:'rgba(154,167,189,.5)', borderWidth:1,
     pointRadius:0, tension:.15, yAxisID:'y2', order:2 });
-  const priceAxis = () => ({ type:'logarithmic', position:'right', grid:{display:false},
+  const priceAxis = () => ({ type:'logarithmic', position:'left', grid:{display:false},
     ticks:{ color:'rgba(154,167,189,.7)', font:{size:11}, callback:logTick } });
 
   // generic oscillator (indicator on the left axis + BTC price overlaid on a right log axis)
@@ -79,7 +79,10 @@
           segment:{ borderColor:c => (o.hot!=null && c.p1.parsed.y>=o.hot)?C.red:((o.cheap!=null && c.p1.parsed.y<=o.cheap)?C.teal:C.orange) } }] },
       options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]),
         label:it=> it.datasetIndex===0 ? 'BTC '+fmtUSD(it.parsed.y) : o.name+' '+it.parsed.y.toFixed(2) } } },
-        scales:{ x:baseOpts().scales.x, y:{ grid:{color:C.line}, ticks:{color:C.muted,font:{size:12}}, suggestedMin:o.min, suggestedMax:o.max }, y2:priceAxis() } }),
+        scales:{ x:baseOpts().scales.x,
+          y: o.logLeft ? { type:'logarithmic', position:'left', grid:{color:C.line}, ticks:{color:C.muted,font:{size:12},callback:v=>[0.1,0.25,0.5,1,2,5,10,25,50].includes(v)?v:''} }
+                       : { position:'left', grid:{color:C.line}, ticks:{color:C.muted,font:{size:12}}, suggestedMin:o.min, suggestedMax:o.max },
+          y2:priceAxis() } }),
       plugins:[watermark, thresholds(th), cycleMarks(D)] }); }
 
   const R = {};
@@ -160,7 +163,7 @@
     setRead('Bitcoin is in the <b>"'+o.current_band+'"</b> band today. The rainbow is a fun, illustrative log-regression, not a model. Treat the colors as mood, not a signal.');
     const bl=$('bands'); if(bl) bl.innerHTML=o.bands.slice().reverse().map(b=>'<span class="ch-assume" style="border-color:'+b.color+'">'+b.label+'</span>').join(''); return ch; };
 
-  R.ahr999 = D => { const ch=oscillator(D,'ahr999',{ field:'ahr999', name:'AHR999', cheap:0.45, hot:1.2, max:3,
+  R.ahr999 = D => { const ch=oscillator(D,'ahr999',{ field:'ahr999', name:'AHR999', cheap:0.45, hot:1.2, logLeft:true,
       cheapLabel:'bottom-fishing zone (0.45)', hotLabel:'above DCA cost (1.2)' });
     const v=D.charts.ahr999.latest, buy=v<0.45;
     setRead('Now at <b>'+v.toFixed(2)+'</b>. '+(buy?'Below 0.45, the historical bottom-fishing zone.':v<1.2?'In the dollar-cost-averaging zone (0.45 to 1.2).':'Above the DCA zone, historically richer.'), buy); return ch; };
