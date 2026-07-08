@@ -144,12 +144,19 @@
   R.rainbow = D => { const o=D.charts.rainbow, s=o.series, labels=s.map(d=>d.date), center=s.map(d=>d.center);
     const bandSets = o.bands.map((b,i)=>({ label:b.label, data:center.map(c=>c*b.mult), borderColor:'rgba(255,255,255,.14)', borderWidth:1, pointRadius:0,
       fill: i===0?'origin':'-1', backgroundColor:b.color+'cc', tension:.2 }));
-    // price as a white line with a dark halo underneath, so it reads on light and dark bands alike
-    bandSets.push({ label:'pxshadow', data:s.map(d=>d.price), borderColor:'rgba(0,0,0,.6)', borderWidth:5, pointRadius:0, tension:.2 });
-    bandSets.push({ label:'Price', data:s.map(d=>d.price), borderColor:'#ffffff', borderWidth:2.4, pointRadius:0, tension:.2 });
+    // Chart.js fills the band areas over later line datasets, so a normal price line gets buried.
+    // Keep an invisible Price dataset for tooltips, and paint the visible black line (white halo) in afterDatasetsDraw so it sits on top.
+    bandSets.push({ label:'Price', data:s.map(d=>d.price), borderColor:'rgba(0,0,0,0)', borderWidth:0, pointRadius:0 });
+    const prices=s.map(d=>d.price);
+    const rbLine={ id:'rbline', afterDatasetsDraw(ch){ const a=ch.chartArea,x=ch.scales.x,y=ch.scales.y,g=ch.ctx; if(!a) return;
+      g.save(); g.beginPath(); let started=false;
+      for(let i=0;i<prices.length;i++){ if(prices[i]==null) continue; const px=x.getPixelForValue(i), py=y.getPixelForValue(prices[i]);
+        if(!started){g.moveTo(px,py);started=true;} else g.lineTo(px,py); }
+      g.lineJoin='round'; g.lineWidth=5; g.strokeStyle='rgba(255,255,255,.9)'; g.stroke();
+      g.lineWidth=2.4; g.strokeStyle='#000'; g.stroke(); g.restore(); } };
     const ch=new Chart($('chart'), { type:'line', data:{ labels, datasets:bandSets },
       options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ filter:it=>it.dataset.label==='Price', callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]), label:it=>'Price '+fmtUSD(it.parsed.y) } } },
-        scales:{ x:baseOpts().scales.x, y:logY() } }), plugins:[watermark, cycleMarks(D)] });
+        scales:{ x:baseOpts().scales.x, y:logY() } }), plugins:[watermark, cycleMarks(D), rbLine] });
     setRead('Bitcoin is in the <b>"'+o.current_band+'"</b> band today. The rainbow is a fun, illustrative log-regression, not a model. Treat the colors as mood, not a signal.');
     const bl=$('bands'); if(bl) bl.innerHTML=o.bands.slice().reverse().map(b=>'<span class="ch-assume" style="border-color:'+b.color+'">'+b.label+'</span>').join(''); return ch; };
 
