@@ -153,6 +153,37 @@
     setRead('Bitcoin is in the <b>"'+o.current_band+'"</b> band today. The rainbow is a fun, illustrative log-regression, not a model. Treat the colors as mood, not a signal.');
     const bl=$('bands'); if(bl) bl.innerHTML=o.bands.slice().reverse().map(b=>'<span class="ch-assume" style="border-color:'+b.color+'">'+b.label+'</span>').join(''); return ch; };
 
+  R.ahr999 = D => { const ch=oscillator(D,'ahr999',{ field:'ahr999', name:'AHR999', cheap:0.45, hot:1.2, max:3,
+      cheapLabel:'bottom-fishing zone (0.45)', hotLabel:'above DCA cost (1.2)' });
+    const v=D.charts.ahr999.latest, buy=v<0.45;
+    setRead('Now at <b>'+v.toFixed(2)+'</b>. '+(buy?'Below 0.45, the historical bottom-fishing zone.':v<1.2?'In the dollar-cost-averaging zone (0.45 to 1.2).':'Above the DCA zone, historically richer.'), buy); return ch; };
+
+  R.fng = D => { const ch=oscillator(D,'fng',{ field:'fng', name:'Fear & Greed', cheap:25, hot:75, min:0, max:100,
+      cheapLabel:'extreme fear (25)', hotLabel:'extreme greed (75)' });
+    const o=D.charts.fng; setRead('Now at <b>'+o.latest+' ('+o.classification+')</b>. Extreme fear has clustered around bottoms, extreme greed around tops. It is a contrarian read.', o.latest<=25); return ch; };
+
+  R.ma2y = D => { const s=D.charts.ma2y.series, labels=s.map(d=>d.date);
+    const ch=new Chart($('chart'), { type:'line',
+      data:{ labels, datasets:[
+        { label:'2yr MA x5', data:s.map(d=>d.ma2y5), borderColor:C.red, borderWidth:1.6, borderDash:[5,4], pointRadius:0, tension:.2 },
+        { label:'2yr MA', data:s.map(d=>d.ma2y), borderColor:C.teal, borderWidth:2, pointRadius:0, tension:.2 },
+        { label:'Price', data:s.map(d=>d.price), borderColor:C.orange, borderWidth:2, pointRadius:0, tension:.2 } ]},
+      options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]),
+        label:it=>['2x 2yr MA (sell)','2yr MA (buy)','Price'][it.datasetIndex]+' '+fmtUSD(it.parsed.y) } } }, scales:{ x:baseOpts().scales.x, y:logY() } }), plugins:[watermark, cycleMarks(D)] });
+    const l=D.charts.ma2y.latest; setRead('Price is <b>'+l.mult.toFixed(2)+'x</b> its 2-year moving average of '+fmtUSD(l.ma2y)+'. '+(l.mult<1?'Below the 2-year average has historically been an accumulation zone.':'Above the 2-year average. The red line (5x) has marked cycle tops.'), l.mult<1); return ch; };
+
+  R.drawdown = D => { const cy=D.charts.drawdown.cycles;
+    const ch=new Chart($('chart'), { type:'line',
+      data:{ datasets: cy.map(c=>({ label:c.label, data:c.path.map(p=>({x:p.d,y:p.dd})), borderColor:c.color,
+        borderWidth:c.current?3:1.6, pointRadius:0, tension:.1, order:c.current?0:1 })) },
+      options: baseOpts({ plugins:{ legend:{display:true, labels:{color:C.muted, boxWidth:14, font:{size:12}}},
+        tooltip:{ callbacks:{ title:it=>'Day '+it[0].parsed.x+' after the top', label:it=>it.dataset.label+': '+it.parsed.y.toFixed(1)+'%' } } },
+        scales:{ x:{ type:'linear', grid:{color:C.line}, ticks:{color:C.muted,font:{size:12},callback:v=>v+'d'},
+                     title:{display:true, text:'Days since the cycle top', color:C.muted, font:{size:12}} },
+                 y:{ grid:{color:C.line}, ticks:{color:C.muted,font:{size:12},callback:v=>v+'%'}, suggestedMin:-90, suggestedMax:8 } } }),
+      plugins:[watermark] });
+    const n=D.charts.drawdown.now; setRead('This cycle is <b>'+n.days+' days</b> past its top and <b>'+n.dd+'%</b> below it. Compare the orange line to how deep and how long past drawdowns ran before the bottom.', n.dd>-55); return ch; };
+
   R.miner_cost = D => { const s=D.charts.miner_cost.series, labels=s.map(d=>d.date), a=D.charts.miner_cost.assumptions;
     const ch=new Chart($('chart'), { type:'line',
       data:{ labels, datasets:[
@@ -225,6 +256,10 @@
       case 'pi_cycle': return Math.abs(c.gap_pct)+'% below the top trigger';
       case 'ma200w': return c.latest.mult.toFixed(2)+'x the 200-week floor';
       case 'rainbow': return '"'+c.current_band+'" band';
+      case 'ahr999': return 'AHR999 '+c.latest.toFixed(2);
+      case 'ma2y': return c.latest.mult.toFixed(2)+'x the 2-year MA';
+      case 'drawdown': return c.now.dd+'% below the top';
+      case 'fng': return c.latest+' - '+c.classification;
       case 'miner_cost': return fmtUSD(c.latest.cost)+' to mine one';
       case 'm2_vs_btc': return '$'+c.m2_latest_t+'T M2, corr '+c.corr_yoy;
       case 'pmi_vs_btc': return 'corr '+c.corr_mom+', near zero';
