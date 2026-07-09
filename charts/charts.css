@@ -61,6 +61,10 @@
 .ch-btn:hover { color: var(--text); border-color: var(--muted); }
 .ch-btn.active { background: var(--accent); color: #1a1206; border-color: var(--accent); }
 .ch-chart { position: relative; width: 100%; height: 460px; }
+/* split price-over-indicator panels (e.g. PMI) sharing one timeline */
+.ch-split { display: flex; flex-direction: column; gap: 4px; }
+.ch-split .ch-chart-price { height: 330px; }
+.ch-split .ch-chart-sub { height: 150px; }
 
 .ch-table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: .92rem; }
 .ch-table th, .ch-table td { text-align: right; padding: 9px 10px; border-bottom: 1px solid var(--line); color: var(--text); }
@@ -104,6 +108,8 @@
   .ch-cards { grid-template-columns: repeat(2,1fr); }
   .ch-index-grid { grid-template-columns: 1fr; }
   .ch-chart { height: 340px; }
+  .ch-split .ch-chart-price { height: 240px; }
+  .ch-split .ch-chart-sub { height: 120px; }
   /* side menu collapses to a horizontal scrolling row above the content.
      use block (not grid) so the scroll strip can't drive grid track sizing and overflow the page */
   .ch-layout { display: block; }

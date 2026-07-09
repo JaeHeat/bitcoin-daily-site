@@ -45,18 +45,40 @@
       g.setLineDash([]); g.fillStyle=color; g.font='700 9px -apple-system,sans-serif'; g.textAlign='center'; g.textBaseline='top'; g.fillText(tag,px,a.top+2); g.restore(); });
     draw(D.cycle.tops, C.orange, 'TOP'); draw(D.cycle.bottoms, C.teal, 'BOT'); } });
 
+  // triangle markers on the price line: red down-triangle at cycle tops, green up-triangle at bottoms (for the split price panel)
+  const cycleTris = (D, series) => ({ id:'ctri', afterDatasetsDraw(ch){ if(!D.cycle) return; const a=ch.chartArea,x=ch.scales.x,y=ch.scales.y,g=ch.ctx; if(!a) return;
+    const labels=ch.data.labels; if(!labels||!labels.length) return; const t0=Date.parse(labels[0]), t1=Date.parse(labels[labels.length-1]);
+    const nearest=ds=>{ const t=Date.parse(ds); let bi=0,bd=1e18; for(let i=0;i<labels.length;i++){ const dd=Math.abs(Date.parse(labels[i])-t); if(dd<bd){bd=dd;bi=i;} } return bi; };
+    const tri=(ds,color,up)=>{ const t=Date.parse(ds); if(t<t0||t>t1) return; const i=nearest(ds), px=x.getPixelForValue(i), py=y.getPixelForValue(series[i].btc);
+      if(px<a.left||px>a.right) return; const s=6, o=up?14:-14; g.save(); g.fillStyle=color; g.beginPath();
+      if(up){ g.moveTo(px,py+o-s); g.lineTo(px-s,py+o+s*0.7); g.lineTo(px+s,py+o+s*0.7); } else { g.moveTo(px,py+o+s); g.lineTo(px-s,py+o-s*0.7); g.lineTo(px+s,py+o-s*0.7); }
+      g.closePath(); g.fill(); g.restore(); };
+    (D.cycle.tops||[]).forEach(d=>tri(d,C.red,false)); (D.cycle.bottoms||[]).forEach(d=>tri(d,C.teal,true)); } });
+
+  // dashed vertical lines at the halvings, spanning a panel (for the split price + PMI panels)
+  const halvingLines = D => ({ id:'halv', afterDatasetsDraw(ch){ if(!D.halvings) return; const a=ch.chartArea,x=ch.scales.x,g=ch.ctx; if(!a) return;
+    const labels=ch.data.labels; if(!labels||!labels.length) return; const t0=Date.parse(labels[0]), t1=Date.parse(labels[labels.length-1]);
+    const nearest=ds=>{ const t=Date.parse(ds); let bi=0,bd=1e18; for(let i=0;i<labels.length;i++){ const dd=Math.abs(Date.parse(labels[i])-t); if(dd<bd){bd=dd;bi=i;} } return bi; };
+    D.halvings.forEach(ds=>{ const t=Date.parse(ds); if(t<t0||t>t1) return; const px=x.getPixelForValue(nearest(ds)); if(px<a.left||px>a.right) return;
+      g.save(); g.strokeStyle='rgba(247,147,26,.5)'; g.lineWidth=1; g.setLineDash([5,4]); g.beginPath(); g.moveTo(px,a.top); g.lineTo(px,a.bottom); g.stroke(); g.restore(); }); } });
+
+  // the PMI 50 line (expansion above, contraction below), for the split PMI panel
+  const pmi50line = { id:'pmi50', beforeDatasetsDraw(ch){ const a=ch.chartArea,y=ch.scales.y,g=ch.ctx; if(!a) return; const py=y.getPixelForValue(50);
+    g.save(); g.strokeStyle='rgba(255,255,255,.32)'; g.lineWidth=1; g.beginPath(); g.moveTo(a.left,py); g.lineTo(a.right,py); g.stroke();
+    g.fillStyle=C.muted; g.font='600 10px -apple-system,sans-serif'; g.textAlign='left'; g.textBaseline='bottom'; g.fillText('50 = flat',a.left+5,py-2); g.restore(); } };
+
   const baseOpts = extra => Object.assign({
     responsive:true, maintainAspectRatio:false, animation:false, interaction:{ mode:'index', intersect:false },
     plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#0b0e14', borderColor:'rgba(255,255,255,.12)', borderWidth:1, padding:10 } },
     scales:{ x:{ grid:{display:false}, ticks:{ color:C.muted, font:{size:12}, maxTicksLimit:9, autoSkip:true, callback:function(i){ const l=this.getLabelForValue(i); return l?String(l).slice(0,4):''; } } },
              y:{ grid:{color:C.line}, ticks:{ color:C.muted, font:{size:12} } } } }, extra||{});
 
-  function saveImg(title){ const src=$('chart'); if(!src) return; const dpr=window.devicePixelRatio||1;
-    const hH=Math.round(58*dpr), fH=Math.round(36*dpr), o=document.createElement('canvas'); o.width=src.width; o.height=src.height+hH+fH;
+  function saveImg(title){ const src=$('chart'); if(!src) return; const sub=$('chart2'); const dpr=window.devicePixelRatio||1;
+    const hH=Math.round(58*dpr), fH=Math.round(36*dpr), subH=sub?sub.height:0, o=document.createElement('canvas'); o.width=src.width; o.height=src.height+subH+hH+fH;
     const g=o.getContext('2d'); g.fillStyle='#0b0e14'; g.fillRect(0,0,o.width,o.height); g.textBaseline='middle'; g.textAlign='left';
     g.fillStyle='#f7931a'; g.font='800 '+Math.round(20*dpr)+'px -apple-system,sans-serif'; g.fillText('Bitcoin Daily',Math.round(20*dpr),hH/2);
     g.textAlign='right'; g.fillStyle='#aeb6c4'; g.font='600 '+Math.round(14*dpr)+'px -apple-system,sans-serif'; g.fillText(title||'',o.width-Math.round(20*dpr),hH/2);
-    g.drawImage(src,0,hH); const fy=src.height+hH+fH/2; g.textAlign='left'; g.fillStyle='#6b7280'; g.font='600 '+Math.round(12*dpr)+'px -apple-system,sans-serif';
+    g.drawImage(src,0,hH); if(sub) g.drawImage(sub,0,hH+src.height); const fy=src.height+subH+hH+fH/2; g.textAlign='left'; g.fillStyle='#6b7280'; g.font='600 '+Math.round(12*dpr)+'px -apple-system,sans-serif';
     g.fillText('Education, not financial advice',Math.round(20*dpr),fy); g.textAlign='right'; g.fillStyle='#9aa7bd'; g.fillText('bitcoin-daily.com',o.width-Math.round(20*dpr),fy);
     const a=document.createElement('a'); a.download='bitcoin-daily-chart.png'; a.href=o.toDataURL('image/png'); a.click(); }
 
@@ -251,17 +273,23 @@
   R.pmi_vs_btc = D => { const o=D.charts.pmi_vs_btc, s=o.series, labels=s.map(d=>d.date);
     setCorrStats([ {num:sign(o.corr_mom), label:'correlation of monthly moves with PMI (effectively zero)', color:C.blue},
                    {num:sign(o.corr_level), label:'correlation of the levels'} ]);
-    const ch=new Chart($('chart'), { type:'line',
-      data:{ labels, datasets:[
-        { label:'PMI', data:s.map(d=>d.pmi), borderColor:C.blue, borderWidth:2, pointRadius:0, tension:.25, yAxisID:'y2' },
-        { label:'BTC', data:s.map(d=>d.btc), borderColor:C.orange, borderWidth:2, pointRadius:0, tension:.25, yAxisID:'y' } ]},
-      options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]),
-        label:it=>it.datasetIndex===1?'BTC '+fmtUSD(it.parsed.y):'PMI '+it.parsed.y.toFixed(1) } } },
-        scales:{ x:baseOpts().scales.x, y:logY(), y2:{ position:'right', grid:{display:false}, min:33, max:66, ticks:{color:C.blue,font:{size:12}} } } }),
-      plugins:[watermark, { id:'pmi50', beforeDatasetsDraw(ch){ const ar=ch.chartArea, y2=ch.scales.y2, g=ch.ctx; if(!ar) return; const py=y2.getPixelForValue(50);
-        g.save(); g.strokeStyle='rgba(255,255,255,.25)'; g.lineWidth=1; g.setLineDash([4,4]); g.beginPath(); g.moveTo(ar.left,py); g.lineTo(ar.right,py); g.stroke();
-        g.setLineDash([]); g.fillStyle=C.muted; g.font='600 10px -apple-system,sans-serif'; g.textAlign='right'; g.fillText('PMI 50 = flat',ar.right-6,py-3); g.restore(); } }, agreeShade(s), cycleMarks(D)] });
-    setRead('Green shading marks months Bitcoin and PMI moved the same direction, red marks opposite. Notice how often it flips. The correlation of monthly moves is <b>'+D.charts.pmi_vs_btc.corr_mom+'</b>, effectively zero.'); return ch; };
+    const yW = sc => { sc.width = 62; };  // fix both panels' left-axis width so the two timelines line up
+    const pad = { padding:{ right:14, top:4 } };
+    const top = new Chart($('chart'), { type:'line',
+      data:{ labels, datasets:[{ label:'Bitcoin price', data:s.map(d=>d.btc), borderColor:C.orange, borderWidth:2, pointRadius:0, tension:.15 }] },
+      options: baseOpts({ layout:pad, plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]), label:it=>'BTC '+fmtUSD(it.parsed.y) } } },
+        scales:{ x:{ grid:{display:false}, ticks:{display:false} },
+          y:{ type:'logarithmic', position:'left', grid:{color:C.line}, afterFit:yW, ticks:{color:C.muted,font:{size:12},callback:logTick} } } }),
+      plugins:[watermark, halvingLines(D), cycleTris(D,s)] });
+    const bot = new Chart($('chart2'), { type:'line',
+      data:{ labels, datasets:[{ label:'PMI', data:s.map(d=>d.pmi), borderColor:C.blue, borderWidth:2, pointRadius:0, tension:.25,
+        fill:{ target:{value:50}, above:'rgba(78,201,122,.28)', below:'rgba(226,87,74,.26)' } }] },
+      options: baseOpts({ layout:pad, plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]), label:it=>'PMI '+it.parsed.y.toFixed(1) } } },
+        scales:{ x:baseOpts().scales.x, y:{ position:'left', grid:{color:C.line}, min:35, max:68, afterFit:yW, ticks:{color:C.muted,font:{size:12}} } } }),
+      plugins:[halvingLines(D), pmi50line] });
+    BDCharts.chart2 = bot;
+    setRead('Top: Bitcoin price with its cycle tops, bottoms and halvings. Bottom: the economy (ISM PMI), green above 50 (expanding), red below (shrinking). The monthly moves barely relate (correlation <b>'+sign(o.corr_mom)+'</b>). Bitcoin has run full bull markets while the economy was shrinking.', false);
+    return top; };
 
   R.sp500_vs_btc = D => { const o=D.charts.sp500_vs_btc, y=o.years, labels=y.map(d=>String(d.year)), vals=y.map(d=>d.corr);
     setCorrStats([ {num:o.full_avg.toFixed(2), label:'average correlation with the S&P 500', color:C.orange},
@@ -283,13 +311,16 @@
       cnt.innerHTML=[[d,'days'],[h,'hours'],[m,'minutes'],[s,'seconds']].map(x=>'<div><div class="cn">'+x[0]+'</div><div class="cl">'+x[1]+'</div></div>').join(''); }
     tick(); setInterval(tick,1000); return null; };
 
-  function render(key, D){ const ch = R[key] ? R[key](D) : null; BDCharts.chart = ch;
-    // drag-across-to-zoom on the x-axis (chartjs-plugin-zoom auto-registers when its script loads)
-    if(ch && ch.options && ch.options.plugins){
-      ch.options.plugins.zoom = { zoom:{ drag:{ enabled:true, backgroundColor:'rgba(247,147,26,.15)', borderColor:C.orange, borderWidth:1 },
-        wheel:{enabled:false}, pinch:{enabled:true}, mode:'x' }, pan:{enabled:false} };
-      ch.update('none'); }
-    const rz=$('resetzoom'); if(rz){ if(ch && ch.resetZoom){ rz.onclick=()=>ch.resetZoom(); } else { rz.style.display='none'; } }
+  function render(key, D){ BDCharts.chart2=null; const ch = R[key] ? R[key](D) : null; BDCharts.chart = ch;
+    // drag-across-to-zoom on x; on split charts (a second panel) zooming one syncs the other (chartjs-plugin-zoom auto-registers on load)
+    const charts=[ch, BDCharts.chart2].filter(c=>c && c.options && c.options.plugins);
+    let syncing=false;
+    charts.forEach(c=>{ c.options.plugins.zoom = { zoom:{ drag:{ enabled:true, backgroundColor:'rgba(247,147,26,.15)', borderColor:C.orange, borderWidth:1 },
+        wheel:{enabled:false}, pinch:{enabled:true}, mode:'x',
+        onZoomComplete:({chart})=>{ if(syncing || charts.length<2) return; syncing=true; const r=chart.scales.x;
+          charts.forEach(o=>{ if(o!==chart) o.zoomScale('x',{min:r.min,max:r.max},'none'); }); syncing=false; } }, pan:{enabled:false} };
+      c.update('none'); });
+    const rz=$('resetzoom'); if(rz){ if(charts.length){ rz.onclick=()=>{ syncing=true; charts.forEach(c=>c.resetZoom&&c.resetZoom()); syncing=false; }; } else { rz.style.display='none'; } }
     const lg=$('logtoggle'); if(lg && ch && ch.options.scales.y && ch.options.scales.y.type==='logarithmic'){
       lg.onclick=()=>{ const log=ch.options.scales.y.type==='logarithmic'; ch.options.scales.y.type=log?'linear':'logarithmic';
         ch.options.scales.y.ticks.callback = log ? (v=>v>=1000?'$'+(v/1000)+'k':'$'+v) : logTick; lg.textContent=log?'Linear scale':'Log scale'; lg.classList.toggle('active',!log); ch.update(); }; }
@@ -318,5 +349,5 @@
       case 'halving_eta': return c.days_remaining+' days to go';
       default: return ''; } }
 
-  global.BDCharts = { C, fmtUSD, fmtDate, render, summary, saveImg, chart:null };
+  global.BDCharts = { C, fmtUSD, fmtDate, render, summary, saveImg, chart:null, chart2:null };
 })(window);
