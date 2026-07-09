@@ -85,6 +85,18 @@
           y2:priceAxis() } }),
       plugins:[watermark, thresholds(th), cycleMarks(D)] }); }
 
+  // Fear & Greed dial (alternative.me style): red=fear on the left, green=greed on the right, needle at the value
+  const fngColor = v => v<=25?'#e2574a':v<=45?'#f0883e':v<55?'#d9b44a':v<75?'#8cc84b':'#2ea043';
+  function drawFngGauge(v){ const cv=$('fng-gauge'); if(!cv) return; const W=300,H=168,dpr=window.devicePixelRatio||1;
+    cv.width=W*dpr; cv.height=H*dpr; cv.style.width=W+'px'; cv.style.height=H+'px';
+    const g=cv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,W,H);
+    const cx=W/2, cy=H-16, R=116, lw=20;
+    [['#e2574a',0,20],['#f0883e',20,40],['#d9b44a',40,60],['#8cc84b',60,80],['#2ea043',80,100]].forEach(s=>{
+      g.beginPath(); g.lineWidth=lw; g.strokeStyle=s[0]; g.arc(cx,cy,R,Math.PI+(s[1]/100)*Math.PI+ (s[1]?0.012:0), Math.PI+(s[2]/100)*Math.PI-0.012); g.stroke(); });
+    const ang=Math.PI+(Math.max(0,Math.min(100,v))/100)*Math.PI;
+    g.beginPath(); g.moveTo(cx,cy); g.lineTo(cx+Math.cos(ang)*(R+3), cy+Math.sin(ang)*(R+3)); g.strokeStyle='#e8edf6'; g.lineWidth=3; g.lineCap='round'; g.stroke();
+    g.beginPath(); g.arc(cx,cy,6,0,7); g.fillStyle='#e8edf6'; g.fill(); }
+
   const R = {};
 
   R.realized_price = D => { const rp=D.charts.realized_price, s=rp.series, labels=s.map(d=>d.date), up=rp.latest.over_under_pct<0;
@@ -168,9 +180,20 @@
     const v=D.charts.ahr999.latest, buy=v<0.45;
     setRead('Now at <b>'+v.toFixed(2)+'</b>. '+(buy?'Below 0.45, the historical bottom-fishing zone.':v<1.2?'In the dollar-cost-averaging zone (0.45 to 1.2).':'Above the DCA zone, historically richer.'), buy); return ch; };
 
-  R.fng = D => { const ch=oscillator(D,'fng',{ field:'fng', name:'Fear & Greed', cheap:25, hot:75, min:0, max:100,
-      cheapLabel:'extreme fear (25)', hotLabel:'extreme greed (75)' });
-    const o=D.charts.fng; setRead('Now at <b>'+o.latest+' ('+o.classification+')</b>. Extreme fear has clustered around bottoms, extreme greed around tops. It is a contrarian read.', o.latest<=25); return ch; };
+  R.fng = D => { const o=D.charts.fng, s=o.series, labels=s.map(d=>d.date), col=fngColor(o.latest);
+    drawFngGauge(o.latest);
+    const num=$('fng-num'), cls=$('fng-cls');
+    if(num){ num.textContent=o.latest; num.style.color=col; }
+    if(cls){ cls.textContent=o.classification.replace(/\b\w/g,m=>m.toUpperCase()); cls.style.color=col; }
+    const ch=new Chart($('chart'), { type:'line',
+      data:{ labels, datasets:[ priceOverlay(s.map(d=>d.price)),
+        { label:'Fear & Greed', data:s.map(d=>d.fng), borderColor:C.orange, borderWidth:2, pointRadius:0, tension:.15, yAxisID:'y', order:1,
+          segment:{ borderColor:c=>fngColor(c.p1.parsed.y) } }] },
+      options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]),
+        label:it=> it.datasetIndex===0 ? 'BTC '+fmtUSD(it.parsed.y) : 'Fear & Greed '+it.parsed.y } } },
+        scales:{ x:baseOpts().scales.x, y:{ position:'left', grid:{color:C.line}, min:0, max:100, ticks:{color:C.muted,font:{size:12}} }, y2:priceAxis() } }),
+      plugins:[watermark, thresholds([{v:25,c:'#e2574a',t:'extreme fear'},{v:75,c:'#2ea043',t:'extreme greed'}]), cycleMarks(D)] });
+    setRead('Extreme fear (under 25) has clustered around cycle bottoms, extreme greed (over 75) around tops. A contrarian read.', o.latest<=25); return ch; };
 
   R.ma2y = D => { const s=D.charts.ma2y.series, labels=s.map(d=>d.date);
     const ch=new Chart($('chart'), { type:'line',
@@ -249,6 +272,12 @@
     tick(); setInterval(tick,1000); return null; };
 
   function render(key, D){ const ch = R[key] ? R[key](D) : null; BDCharts.chart = ch;
+    // drag-across-to-zoom on the x-axis (chartjs-plugin-zoom auto-registers when its script loads)
+    if(ch && ch.options && ch.options.plugins){
+      ch.options.plugins.zoom = { zoom:{ drag:{ enabled:true, backgroundColor:'rgba(247,147,26,.15)', borderColor:C.orange, borderWidth:1 },
+        wheel:{enabled:false}, pinch:{enabled:true}, mode:'x' }, pan:{enabled:false} };
+      ch.update('none'); }
+    const rz=$('resetzoom'); if(rz){ if(ch && ch.resetZoom){ rz.onclick=()=>ch.resetZoom(); } else { rz.style.display='none'; } }
     const lg=$('logtoggle'); if(lg && ch && ch.options.scales.y && ch.options.scales.y.type==='logarithmic'){
       lg.onclick=()=>{ const log=ch.options.scales.y.type==='logarithmic'; ch.options.scales.y.type=log?'linear':'logarithmic';
         ch.options.scales.y.ticks.callback = log ? (v=>v>=1000?'$'+(v/1000)+'k':'$'+v) : logTick; lg.textContent=log?'Linear scale':'Log scale'; lg.classList.toggle('active',!log); ch.update(); }; }

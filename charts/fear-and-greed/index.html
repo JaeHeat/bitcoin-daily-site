@@ -4,18 +4,18 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Crypto Fear and Greed Index Chart (Live) | Bitcoin Sentiment</title>
-  <meta name="description" content="Live Crypto Fear and Greed Index with BTC price overlaid. Extreme fear has clustered around bottoms and extreme greed around tops. A contrarian sentiment gauge, updated daily." />
+  <meta name="description" content="Live Crypto Fear and Greed Index with the dial and full history. Extreme fear has clustered around bottoms and extreme greed around tops. A contrarian sentiment gauge, updated daily." />
   <link rel="canonical" href="https://bitcoin-daily.com/charts/fear-and-greed/" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Crypto Fear and Greed Index Chart (Live) | Bitcoin Sentiment" />
-  <meta property="og:description" content="Live Crypto Fear and Greed Index with BTC price overlaid. Extreme fear has clustered around bottoms and extreme greed around tops. A contrarian sentiment gauge, updated daily." />
+  <meta property="og:description" content="Live Crypto Fear and Greed Index with the dial and full history. Extreme fear has clustered around bottoms and extreme greed around tops. A contrarian sentiment gauge, updated daily." />
   <meta property="og:url" content="https://bitcoin-daily.com/charts/fear-and-greed/" />
   <meta property="og:image" content="https://bitcoin-daily.com/assets/bitcoin-daily-pfp.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Crypto Fear and Greed Index Chart (Live) | Bitcoin Sentiment" />
   <meta name="twitter:image" content="https://bitcoin-daily.com/assets/bitcoin-daily-pfp.png" />
   <link rel="stylesheet" href="/styles.css?v=2" />
-  <link rel="stylesheet" href="/charts/charts.css?v=5" />
+  <link rel="stylesheet" href="/charts/charts.css?v=6" />
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"Crypto Fear and Greed Index Chart (Live) | Bitcoin Sentiment","url":"https://bitcoin-daily.com/charts/fear-and-greed/","isPartOf":{"@type":"WebSite","name":"Bitcoin Daily","url":"https://bitcoin-daily.com/"},"breadcrumb":{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Charts","item":"https://bitcoin-daily.com/charts/"},{"@type":"ListItem","position":2,"name":"Fear & Greed","item":"https://bitcoin-daily.com/charts/fear-and-greed/"}]}}</script>
 </head>
 <body>
@@ -41,12 +41,12 @@
         <div class="ch-layout">
           <nav class="ch-side"><div class="ch-side-inner"><a class="ch-side-all" href="/charts/">&larr; All charts</a><div class="grp">Cycle top and bottom signals</div><a class="" href="/charts/realized-price/">Realized price</a><a class="" href="/charts/mvrv/">MVRV</a><a class="" href="/charts/mayer-multiple/">Mayer Multiple</a><a class="" href="/charts/puell-multiple/">Puell Multiple</a><a class="" href="/charts/nupl/">NUPL</a><a class="" href="/charts/pi-cycle-top/">Pi Cycle Top</a><a class="" href="/charts/200-week-moving-average/">200-week MA</a><a class="" href="/charts/rainbow-chart/">Rainbow chart</a><a class="" href="/charts/ahr999/">AHR999</a><a class="" href="/charts/2-year-moving-average/">2-year MA</a><a class="" href="/charts/drawdown/">Drawdown path</a><a class="active" href="/charts/fear-and-greed/">Fear & Greed</a><div class="grp">Macro and cross-asset</div><a class="" href="/charts/miner-cost/">Miner cost</a><a class="" href="/charts/m2-money-supply/">M2 money supply</a><a class="" href="/charts/pmi/">PMI</a><a class="" href="/charts/sp500-correlation/">S&P 500</a><div class="grp">Cycle timing</div><a class="" href="/charts/halving-countdown/">Halving countdown</a></div></nav>
           <div class="ch-main">
-            <div class="ch-hero"><h1>Crypto Fear and Greed Index (Live)</h1><p class="lead">A 0 to 100 sentiment gauge. Extreme fear has clustered around bottoms, extreme greed around tops.</p><p class="ch-asof" id="asof">Loading the latest reading...</p></div>
+            <div class="ch-hero fng-hero"><h1>Crypto Fear and Greed Index (Live)</h1><p class="lead">A 0 to 100 sentiment gauge. Extreme fear has clustered around bottoms, extreme greed around tops.</p><div class="fng-dial"><canvas id="fng-gauge" width="300" height="168"></canvas><div class="fng-readout"><div class="fng-num" id="fng-num">--</div><div class="fng-cls" id="fng-cls">&nbsp;</div></div></div><p class="ch-asof" id="asof">Loading the latest reading...</p></div>
             <div class="ch-panel">
-  <p class="cap">The Fear and Greed Index on the left axis with BTC price overlaid on the right (log). Below 25 is extreme fear, above 75 is extreme greed.</p>
+  <p class="cap">The full history, colored red (fear) to green (greed), with BTC price overlaid on the right (log). Below 25 is extreme fear, above 75 is extreme greed.</p>
   <div class="ch-read" id="read"></div>
-  <div class="ch-legend"><span><span class="ch-sw line" style="background:#f7931a"></span>Fear & Greed (left)</span><span><span class="ch-sw line" style="background:#9aa7bd"></span>BTC price (right, log)</span></div>
-  <div class="ch-controls"><button class="ch-btn" id="save">Save image</button></div>
+  <div class="ch-legend"><span><span class="ch-sw line" style="background:#9aa7bd"></span>BTC price (right, log)</span></div>
+  <div class="ch-controls"><button class="ch-btn" id="resetzoom">Reset zoom</button><button class="ch-btn" id="save">Save image</button></div><p class="ch-hint">Drag across the chart to zoom into any span. Reset zoom to go back.</p>
   <div class="ch-chart"><canvas id="chart"></canvas></div>
   
   <p class="ch-note">Source: the Crypto Fear and Greed Index from alternative.me, daily since February 2018. It blends volatility, momentum, social media, and survey inputs into one number.</p>
@@ -66,7 +66,8 @@
     </div>
   </footer>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-  <script src="/charts/charts.js?v=8"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js"></script>
+  <script src="/charts/charts.js?v=9"></script>
   <script>
   fetch('/charts/charts_data.json',{cache:'no-store'}).then(function(r){return r.json();}).then(function(D){
     document.getElementById('asof').textContent='Live reading as of '+BDCharts.fmtDate(D.as_of)+'. Bitcoin at '+BDCharts.fmtUSD(D.price)+'.';
