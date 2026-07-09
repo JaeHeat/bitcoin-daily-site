@@ -97,6 +97,12 @@
     g.beginPath(); g.moveTo(cx,cy); g.lineTo(cx+Math.cos(ang)*(R+3), cy+Math.sin(ang)*(R+3)); g.strokeStyle='#e8edf6'; g.lineWidth=3; g.lineCap='round'; g.stroke();
     g.beginPath(); g.arc(cx,cy,6,0,7); g.fillStyle='#e8edf6'; g.fill(); }
 
+  // big correlation-number cards in the hero of the correlation charts (M2 / PMI / S&P)
+  function setCorrStats(cards){ const el=$('corr-stats'); if(!el) return;
+    el.innerHTML = cards.map(c=>'<div class="corr-stat'+(c.cls?' '+c.cls:'')+'"><div class="n" style="color:'+(c.color||'var(--text)')
+      +'">'+c.num+'</div><div class="l">'+c.label+'</div></div>').join(''); }
+  const sign = n => (n>=0?'+':'')+n.toFixed(2);
+
   const R = {};
 
   R.realized_price = D => { const rp=D.charts.realized_price, s=rp.series, labels=s.map(d=>d.date), up=rp.latest.over_under_pct<0;
@@ -230,7 +236,9 @@
     setRead('Estimated cost to mine one Bitcoin is about <b>'+fmtUSD(l.cost)+'</b>, so price is roughly '+l.price_to_cost.toFixed(2)+'x the electricity cost.');
     const as=$('assume'); if(as) as.innerHTML='<span class="ch-assume">Efficiency '+a.efficiency_j_th+' J/TH (range '+a.eff_band[0]+' to '+a.eff_band[1]+')</span><span class="ch-assume">Power $'+a.electricity_usd_kwh+'/kWh (range $'+a.elec_band[0]+' to $'+a.elec_band[1]+')</span>'; return ch; };
 
-  R.m2_vs_btc = D => { const s=D.charts.m2_vs_btc.series, labels=s.map(d=>d.date);
+  R.m2_vs_btc = D => { const o=D.charts.m2_vs_btc, s=o.series, labels=s.map(d=>d.date);
+    setCorrStats([ {num:sign(o.corr_yoy), label:'12-month correlation with the money supply', color:C.teal},
+                   {num:'$'+o.m2_latest_t+'T', label:'US M2 money supply today'} ]);
     const ch=new Chart($('chart'), { type:'line',
       data:{ labels, datasets:[
         { label:'M2', data:s.map(d=>d.m2), borderColor:C.teal, borderWidth:2, pointRadius:0, tension:.25, yAxisID:'y2' },
@@ -240,7 +248,9 @@
         scales:{ x:baseOpts().scales.x, y:logY(), y2:{ position:'right', grid:{display:false}, ticks:{color:C.teal,font:{size:12},callback:v=>'$'+(v/1000).toFixed(0)+'T'} } } }), plugins:[watermark, agreeShade(s), cycleMarks(D)] });
     setRead('US M2 is about <b>$'+D.charts.m2_vs_btc.m2_latest_t+' trillion</b>. Green shading marks months they moved the same direction, red marks opposite. Year-over-year correlation is '+D.charts.m2_vs_btc.corr_yoy+', a real but loose link.'); return ch; };
 
-  R.pmi_vs_btc = D => { const s=D.charts.pmi_vs_btc.series, labels=s.map(d=>d.date);
+  R.pmi_vs_btc = D => { const o=D.charts.pmi_vs_btc, s=o.series, labels=s.map(d=>d.date);
+    setCorrStats([ {num:sign(o.corr_mom), label:'correlation of monthly moves with PMI (effectively zero)', color:C.blue},
+                   {num:sign(o.corr_level), label:'correlation of the levels'} ]);
     const ch=new Chart($('chart'), { type:'line',
       data:{ labels, datasets:[
         { label:'PMI', data:s.map(d=>d.pmi), borderColor:C.blue, borderWidth:2, pointRadius:0, tension:.25, yAxisID:'y2' },
@@ -253,7 +263,9 @@
         g.setLineDash([]); g.fillStyle=C.muted; g.font='600 10px -apple-system,sans-serif'; g.textAlign='right'; g.fillText('PMI 50 = flat',ar.right-6,py-3); g.restore(); } }, agreeShade(s), cycleMarks(D)] });
     setRead('Green shading marks months Bitcoin and PMI moved the same direction, red marks opposite. Notice how often it flips. The correlation of monthly moves is <b>'+D.charts.pmi_vs_btc.corr_mom+'</b>, effectively zero.'); return ch; };
 
-  R.sp500_vs_btc = D => { const y=D.charts.sp500_vs_btc.years, labels=y.map(d=>String(d.year)), vals=y.map(d=>d.corr);
+  R.sp500_vs_btc = D => { const o=D.charts.sp500_vs_btc, y=o.years, labels=y.map(d=>String(d.year)), vals=y.map(d=>d.corr);
+    setCorrStats([ {num:o.full_avg.toFixed(2), label:'average correlation with the S&P 500', color:C.orange},
+                   {num:o.claim.toFixed(2), label:'the number people quote', cls:'myth'} ]);
     const ch=new Chart($('chart'), { type:'bar', data:{ labels, datasets:[{ data:vals, backgroundColor:y.map(d=>d.year<2020?C.teal:C.orange), borderRadius:3 }] },
       options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>it[0].label, label:it=>'Correlation '+it.parsed.y.toFixed(2) } } },
         scales:{ x:{ grid:{display:false}, ticks:{color:C.muted,font:{size:12}} }, y:{ grid:{color:C.line}, ticks:{color:C.muted,font:{size:12}}, suggestedMin:-0.25, suggestedMax:1 } } }),

@@ -30,6 +30,13 @@
 .fng-readout { position: absolute; left: 0; right: 0; bottom: 2px; text-align: center; pointer-events: none; }
 .fng-num { font-size: 3.6rem; font-weight: 800; line-height: 1; letter-spacing: -1px; }
 .fng-cls { font-size: 1.02rem; font-weight: 600; letter-spacing: .3px; margin-top: 3px; }
+
+/* correlation-number hero cards (M2 / PMI / S&P) */
+.corr-stats { display: flex; gap: 14px; flex-wrap: wrap; margin: 18px 0 8px; }
+.corr-stat { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 20px; min-width: 160px; }
+.corr-stat .n { font-size: 2.7rem; font-weight: 800; line-height: 1; letter-spacing: -1px; }
+.corr-stat .l { color: var(--muted); font-size: .88rem; margin-top: 8px; max-width: 230px; line-height: 1.35; }
+.corr-stat.myth .n { color: var(--muted); text-decoration: line-through; opacity: .6; }
 .ch-hero h1 { font-size: clamp(1.9rem, 4.4vw, 3rem); line-height: 1.1; letter-spacing: -.4px; margin-bottom: 12px; }
 .ch-hero .lead { font-size: 1.12rem; color: var(--muted); max-width: 760px; }
 .ch-asof { color: var(--muted); font-size: .92rem; margin-top: 12px; }
