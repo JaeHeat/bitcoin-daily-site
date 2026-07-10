@@ -371,6 +371,25 @@
     const money=(n,dec)=>(n<0?'-$':'+$')+Math.abs(n).toLocaleString(undefined,{maximumFractionDigits:dec});
     setRead('Latest day: <b>'+money(l.net,0)+'m</b> ('+fmtDate(l.date)+'). Net over the tracked window is <b>'+money(tot/1000,2)+' billion</b>. Green bars are inflow days, red are outflow days.', l.net>=0); return ch; };
 
+  R.analogs = D => { const AA=D.charts.analogs, colors=['#f7931a','#4ec97a','#c9a227','#a06cd5','#e2574a'];
+    let asset = AA.BTC ? 'BTC' : Object.keys(AA)[0];
+    const nowLine=W=>({ id:'nl', afterDatasetsDraw(ch){ const a=ch.chartArea,x=ch.scales.x,g=ch.ctx; if(!a) return; const px=x.getPixelForValue(W); if(px<a.left||px>a.right) return;
+      g.save(); g.strokeStyle='rgba(255,255,255,.4)'; g.lineWidth=1; g.setLineDash([4,4]); g.beginPath(); g.moveTo(px,a.top); g.lineTo(px,a.bottom); g.stroke();
+      g.setLineDash([]); g.fillStyle=C.muted; g.font='700 11px -apple-system,sans-serif'; g.textAlign='center'; g.fillText('TODAY',px,a.top+12); g.restore(); } });
+    const build=k=>{ const A=AA[k], W=A.window, ds=A.analogs.map((a,i)=>({ label:a.date, data:a.path.map(p=>({x:p[0],y:p[1]})), borderColor:colors[i], borderWidth:1.5, pointRadius:0, tension:.12, segment:{ borderDash:c=>c.p0.parsed.x>=W?[5,4]:undefined } }));
+      ds.push({ label:'Now', data:A.current.map(p=>({x:p[0],y:p[1]})), borderColor:'#1f57c3', borderWidth:3.4, pointRadius:0, tension:.12, order:-1 }); return ds; };
+    const ch=new Chart($('chart'), { type:'line', data:{ datasets:build(asset) },
+      options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>'Day '+it[0].parsed.x+' from the window start', label:it=>it.dataset.label==='Now'?'Now (this cycle)':'Analog: '+fmtDate(it.dataset.label) } } },
+        scales:{ x:{ type:'linear', grid:{color:C.line}, ticks:{color:C.muted,font:{size:12},callback:v=>v+'d'}, title:{display:true,text:'Days from the window start',color:C.muted,font:{size:12}} },
+                 y:{ grid:{color:C.line}, ticks:{color:C.muted,font:{size:11},callback:v=>v.toFixed(1)}, title:{display:true,text:'shape (z-normalized price)',color:C.muted,font:{size:11}} } } }),
+      plugins:[watermark, nowLine(AA[asset].window)] });
+    const setLeg=()=>{ const A=AA[asset], el=$('analog_legend'); if(el) el.innerHTML='<b style="color:#1f57c3">Now</b> vs its 5 closest past matches. Dashed = what came next:<br>'+A.analogs.map((a,i)=>'<span style="color:'+colors[i]+';font-weight:700">'+fmtDate(a.date)+'</span> then <b>'+(a.fwd>=0?'+':'')+a.fwd+'%</b>').join(' &nbsp;&middot;&nbsp; '); };
+    const bb=$('analog_assets'); if(bb){ bb.innerHTML=Object.keys(AA).map(k=>'<button class="ch-btn'+(k===asset?' active':'')+'" data-a="'+k+'">'+k+'</button>').join('');
+      bb.querySelectorAll('button').forEach(b=>b.onclick=()=>{ asset=b.dataset.a; ch.data.datasets=build(asset); ch.config.plugins[ch.config.plugins.length-1]=nowLine(AA[asset].window); ch.update(); bb.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b)); setLeg(); }); }
+    setLeg();
+    setRead('These are the 5 past 360-day stretches whose shape most resembles the last year. The dashed lines show what happened over the next 180 days. History rhymes, it does not repeat, so read this as context, not a forecast.');
+    return ch; };
+
   R.halving = D => { const hv=D.charts.halving_eta; const cap=$('halving_cap');
     const dateEl=$('halving_date'); if(dateEl) dateEl.innerHTML='Estimated <b>'+fmtDate(hv.eta_date)+'</b>';
     if(cap && hv.height) cap.textContent='Block '+hv.height.toLocaleString()+' of '+hv.next_block.toLocaleString()+'. Estimated at roughly one block every ten minutes.';
@@ -416,6 +435,7 @@
       case 'metcalfe': return Math.round(c.latest)+'% of network trend';
       case 'sentiment': return 'price '+(c.latest.pc>=0?'+':'')+c.latest.pc+'% over 30d';
       case 'monthly_returns': { const mo=new Date().getMonth(), nm=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][mo], a=c.avg[mo+1]; return a==null?'monthly seasonality':nm+' avg '+(a>=0?'+':'')+a.toFixed(1)+'%'; }
+      case 'analogs': { const A=c.BTC||Object.values(c)[0]; const t=A.analogs[0]; return 'closest: '+t.date.slice(0,4)+', next '+(t.fwd>=0?'+':'')+t.fwd+'%'; }
       case 'fng': return c.latest+' - '+c.classification;
       case 'miner_cost': return fmtUSD(c.latest.cost)+' to mine one';
       case 'etf_flows': return 'latest '+(c.latest.net>=0?'+':'')+'$'+c.latest.net+'m';
