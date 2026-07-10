@@ -22,6 +22,14 @@
 .ch-side .ch-side-all { color: var(--text); font-weight: 600; margin-bottom: 2px; }
 .ch-main { min-width: 0; }
 
+/* full-width layout for wide content (returns heatmap): menu becomes a top strip so the table gets the whole page */
+.ch-wide { display: block; }
+.ch-wide .ch-side { position: static; margin-bottom: 14px; max-height: none; overflow: visible; }
+.ch-wide .ch-side-inner { flex-direction: row; overflow-x: auto; gap: 8px; padding-bottom: 8px; -webkit-overflow-scrolling: touch; }
+.ch-wide .ch-side .grp, .ch-wide .ch-side .ch-side-all { display: none; }
+.ch-wide .ch-side a { flex: 0 0 auto; white-space: nowrap; border: 1px solid var(--line); background: var(--panel); }
+.ch-wide .ch-side a.active { border-color: var(--accent); color: var(--accent); }
+
 .ch-hero { padding: 40px 0 6px; }
 .ch-hint { color: var(--muted); font-size: .82rem; margin: 6px 0 0; opacity: .82; }
 
