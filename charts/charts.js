@@ -327,17 +327,18 @@
     const v=D.charts.metcalfe.latest; setRead('Now at <b>'+Math.round(v)+'%</b> of its 2-year network-value trend. Below 100 means price is cheap versus on-chain activity (active addresses), above means rich. Metcalfe law, network value grows with users squared.', v<100); return ch; };
 
   R.sentiment = D => { const s=D.charts.sentiment.series, labels=s.map(d=>d.date);
+    const zone=i=>{ const p=s[i]; if(!p||p.pc==null||p.hi==null) return C.blue; return p.pc>=p.hi?C.red:(p.pc<=p.lo?'#4ec97a':C.blue); };
     const ch=new Chart($('chart'), { type:'line',
       data:{ labels, datasets:[
-        { label:'Overbought', data:s.map(d=>d.hi), borderColor:'rgba(226,87,74,.75)', borderWidth:1.2, borderDash:[5,4], pointRadius:0, tension:.1 },
-        { label:'Oversold', data:s.map(d=>d.lo), borderColor:'rgba(78,201,122,.85)', borderWidth:1.2, borderDash:[5,4], pointRadius:0, tension:.1 },
-        { label:'Active addresses', data:s.map(d=>d.ac), borderColor:'rgba(154,167,189,.55)', borderWidth:1.4, pointRadius:0, tension:.25 },
-        { label:'Price', data:s.map(d=>d.pc), borderColor:C.blue, borderWidth:2.4, pointRadius:0, tension:.2, order:0 } ]},
-      options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]),
-        label:it=>['Overbought band','Oversold band','Active addresses 30d','Price 30d'][it.datasetIndex]+': '+(it.parsed.y>=0?'+':'')+it.parsed.y.toFixed(1)+'%' } } },
+        { label:'hi', data:s.map(d=>d.hi), borderColor:'transparent', pointRadius:0, fill:'+1', backgroundColor:'rgba(154,167,189,.10)', tension:.1 },
+        { label:'lo', data:s.map(d=>d.lo), borderColor:'transparent', pointRadius:0, tension:.1 },
+        { label:'Active addresses', data:s.map(d=>d.ac), borderColor:'rgba(154,167,189,.32)', borderWidth:1, pointRadius:0, tension:.35 },
+        { label:'Price', data:s.map(d=>d.pc), borderColor:C.blue, borderWidth:2.8, pointRadius:0, tension:.2, order:0, segment:{ borderColor:c=>zone(c.p1.dataIndex) } } ]},
+      options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ filter:it=>it.datasetIndex>=2, callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]),
+        label:it=>(it.datasetIndex===3?'Price 30d':'Active addresses 30d')+': '+(it.parsed.y>=0?'+':'')+it.parsed.y.toFixed(1)+'%' } } },
         scales:{ x:baseOpts().scales.x, y:{ grid:{color:C.line}, ticks:{color:C.muted,font:{size:12},callback:v=>v+'%'} } } }),
       plugins:[watermark, cycleMarks(D)] });
-    const l=D.charts.sentiment.latest; setRead('Over the last 30 days price is <b>'+(l.pc>=0?'+':'')+l.pc+'%</b> and active addresses are <b>'+(l.ac>=0?'+':'')+l.ac+'%</b>. When the blue line rides the red band the market is hot, when it dips to the green band it is oversold.', l.pc<0); return ch; };
+    const l=D.charts.sentiment.latest; setRead('The bold line is Bitcoin’s 30-day price change. Inside the grey band is normal. It turns <b style="color:#e2574a">red</b> above the band (overheated) and <b style="color:#4ec97a">green</b> below it (oversold). The faint line is the 30-day change in active addresses.', l.pc<0); return ch; };
 
   function returnsTable(o, isQ){
     const cols = isQ?['Q1','Q2','Q3','Q4']:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
