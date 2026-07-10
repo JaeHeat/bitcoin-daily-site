@@ -245,6 +245,21 @@
       plugins:[watermark] });
     const n=D.charts.drawdown.now; setRead('This cycle is <b>'+n.days+' days</b> past its top and <b>'+n.dd+'%</b> below it. Compare the orange line to how deep and how long past drawdowns ran before the bottom.', n.dd>-55); return ch; };
 
+  R.cycle_band = D => { const o=D.charts.cycle_band, b=o.band, cur=o.current;
+    const ch=new Chart($('chart'), { type:'line',
+      data:{ datasets:[
+        { label:'Range high', data:b.map(p=>({x:p.d,y:p.hi})), borderColor:'rgba(154,167,189,.35)', borderWidth:1, pointRadius:0, tension:.25, fill:'+1', backgroundColor:'rgba(154,167,189,.15)' },
+        { label:'Range low', data:b.map(p=>({x:p.d,y:p.lo})), borderColor:'rgba(154,167,189,.35)', borderWidth:1, pointRadius:0, tension:.25 },
+        { label:'Average bear', data:b.map(p=>({x:p.d,y:p.avg})), borderColor:C.teal, borderWidth:1.8, borderDash:[6,4], pointRadius:0, tension:.25 },
+        { label:'This cycle', data:cur.map(p=>({x:p.d,y:p.mult})), borderColor:C.orange, borderWidth:3, pointRadius:0, tension:.15, order:0 } ]},
+      options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ mode:'nearest', intersect:false, callbacks:{ title:it=>'Day '+it[0].parsed.x+' after the top',
+          label:it=>['Range high','Range low','Average bear','This cycle'][it.datasetIndex]+': '+it.parsed.y.toFixed(2)+'x the top' } } },
+        scales:{ x:{ type:'linear', grid:{color:C.line}, ticks:{color:C.muted,font:{size:12},callback:v=>v+'d'},
+                     title:{display:true, text:'Days since the cycle top', color:C.muted, font:{size:12}} },
+                 y:{ grid:{color:C.line}, ticks:{color:C.muted,font:{size:12},callback:v=>v.toFixed(2)+'x'}, suggestedMin:0.2, suggestedMax:1.25 } } }),
+      plugins:[watermark] });
+    const n=o.now; setRead('At <b>day '+n.day+'</b> of the bear, this cycle sits at <b>'+n.mult.toFixed(2)+'x</b> the top. Every past cycle (2013, 2017, 2021) was between '+n.lo.toFixed(2)+'x and '+n.hi.toFixed(2)+'x at this point, so we are <b>'+n.pos+'</b>.', n.mult>=n.avg); return ch; };
+
   R.miner_cost = D => { const s=D.charts.miner_cost.series, labels=s.map(d=>d.date), a=D.charts.miner_cost.assumptions;
     const ch=new Chart($('chart'), { type:'line',
       data:{ labels, datasets:[
@@ -341,6 +356,7 @@
       case 'ahr999': return 'AHR999 '+c.latest.toFixed(2);
       case 'ma2y': return c.latest.mult.toFixed(2)+'x the 2-year MA';
       case 'drawdown': return c.now.dd+'% below the top';
+      case 'cycle_band': return c.now.mult.toFixed(2)+'x, '+c.now.pos;
       case 'fng': return c.latest+' - '+c.classification;
       case 'miner_cost': return fmtUSD(c.latest.cost)+' to mine one';
       case 'm2_vs_btc': return '$'+c.m2_latest_t+'T M2, corr '+c.corr_yoy;
