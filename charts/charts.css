@@ -60,6 +60,14 @@
 .ch-btn { background: transparent; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: .82rem; font-weight: 600; cursor: pointer; font-family: inherit; }
 .ch-btn:hover { color: var(--text); border-color: var(--muted); }
 .ch-btn.active { background: var(--accent); color: #1a1206; border-color: var(--accent); }
+/* monthly / quarterly returns heatmap */
+#returns_table { overflow-x: auto; }
+.ch-heat { width: 100%; min-width: 640px; border-collapse: collapse; font-size: .82rem; font-variant-numeric: tabular-nums; }
+.ch-heat th, .ch-heat td { padding: 6px 4px; text-align: center; border: 1px solid #0b0e14; white-space: nowrap; }
+.ch-heat th { color: var(--muted); font-weight: 600; font-size: .76rem; }
+.ch-heat td.yr { color: var(--text); font-weight: 700; text-align: left; padding-left: 9px; }
+.ch-heat td.st { color: var(--text); font-weight: 700; background: rgba(255,255,255,.05); }
+
 .ch-chart { position: relative; width: 100%; height: 460px; }
 /* split price-over-indicator panels (e.g. PMI) sharing one timeline */
 .ch-split { display: flex; flex-direction: column; gap: 4px; }

@@ -315,6 +315,47 @@
       plugins:[watermark, thresholds([{v:D.charts.sp500_vs_btc.claim,c:C.red,t:'the "0.87" claim'},{v:D.charts.sp500_vs_btc.full_avg,c:C.muted,t:'full-period average '+D.charts.sp500_vs_btc.full_avg}])] });
     setRead('The full-period average correlation is <b>'+D.charts.sp500_vs_btc.full_avg+'</b>, not the 0.87 people quote. It even goes negative in some years.'); return ch; };
 
+  R.metcalfe = D => { const s=D.charts.metcalfe.series, labels=s.map(d=>d.date);
+    const ch=new Chart($('chart'), { type:'line',
+      data:{ labels, datasets:[ priceOverlay(s.map(d=>d.price)),
+        { label:'Price to Metcalfe', data:s.map(d=>d.ratio), borderColor:C.orange, borderWidth:2, pointRadius:0, tension:.15, yAxisID:'y', order:1,
+          segment:{ borderColor:c=>{const y=c.p1.parsed.y; return y>=200?C.red:y<=60?C.teal:C.orange;} } }] },
+      options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]),
+        label:it=> it.datasetIndex===0?'BTC '+fmtUSD(it.parsed.y):'Price/Metcalfe '+Math.round(it.parsed.y)+'%' } } },
+        scales:{ x:baseOpts().scales.x, y:{ type:'logarithmic', position:'left', grid:{color:C.line}, ticks:{color:C.muted,font:{size:12},callback:v=>[20,40,60,100,200,400].includes(v)?v+'%':''} }, y2:priceAxis() } }),
+      plugins:[watermark, thresholds([{v:100,c:C.muted,t:'fair value (100%)'}]), cycleMarks(D)] });
+    const v=D.charts.metcalfe.latest; setRead('Now at <b>'+Math.round(v)+'%</b> of its 2-year network-value trend. Below 100 means price is cheap versus on-chain activity (active addresses), above means rich. Metcalfe law, network value grows with users squared.', v<100); return ch; };
+
+  R.sentiment = D => { const s=D.charts.sentiment.series, labels=s.map(d=>d.date);
+    const ch=new Chart($('chart'), { type:'line',
+      data:{ labels, datasets:[
+        { label:'Overbought', data:s.map(d=>d.hi), borderColor:'rgba(226,87,74,.75)', borderWidth:1.2, borderDash:[5,4], pointRadius:0, tension:.1 },
+        { label:'Oversold', data:s.map(d=>d.lo), borderColor:'rgba(78,201,122,.85)', borderWidth:1.2, borderDash:[5,4], pointRadius:0, tension:.1 },
+        { label:'Active addresses', data:s.map(d=>d.ac), borderColor:'rgba(154,167,189,.55)', borderWidth:1.4, pointRadius:0, tension:.25 },
+        { label:'Price', data:s.map(d=>d.pc), borderColor:C.blue, borderWidth:2.4, pointRadius:0, tension:.2, order:0 } ]},
+      options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]),
+        label:it=>['Overbought band','Oversold band','Active addresses 30d','Price 30d'][it.datasetIndex]+': '+(it.parsed.y>=0?'+':'')+it.parsed.y.toFixed(1)+'%' } } },
+        scales:{ x:baseOpts().scales.x, y:{ grid:{color:C.line}, ticks:{color:C.muted,font:{size:12},callback:v=>v+'%'} } } }),
+      plugins:[watermark, cycleMarks(D)] });
+    const l=D.charts.sentiment.latest; setRead('Over the last 30 days price is <b>'+(l.pc>=0?'+':'')+l.pc+'%</b> and active addresses are <b>'+(l.ac>=0?'+':'')+l.ac+'%</b>. When the blue line rides the red band the market is hot, when it dips to the green band it is oversold.', l.pc<0); return ch; };
+
+  function returnsTable(o, isQ){
+    const cols = isQ?['Q1','Q2','Q3','Q4']:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const bg=v=>{ if(v==null) return 'transparent'; const a=(0.12+Math.min(1,Math.abs(v)/45)*0.5); return (v>=0?'rgba(78,201,122,':'rgba(226,87,74,')+a.toFixed(2)+')'; };
+    const fmt=v=>v==null?'':(v>=0?'+':'')+v.toFixed(1)+'%';
+    let h='<table class="ch-heat"><thead><tr><th>Year</th>'+cols.map(c=>'<th>'+c+'</th>').join('')+'</tr></thead><tbody>';
+    o.years.forEach(y=>{ const r=o.data[y]||{}; h+='<tr><td class="yr">'+y+'</td>'+cols.map((c,i)=>'<td style="background:'+bg(r[i+1])+'">'+fmt(r[i+1])+'</td>').join('')+'</tr>'; });
+    h+='</tbody><tfoot><tr><td class="yr">Avg</td>'+cols.map((c,i)=>'<td class="st">'+fmt(o.avg[i+1])+'</td>').join('')+'</tr>'
+      +'<tr><td class="yr">Median</td>'+cols.map((c,i)=>'<td class="st">'+fmt(o.median[i+1])+'</td>').join('')+'</tr></tfoot></table>';
+    return h; }
+  R.monthly_returns = D => { const el=$('returns_table'); if(!el) return null;
+    const draw=isQ=>{ el.innerHTML=returnsTable(isQ?D.charts.quarterly_returns:D.charts.monthly_returns, isQ); };
+    draw(false);
+    const bm=$('btn_month'), bq=$('btn_qtr');
+    if(bm) bm.onclick=()=>{ draw(false); bm.classList.add('active'); if(bq) bq.classList.remove('active'); };
+    if(bq) bq.onclick=()=>{ draw(true); bq.classList.add('active'); if(bm) bm.classList.remove('active'); };
+    return null; };
+
   R.halving = D => { const hv=D.charts.halving_eta; const cap=$('halving_cap');
     const dateEl=$('halving_date'); if(dateEl) dateEl.innerHTML='Estimated <b>'+fmtDate(hv.eta_date)+'</b>';
     if(cap && hv.height) cap.textContent='Block '+hv.height.toLocaleString()+' of '+hv.next_block.toLocaleString()+'. Estimated at roughly one block every ten minutes.';
@@ -357,6 +398,9 @@
       case 'ma2y': return c.latest.mult.toFixed(2)+'x the 2-year MA';
       case 'drawdown': return c.now.dd+'% below the top';
       case 'cycle_band': return c.now.mult.toFixed(2)+'x, '+c.now.pos;
+      case 'metcalfe': return Math.round(c.latest)+'% of network trend';
+      case 'sentiment': return 'price '+(c.latest.pc>=0?'+':'')+c.latest.pc+'% over 30d';
+      case 'monthly_returns': { const mo=new Date().getMonth(), nm=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][mo], a=c.avg[mo+1]; return a==null?'monthly seasonality':nm+' avg '+(a>=0?'+':'')+a.toFixed(1)+'%'; }
       case 'fng': return c.latest+' - '+c.classification;
       case 'miner_cost': return fmtUSD(c.latest.cost)+' to mine one';
       case 'm2_vs_btc': return '$'+c.m2_latest_t+'T M2, corr '+c.corr_yoy;
