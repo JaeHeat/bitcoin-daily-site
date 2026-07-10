@@ -356,6 +356,20 @@
     if(bq) bq.onclick=()=>{ draw(true); bq.classList.add('active'); if(bm) bm.classList.remove('active'); };
     return null; };
 
+  R.etf_flows = D => { const s=D.charts.etf_flows.series, labels=s.map(d=>d.date);
+    const ch=new Chart($('chart'), { data:{ labels, datasets:[
+      { type:'line', label:'Cumulative', data:s.map(d=>d.cum/1000), borderColor:C.orange, borderWidth:2.4, pointRadius:0, tension:.1, yAxisID:'y2', order:0 },
+      { type:'bar', label:'Daily net flow', data:s.map(d=>d.net), backgroundColor:s.map(d=>d.net>=0?'rgba(78,201,122,.85)':'rgba(226,87,74,.85)'), borderWidth:0, yAxisID:'y', order:1 } ]},
+      options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]),
+        label:it=> it.dataset.type==='line' ? 'Cumulative '+(it.parsed.y>=0?'+':'')+'$'+it.parsed.y.toFixed(2)+'B' : 'Net '+(it.parsed.y>=0?'+':'')+'$'+Math.round(it.parsed.y)+'m' } } },
+        scales:{ x:{ grid:{display:false}, ticks:{ color:C.muted, font:{size:11}, maxTicksLimit:12, autoSkip:true, callback:function(i){ const l=this.getLabelForValue(i); return l?l.slice(5):''; } } },
+                 y:{ grid:{color:C.line}, ticks:{color:C.muted,font:{size:12},callback:v=>(v>=0?'+':'')+'$'+v+'m'} },
+                 y2:{ position:'right', grid:{display:false}, ticks:{color:C.orange,font:{size:12},callback:v=>'$'+v+'B'} } } }),
+      plugins:[watermark] });
+    const l=D.charts.etf_flows.latest, tot=D.charts.etf_flows.total;
+    const money=(n,dec)=>(n<0?'-$':'+$')+Math.abs(n).toLocaleString(undefined,{maximumFractionDigits:dec});
+    setRead('Latest day: <b>'+money(l.net,0)+'m</b> ('+fmtDate(l.date)+'). Net over the tracked window is <b>'+money(tot/1000,2)+' billion</b>. Green bars are inflow days, red are outflow days.', l.net>=0); return ch; };
+
   R.halving = D => { const hv=D.charts.halving_eta; const cap=$('halving_cap');
     const dateEl=$('halving_date'); if(dateEl) dateEl.innerHTML='Estimated <b>'+fmtDate(hv.eta_date)+'</b>';
     if(cap && hv.height) cap.textContent='Block '+hv.height.toLocaleString()+' of '+hv.next_block.toLocaleString()+'. Estimated at roughly one block every ten minutes.';
@@ -403,6 +417,7 @@
       case 'monthly_returns': { const mo=new Date().getMonth(), nm=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][mo], a=c.avg[mo+1]; return a==null?'monthly seasonality':nm+' avg '+(a>=0?'+':'')+a.toFixed(1)+'%'; }
       case 'fng': return c.latest+' - '+c.classification;
       case 'miner_cost': return fmtUSD(c.latest.cost)+' to mine one';
+      case 'etf_flows': return 'latest '+(c.latest.net>=0?'+':'')+'$'+c.latest.net+'m';
       case 'm2_vs_btc': return '$'+c.m2_latest_t+'T M2, corr '+c.corr_yoy;
       case 'pmi_vs_btc': return 'corr '+c.corr_mom+', near zero';
       case 'sp500_vs_btc': return 'avg corr '+c.full_avg+', not 0.87';
