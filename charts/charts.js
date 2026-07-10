@@ -390,6 +390,31 @@
     setRead('These are the 5 past 360-day stretches whose shape most resembles the last year. The dashed lines show what happened over the next 180 days. History rhymes, it does not repeat, so read this as context, not a forecast.');
     return ch; };
 
+  function drawPsychology(D){ const cv=$('chart'); if(!cv) return; const P=D.charts.psychology;
+    const box=cv.parentElement, dpr=window.devicePixelRatio||1, W=box.clientWidth, H=box.clientHeight;
+    cv.style.width=W+'px'; cv.style.height=H+'px'; cv.width=W*dpr; cv.height=H*dpr;
+    const g=cv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,W,H);
+    const pad={l:24,r:24,t:54,b:64};
+    const kf=[[0.02,0.30,'Disbelief'],[0.11,0.37,'Hope'],[0.21,0.46,'Optimism'],[0.31,0.57,'Belief'],[0.40,0.74,'Thrill'],[0.46,0.94,'Euphoria'],[0.55,0.73,'Complacency'],[0.62,0.60,'Anxiety'],[0.69,0.49,'Denial'],[0.76,0.35,'Panic'],[0.83,0.20,'Capitulation'],[0.89,0.10,'Depression'],[0.99,0.24,'']];
+    const X=t=>pad.l+t*(W-pad.l-pad.r), Y=h=>H-pad.b-h*(H-pad.t-pad.b);
+    g.beginPath(); g.moveTo(X(kf[0][0]),Y(kf[0][1]));
+    for(let i=1;i<kf.length;i++){ const a=kf[i-1],b=kf[i], cx=(X(a[0])+X(b[0]))/2; g.bezierCurveTo(cx,Y(a[1]),cx,Y(b[1]),X(b[0]),Y(b[1])); }
+    g.lineWidth=3.4; g.lineJoin='round'; const grad=g.createLinearGradient(0,0,W,0); grad.addColorStop(0,'#4ec97a'); grad.addColorStop(0.46,C.orange); grad.addColorStop(0.6,'#e2574a'); grad.addColorStop(0.89,'#2f6fb0'); grad.addColorStop(1,'#4ec97a'); g.strokeStyle=grad; g.stroke();
+    g.font='600 11px -apple-system,sans-serif'; g.textAlign='center';
+    kf.forEach(k=>{ if(!k[2]) return; g.fillStyle=C.muted; g.fillText(k[2], X(k[0]), Y(k[1])+(k[1]>0.55?-11:19)); });
+    // top / bottom of the 4-year cycle
+    g.fillStyle=C.orange; g.font='700 11px -apple-system,sans-serif'; g.fillText('▲ cycle top', X(0.46), 20);
+    g.fillStyle='#2f6fb0'; g.fillText('cycle bottom ▼', X(0.89), H-16);
+    const hAt=t=>{ let a=kf[0],b=kf[kf.length-1]; for(let i=1;i<kf.length;i++){ if(kf[i][0]>=t){a=kf[i-1];b=kf[i];break;} } return a[1]+(b[1]-a[1])*((t-a[0])/(b[0]-a[0]+1e-9)); };
+    const px=X(P.position), py=Y(hAt(P.position));
+    g.strokeStyle='rgba(232,237,246,.25)'; g.lineWidth=1; g.setLineDash([3,4]); g.beginPath(); g.moveTo(px,pad.t-14); g.lineTo(px,H-pad.b+30); g.stroke(); g.setLineDash([]);
+    g.beginPath(); g.arc(px,py,10,0,7); g.fillStyle='#e8edf6'; g.fill(); g.lineWidth=4; g.strokeStyle=C.red; g.stroke();
+    g.fillStyle=C.text; g.font='800 13px -apple-system,sans-serif'; g.textAlign=px>W-90?'right':'center'; g.fillText('YOU ARE HERE', px, py-19);
+    g.fillStyle=C.red; g.font='800 15px -apple-system,sans-serif'; g.fillText(P.phase, px, py+30);
+    g.save(); g.globalAlpha=.6; g.fillStyle=C.muted; g.font='600 12px -apple-system,sans-serif'; g.textAlign='right'; g.textBaseline='bottom'; g.fillText('bitcoin-daily.com',W-6,H-4); g.restore(); }
+  R.psychology = D => { drawPsychology(D); new ResizeObserver(()=>drawPsychology(D)).observe($('chart').parentElement);
+    const P=D.charts.psychology; setRead('Bitcoin is about <b>'+P.since_top_days+' days</b> past its cycle top and <b>'+P.drawdown+'%</b> below it. On the market emotion curve that lands us around <b style="color:#e2574a">'+P.phase+'</b>'+(P.fng!=null?', with Fear and Greed at '+P.fng+' ('+P.fng_class+')':'')+'. The crowd is usually most wrong at the extremes.', true); return null; };
+
   R.halving = D => { const hv=D.charts.halving_eta; const cap=$('halving_cap');
     const dateEl=$('halving_date'); if(dateEl) dateEl.innerHTML='Estimated <b>'+fmtDate(hv.eta_date)+'</b>';
     if(cap && hv.height) cap.textContent='Block '+hv.height.toLocaleString()+' of '+hv.next_block.toLocaleString()+'. Estimated at roughly one block every ten minutes.';
@@ -436,6 +461,7 @@
       case 'sentiment': return 'price '+(c.latest.pc>=0?'+':'')+c.latest.pc+'% over 30d';
       case 'monthly_returns': { const mo=new Date().getMonth(), nm=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][mo], a=c.avg[mo+1]; return a==null?'monthly seasonality':nm+' avg '+(a>=0?'+':'')+a.toFixed(1)+'%'; }
       case 'analogs': { const A=c.BTC||Object.values(c)[0]; const t=A.analogs[0]; return 'closest: '+t.date.slice(0,4)+', next '+(t.fwd>=0?'+':'')+t.fwd+'%'; }
+      case 'psychology': return c.phase+' phase';
       case 'fng': return c.latest+' - '+c.classification;
       case 'miner_cost': return fmtUSD(c.latest.cost)+' to mine one';
       case 'etf_flows': return 'latest '+(c.latest.net>=0?'+':'')+'$'+c.latest.net+'m';
