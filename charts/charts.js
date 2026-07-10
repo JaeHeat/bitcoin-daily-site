@@ -371,23 +371,33 @@
     const money=(n,dec)=>(n<0?'-$':'+$')+Math.abs(n).toLocaleString(undefined,{maximumFractionDigits:dec});
     setRead('Latest day: <b>'+money(l.net,0)+'m</b> ('+fmtDate(l.date)+'). Net over the tracked window is <b>'+money(tot/1000,2)+' billion</b>. Green bars are inflow days, red are outflow days.', l.net>=0); return ch; };
 
-  R.analogs = D => { const AA=D.charts.analogs, colors=['#f7931a','#4ec97a','#c9a227','#a06cd5','#e2574a'];
+  R.analogs = D => { const AA=D.charts.analogs, colors=['#f7931a','#2dd4bf','#e0b23a','#a06cd5','#e2574a'];
     let asset = AA.BTC ? 'BTC' : Object.keys(AA)[0];
-    const nowLine=W=>({ id:'nl', afterDatasetsDraw(ch){ const a=ch.chartArea,x=ch.scales.x,g=ch.ctx; if(!a) return; const px=x.getPixelForValue(W); if(px<a.left||px>a.right) return;
-      g.save(); g.strokeStyle='rgba(255,255,255,.4)'; g.lineWidth=1; g.setLineDash([4,4]); g.beginPath(); g.moveTo(px,a.top); g.lineTo(px,a.bottom); g.stroke();
-      g.setLineDash([]); g.fillStyle=C.muted; g.font='700 11px -apple-system,sans-serif'; g.textAlign='center'; g.fillText('TODAY',px,a.top+12); g.restore(); } });
-    const build=k=>{ const A=AA[k], W=A.window, ds=A.analogs.map((a,i)=>({ label:a.date, data:a.path.map(p=>({x:p[0],y:p[1]})), borderColor:colors[i], borderWidth:1.5, pointRadius:0, tension:.12, segment:{ borderDash:c=>c.p0.parsed.x>=W?[5,4]:undefined } }));
-      ds.push({ label:'Now', data:A.current.map(p=>({x:p[0],y:p[1]})), borderColor:'#1f57c3', borderWidth:3.4, pointRadius:0, tension:.12, order:-1 }); return ds; };
+    // one plugin: shade the forward zone, draw the TODAY divider, and label each forward path's return at its end
+    const decor=k=>({ id:'ad', afterDatasetsDraw(ch){ const A=AA[k], W=A.window, a=ch.chartArea, x=ch.scales.x, y=ch.scales.y, g=ch.ctx; if(!a) return;
+      const px=Math.max(a.left,Math.min(a.right,x.getPixelForValue(W)));
+      g.save(); g.fillStyle='rgba(247,147,26,.05)'; g.fillRect(px,a.top,a.right-px,a.bottom-a.top);
+      g.strokeStyle='rgba(232,237,246,.55)'; g.lineWidth=1; g.setLineDash([4,4]); g.beginPath(); g.moveTo(px,a.top); g.lineTo(px,a.bottom); g.stroke(); g.setLineDash([]);
+      g.fillStyle=C.text; g.font='800 11px -apple-system,sans-serif'; g.textAlign='center'; g.fillText('TODAY',px,a.top+11);
+      g.fillStyle=C.muted; g.font='600 10px -apple-system,sans-serif'; g.textAlign='left'; g.fillText('history ←',a.left+6,a.top+11); g.textAlign='right'; g.fillText('→ what came next',a.right-6,a.top+11);
+      const ys=A.analogs.map((an,i)=>({i,fwd:an.fwd,ey:y.getPixelForValue(an.path[an.path.length-1][1])})).sort((p,q)=>p.ey-q.ey);
+      let prev=-99; g.font='800 12px -apple-system,sans-serif'; g.textAlign='left';
+      ys.forEach(o=>{ let ly=o.ey; if(ly-prev<15) ly=prev+15; prev=ly; g.fillStyle=colors[o.i]; g.fillText((o.fwd>=0?'+':'')+o.fwd+'%', a.right+6, ly+4); }); g.restore(); } });
+    const build=k=>{ const A=AA[k], W=A.window;
+      const ds=A.analogs.map((an,i)=>({ label:an.date, data:an.path.map(p=>({x:p[0],y:p[1]})), borderWidth:2, pointRadius:0, tension:.15,
+        segment:{ borderColor:c=>c.p0.parsed.x>=W?colors[i]:'rgba(154,167,189,.18)', borderDash:c=>c.p0.parsed.x>=W?[6,4]:undefined } }));
+      ds.push({ label:'Now', data:A.current.map(p=>({x:p[0],y:p[1]})), borderColor:'#2f6fb0', borderWidth:4, pointRadius:0, tension:.15, order:-1 }); return ds; };
     const ch=new Chart($('chart'), { type:'line', data:{ datasets:build(asset) },
-      options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>'Day '+it[0].parsed.x+' from the window start', label:it=>it.dataset.label==='Now'?'Now (this cycle)':'Analog: '+fmtDate(it.dataset.label) } } },
+      options: baseOpts({ layout:{padding:{right:52,top:6}}, plugins:{ legend:{display:false},
+        tooltip:{ filter:it=>it.dataset.label==='Now'||it.parsed.x>=AA[asset].window, callbacks:{ title:it=>'Day '+it[0].parsed.x, label:it=>it.dataset.label==='Now'?'This cycle (now)':fmtDate(it.dataset.label)+' then '+((AA[asset].analogs.find(x=>x.date===it.dataset.label)||{}).fwd>=0?'+':'')+(AA[asset].analogs.find(x=>x.date===it.dataset.label)||{}).fwd+'%' } } },
         scales:{ x:{ type:'linear', grid:{color:C.line}, ticks:{color:C.muted,font:{size:12},callback:v=>v+'d'}, title:{display:true,text:'Days from the window start',color:C.muted,font:{size:12}} },
-                 y:{ grid:{color:C.line}, ticks:{color:C.muted,font:{size:11},callback:v=>v.toFixed(1)}, title:{display:true,text:'shape (z-normalized price)',color:C.muted,font:{size:11}} } } }),
-      plugins:[watermark, nowLine(AA[asset].window)] });
-    const setLeg=()=>{ const A=AA[asset], el=$('analog_legend'); if(el) el.innerHTML='<b style="color:#1f57c3">Now</b> vs its 5 closest past matches. Dashed = what came next:<br>'+A.analogs.map((a,i)=>'<span style="color:'+colors[i]+';font-weight:700">'+fmtDate(a.date)+'</span> then <b>'+(a.fwd>=0?'+':'')+a.fwd+'%</b>').join(' &nbsp;&middot;&nbsp; '); };
+                 y:{ grid:{color:C.line}, ticks:{display:false}, title:{display:true,text:'shape only (size removed)',color:C.muted,font:{size:11}} } } }),
+      plugins:[watermark, decor(asset)] });
+    const setLeg=()=>{ const A=AA[asset], el=$('analog_legend'); if(el) el.innerHTML='The <b style="color:#2f6fb0">bold blue</b> line is now. The faint grey lines are the 5 closest past matches, and each colored line is what came next after that match:<br>'+A.analogs.map((a,i)=>'<span style="color:'+colors[i]+';font-weight:700">'+fmtDate(a.date)+'</span> then <b>'+(a.fwd>=0?'+':'')+a.fwd+'%</b>').join(' &nbsp;&middot;&nbsp; '); };
     const bb=$('analog_assets'); if(bb){ bb.innerHTML=Object.keys(AA).map(k=>'<button class="ch-btn'+(k===asset?' active':'')+'" data-a="'+k+'">'+k+'</button>').join('');
-      bb.querySelectorAll('button').forEach(b=>b.onclick=()=>{ asset=b.dataset.a; ch.data.datasets=build(asset); ch.config.plugins[ch.config.plugins.length-1]=nowLine(AA[asset].window); ch.update(); bb.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b)); setLeg(); }); }
+      bb.querySelectorAll('button').forEach(b=>b.onclick=()=>{ asset=b.dataset.a; ch.data.datasets=build(asset); ch.config.plugins[ch.config.plugins.length-1]=decor(asset); ch.update(); bb.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b)); setLeg(); }); }
     setLeg();
-    setRead('These are the 5 past 360-day stretches whose shape most resembles the last year. The dashed lines show what happened over the next 180 days. History rhymes, it does not repeat, so read this as context, not a forecast.');
+    setRead('The <b style="color:#2f6fb0">bold line</b> is the last year of Bitcoin. The faint grey lines are the 5 past stretches that traced the most similar shape, and to the right of TODAY the colored lines show what each one did next. Read the spread as a range of what has happened before, not a forecast.');
     return ch; };
 
   function drawPsychology(D){ const cv=$('chart'); if(!cv) return; const P=D.charts.psychology;
