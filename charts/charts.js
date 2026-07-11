@@ -357,7 +357,7 @@
     if(bq) bq.onclick=()=>{ draw(true); bq.classList.add('active'); if(bm) bm.classList.remove('active'); };
     return null; };
 
-  R.etf_flows = D => { const s=D.charts.etf_flows.series, labels=s.map(d=>d.date);
+  R.etf_flows = D => { const E=D.charts.etf_flows, s=E.series, labels=s.map(d=>d.date);
     const ch=new Chart($('chart'), { data:{ labels, datasets:[
       { type:'line', label:'Cumulative', data:s.map(d=>d.cum/1000), borderColor:C.orange, borderWidth:2.4, pointRadius:0, tension:.1, yAxisID:'y2', order:0 },
       { type:'bar', label:'Daily net flow', data:s.map(d=>d.net), backgroundColor:s.map(d=>d.net>=0?'rgba(78,201,122,.85)':'rgba(226,87,74,.85)'), borderWidth:0, yAxisID:'y', order:1 } ]},
@@ -367,9 +367,24 @@
                  y:{ grid:{color:C.line}, ticks:{color:C.muted,font:{size:12},callback:v=>(v>=0?'+':'')+'$'+v+'m'} },
                  y2:{ position:'right', grid:{display:false}, ticks:{color:C.orange,font:{size:12},callback:v=>'$'+v+'B'} } } }),
       plugins:[watermark] });
-    const l=D.charts.etf_flows.latest, tot=D.charts.etf_flows.total;
+    const l=E.latest, tot=E.total, S=E.summary;
     const money=(n,dec)=>(n<0?'-$':'+$')+Math.abs(n).toLocaleString(undefined,{maximumFractionDigits:dec});
-    setRead('Latest day: <b>'+money(l.net,0)+'m</b> ('+fmtDate(l.date)+'). Net over the tracked window is <b>'+money(tot/1000,2)+' billion</b>. Green bars are inflow days, red are outflow days.', l.net>=0); return ch; };
+    // a $-millions figure -> compact card value ($X.XXB for a billion+, else $Xm; a flat day reads +$0)
+    const fmtM=n=>{ const a=Math.abs(n), sgn=n<0?'-$':'+$'; return a<0.5?'+$0':(a>=1000?sgn+(a/1000).toFixed(2)+'B':sgn+Math.round(a).toLocaleString()+'m'); };
+    const cls=n=> n>0?'up':(n<0?'neg':'');
+    const box=$('etf_cards');
+    if(box && S){
+      const cards=[
+        ['Total Net Inflow', S.all_time_total, 'Since the January 2024 launch'],
+        ['Daily Net Inflow', l.net, fmtDate(l.date)],
+        ['Record Inflow Day', S.record_inflow, 'Biggest single day ever'],
+        ['Average Daily Flow', S.avg_daily, 'Per trading day since launch'] ];
+      box.innerHTML = cards.map(c=>'<div class="ch-stat"><div class="l">'+c[0]+'</div><div class="n '+cls(c[1])+'">'+fmtM(c[1])+'</div><div class="s">'+c[2]+'</div></div>').join('')
+        + '<p class="ch-hint" style="grid-column:1/-1;margin:2px 0 0">Net flows via Farside Investors, updated '+fmtDate(l.date)+'. These track money into and out of the funds, not the funds’ total assets or trading volume.</p>';
+    }
+    setRead((S?'All-time net inflow into the US spot ETFs is <b>'+money(S.all_time_total/1000,2)+' billion</b> since the January 2024 launch. ':'')
+      +'The latest day was <b>'+money(l.net,0)+'m</b> ('+fmtDate(l.date)+'). Over the roughly three-week window charted below, net is <b>'+money(tot/1000,2)+' billion</b>. Green bars are inflow days, red are outflow days.', l.net>=0);
+    return ch; };
 
   R.analogs = D => { const AA=D.charts.analogs, colors=['#f7931a','#2dd4bf','#e0b23a','#a06cd5','#e2574a'];
     let asset = AA.BTC ? 'BTC' : Object.keys(AA)[0];
@@ -495,7 +510,7 @@
       case 'psychology': return c.phase+' phase';
       case 'fng': return c.latest+' - '+c.classification;
       case 'miner_cost': return fmtUSD(c.latest.cost)+' to mine one';
-      case 'etf_flows': return 'latest '+(c.latest.net>=0?'+':'')+'$'+c.latest.net+'m';
+      case 'etf_flows': return c.summary ? 'all-time +$'+(c.summary.all_time_total/1000).toFixed(1)+'B' : 'latest '+(c.latest.net>=0?'+':'')+'$'+c.latest.net+'m';
       case 'm2_vs_btc': return '$'+c.m2_latest_t+'T M2, corr '+c.corr_yoy;
       case 'pmi_vs_btc': return 'corr '+c.corr_mom+', near zero';
       case 'sp500_vs_btc': return 'avg corr '+c.full_avg+', not 0.87';
