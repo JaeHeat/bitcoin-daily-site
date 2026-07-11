@@ -184,6 +184,26 @@
         label:it=>(it.datasetIndex===1?'Price ':'200-week avg ')+fmtUSD(it.parsed.y) } } }, scales:{ x:baseOpts().scales.x, y:logY() } }), plugins:[watermark, cycleMarks(D)] });
     const l=D.charts.ma200w.latest; setRead('Price is <b>'+l.mult.toFixed(2)+'x</b> its 200-week average of '+fmtUSD(l.ma200w)+'. '+(l.mult<1.3?'That is close to the floor Bitcoin has only broken at deep bear-market lows.':'Room above the long-term floor.'), l.mult<1.3); return ch; };
 
+  R.power_law = D => { const P=D.charts.power_law, s=P.series, gen=Date.UTC(2009,0,3);
+    const day=d=>Math.max(1,(Date.parse(d.date)-gen)/86400000), dates=s.map(d=>d.date);
+    const pt=f=>s.map(d=>({x:day(d), y:d[f]})), yr=y=>(Date.UTC(y,0,1)-gen)/86400000;
+    const years=[2011,2013,2015,2017,2019,2021,2023,2025,2027,2029], lo=day(s[0]), hi=day(s[s.length-1]);
+    const ch=new Chart($('chart'), { type:'line', data:{ datasets:[
+      { label:'Resistance', data:pt('resist'), borderColor:'rgba(226,87,74,.6)', borderWidth:1.5, borderDash:[5,4], pointRadius:0, tension:0, order:3 },
+      { label:'Support', data:pt('support'), borderColor:'rgba(78,201,122,.65)', borderWidth:1.5, borderDash:[5,4], pointRadius:0, tension:0, fill:'-1', backgroundColor:'rgba(247,147,26,.05)', order:4 },
+      { label:'Power-law fair value', data:pt('center'), borderColor:C.orange, borderWidth:2.6, pointRadius:0, tension:0, order:1 },
+      { label:'Price', data:pt('price'), borderColor:'#2f6fb0', borderWidth:2.6, pointRadius:0, tension:0, order:0 } ]},
+      options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ mode:'index', intersect:false,
+          filter:it=>it.dataset.label==='Price'||it.dataset.label==='Power-law fair value',
+          callbacks:{ title:it=>fmtDate(dates[it[0].dataIndex]), label:it=>it.dataset.label+' '+fmtUSD(it.parsed.y) } } },
+        scales:{ x:{ type:'logarithmic', grid:{display:false},
+            afterBuildTicks:ax=>{ ax.ticks=years.filter(y=>yr(y)>=lo&&yr(y)<=hi).map(y=>({value:yr(y)})); },
+            ticks:{ color:C.muted, font:{size:12}, autoSkip:false, callback:v=>{ const yy=new Date(gen+v*86400000).getUTCFullYear(); return years.includes(yy)?String(yy):''; } } },
+          y:logY() } }), plugins:[watermark] });
+    const L=P.latest;
+    setRead('Bitcoin is around <b>'+fmtUSD(L.price)+'</b>, about <b>'+(L.vs_fair_pct>=0?'+':'')+L.vs_fair_pct+'%</b> '+(L.vs_fair_pct>=0?'above':'below')+' its power-law fair value of <b>'+fmtUSD(L.fair)+'</b>. That puts it about <b>'+Math.round(L.corridor_pos)+'%</b> of the way from the green support line up to the red resistance line. Stretching both axes by the same log amount is what turns fifteen years of history into one near-straight line.', L.vs_fair_pct<0);
+    return ch; };
+
   R.rainbow = D => { const o=D.charts.rainbow, s=o.series, labels=s.map(d=>d.date), center=s.map(d=>d.center);
     const bandSets = o.bands.map((b,i)=>({ label:b.label, data:center.map(c=>c*b.mult), borderColor:'rgba(255,255,255,.14)', borderWidth:1, pointRadius:0,
       fill: i===0?'origin':'-1', backgroundColor:b.color+'cc', tension:.2 }));
@@ -528,6 +548,7 @@
       case 'nupl': return c.latest.toFixed(2)+' - '+c.current_zone;
       case 'pi_cycle': return Math.abs(c.gap_pct)+'% below the top trigger';
       case 'ma200w': return c.latest.mult.toFixed(2)+'x the 200-week floor';
+      case 'power_law': return (c.latest.vs_fair_pct>=0?'+':'')+c.latest.vs_fair_pct+'% vs fair value';
       case 'rainbow': return '"'+c.current_band+'" band';
       case 'ahr999': return 'AHR999 '+c.latest.toFixed(2);
       case 'ma2y': return c.latest.mult.toFixed(2)+'x the 2-year MA';
