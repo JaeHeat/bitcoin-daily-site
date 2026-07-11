@@ -420,46 +420,64 @@
     cv.style.width=W+'px'; cv.style.height=H+'px'; cv.width=W*dpr; cv.height=H*dpr;
     const g=cv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,W,H);
     const rr=(x,y,w,h,r)=>{ g.beginPath(); if(g.roundRect){ g.roundRect(x,y,w,h,r); } else { g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); } };
-    const pad={l:20,r:20,t:78,b:80};
+    const halo=(t,x,y)=>{ g.strokeStyle='rgba(9,12,18,.92)'; g.lineWidth=3.6; g.lineJoin='round'; g.strokeText(t,x,y); g.fillText(t,x,y); };
+    const usd=n=> n>=1000?'$'+Math.round(n/1000)+'k':'$'+Math.round(n);
+    const pad={l:20,r:20,t:84,b:82};
     // [x, height, label, color, big?]
     const kf=[[0.02,0.28,'Disbelief','#5b9bd5',0],[0.11,0.36,'Hope','#4ea3c9',0],[0.20,0.46,'Optimism','#43b581',0],[0.30,0.57,'Belief','#5bbf5b',0],[0.39,0.74,'Thrill','#d4a017',0],[0.46,0.95,'Euphoria','#f7931a',1],[0.55,0.73,'Complacency','#f0a35e',0],[0.62,0.60,'Anxiety','#e07b3a',0],[0.69,0.49,'Denial','#e2574a',0],[0.76,0.35,'Panic','#c0392b',0],[0.83,0.20,'Capitulation','#8e44ad',1],[0.89,0.10,'Depression','#3b6fb0',0],[0.99,0.26,'','#43b581',0]];
     const X=t=>pad.l+t*(W-pad.l-pad.r), Y=h=>H-pad.b-h*(H-pad.t-pad.b);
-    const pathTo=()=>{ g.moveTo(X(kf[0][0]),Y(kf[0][1])); for(let i=1;i<kf.length;i++){ const a=kf[i-1],b=kf[i], cx=(X(a[0])+X(b[0]))/2; g.bezierCurveTo(cx,Y(a[1]),cx,Y(b[1]),X(b[0]),Y(b[1])); } };
-    const grad=g.createLinearGradient(0,0,W,0); grad.addColorStop(0,'#5b9bd5'); grad.addColorStop(0.30,'#43b581'); grad.addColorStop(0.46,C.orange); grad.addColorStop(0.60,'#e2574a'); grad.addColorStop(0.83,'#8e44ad'); grad.addColorStop(1,'#3b6fb0');
-    // soft gradient fill under the curve for weight
-    g.beginPath(); pathTo(); g.lineTo(X(0.99),H-pad.b+50); g.lineTo(X(0.02),H-pad.b+50); g.closePath();
-    const fg=g.createLinearGradient(0,Y(1),0,Y(0)); fg.addColorStop(0,'rgba(247,147,26,.16)'); fg.addColorStop(1,'rgba(247,147,26,.012)'); g.fillStyle=fg; g.fill();
-    // thick glowing curve
-    g.save(); g.shadowColor='rgba(247,147,26,.4)'; g.shadowBlur=16; g.beginPath(); pathTo(); g.lineWidth=6; g.lineJoin='round'; g.lineCap='round'; g.strokeStyle=grad; g.stroke(); g.restore();
-    // eyebrow
-    g.textAlign='left'; g.textBaseline='alphabetic'; g.fillStyle=C.muted; g.font='800 12px -apple-system,sans-serif'; g.fillText('THE MARKET EMOTION CYCLE', pad.l, 28);
-    // top / bottom of the 4-year cycle
-    g.textAlign='center'; g.fillStyle=C.orange; g.font='800 12.5px -apple-system,sans-serif'; g.fillText('▲ THE CYCLE TOP', X(0.46), 50);
-    g.fillStyle='#3b6fb0'; g.fillText('THE CYCLE BOTTOM ▼', X(0.90), H-22);
-    // marker position first, so the labels can clear its column
-    const hAt=t=>{ let a=kf[0],b=kf[kf.length-1]; for(let i=1;i<kf.length;i++){ if(kf[i][0]>=t){a=kf[i-1];b=kf[i];break;} } return a[1]+(b[1]-a[1])*((t-a[0])/(b[0]-a[0]+1e-9)); };
-    const px=X(P.position), py=Y(hAt(P.position));
-    // bold, color-coded phase labels (skip the current phase and anything sitting under the marker column)
+    const pos=P.position, pp=P.price_path;
+    // road-ahead zone (what typically comes next, right of you-are-here)
+    g.fillStyle='rgba(154,167,189,.05)'; g.fillRect(X(pos), pad.t-32, Math.max(0,W-X(pos)-2), H-pad.b-(pad.t-32)+42);
+    // the emotion "map": a faint dashed reference arc
+    const emo=g.createLinearGradient(0,0,W,0); emo.addColorStop(0,'#5b9bd5'); emo.addColorStop(0.30,'#43b581'); emo.addColorStop(0.46,C.orange); emo.addColorStop(0.60,'#e2574a'); emo.addColorStop(0.83,'#8e44ad'); emo.addColorStop(1,'#3b6fb0');
+    g.save(); g.globalAlpha=.5; g.setLineDash([2,6]); g.lineCap='round'; g.beginPath(); g.moveTo(X(kf[0][0]),Y(kf[0][1]));
+    for(let i=1;i<kf.length;i++){ const a=kf[i-1],b=kf[i], cx=(X(a[0])+X(b[0]))/2; g.bezierCurveTo(cx,Y(a[1]),cx,Y(b[1]),X(b[0]),Y(b[1])); }
+    g.lineWidth=2.5; g.strokeStyle=emo; g.stroke(); g.restore();
+    // the real journey: BTC price this cycle (bottom -> today), mapped onto the same arc
+    let px, py;
+    if(pp && pp.length){
+      const pg=g.createLinearGradient(0,0,W,0); pg.addColorStop(0,'#4ec97a'); pg.addColorStop(.5,C.orange); pg.addColorStop(1,'#e2574a');
+      g.save(); g.shadowColor='rgba(247,147,26,.3)'; g.shadowBlur=12; g.beginPath();
+      pp.forEach((p,i)=> i? g.lineTo(X(p[0]),Y(p[1])) : g.moveTo(X(p[0]),Y(p[1])));
+      g.lineWidth=5; g.lineJoin='round'; g.lineCap='round'; g.strokeStyle=pg; g.stroke(); g.restore();
+      px=X(pp[pp.length-1][0]); py=Y(pp[pp.length-1][1]);
+      let pk=0; for(let i=1;i<pp.length;i++) if(pp[i][1]>pp[pk][1]) pk=i;   // cycle-top anchor
+      g.font='800 11px -apple-system,sans-serif'; g.textAlign='left'; g.fillStyle='#4ec97a'; halo('Cycle low '+usd(P.price_low), X(pp[0][0])+8, Y(pp[0][1])+2);
+      g.textAlign='center'; g.fillStyle=C.orange; halo('Top '+usd(P.price_high), X(pp[pk][0]), Y(pp[pk][1])-13);
+    } else { const hAt=t=>{ let a=kf[0],b=kf[kf.length-1]; for(let i=1;i<kf.length;i++){ if(kf[i][0]>=t){a=kf[i-1];b=kf[i];break;} } return a[1]+(b[1]-a[1])*((t-a[0])/(b[0]-a[0]+1e-9)); }; px=X(pos); py=Y(hAt(pos)); }
+    // eyebrow + legend
+    g.textAlign='left'; g.textBaseline='alphabetic'; g.fillStyle=C.muted; g.font='800 12px -apple-system,sans-serif'; g.fillText('THE MARKET EMOTION CYCLE', pad.l, 26);
+    g.strokeStyle=C.orange; g.lineWidth=3.5; g.beginPath(); g.moveTo(pad.l,44); g.lineTo(pad.l+24,44); g.stroke();
+    g.fillStyle=C.text; g.font='700 11.5px -apple-system,sans-serif'; g.fillText('BTC price this cycle', pad.l+30, 48);
+    const lx=pad.l+30+g.measureText('BTC price this cycle').width+18;
+    g.save(); g.setLineDash([2,4]); g.globalAlpha=.7; g.strokeStyle='#9aa7bd'; g.lineWidth=2.5; g.beginPath(); g.moveTo(lx,44); g.lineTo(lx+24,44); g.stroke(); g.restore();
+    g.fillStyle=C.muted; g.fillText('typical emotion path', lx+30, 48);
+    // phase labels, moved off the line with a dark halo (skip the current phase + the marker column)
     const cur=(P.phase||'').toLowerCase();
-    kf.forEach(k=>{ if(!k[2] || k[2].toLowerCase()===cur || Math.abs(X(k[0])-px)<34) return; const big=k[4]; g.textAlign='center'; g.fillStyle=k[3];
-      g.font=(big?'800 ':'700 ')+(big?16.5:11.5)+'px -apple-system,sans-serif'; g.fillText(big?k[2].toUpperCase():k[2], X(k[0]), Y(k[1])-(big?20:12)); });
-    // ---- YOU ARE HERE ----
-    g.strokeStyle='rgba(232,237,246,.16)'; g.lineWidth=1; g.setLineDash([3,5]); g.beginPath(); g.moveTo(px,pad.t-34); g.lineTo(px,H-pad.b+38); g.stroke(); g.setLineDash([]);
-    // glow rings + dot
+    kf.forEach(k=>{ if(!k[2] || k[2].toLowerCase()===cur || Math.abs(X(k[0])-px)<36) return; const big=k[4]; g.textAlign='center'; g.fillStyle=k[3];
+      g.font=(big?'800 ':'700 ')+(big?15.5:11.5)+'px -apple-system,sans-serif';
+      const yy = k[1]>=0.5 ? Y(k[1])-(big?26:20) : Y(k[1])+(big?32:25);
+      halo(big?k[2].toUpperCase():k[2], X(k[0]), yy); });
+    g.fillStyle=C.muted; g.font='700 11px -apple-system,sans-serif'; g.textAlign='left'; g.globalAlpha=.85; halo('the road ahead', X(pos)+9, pad.t-16); g.globalAlpha=1;
+    // ---- YOU ARE HERE (on the real price line) ----
+    g.strokeStyle='rgba(232,237,246,.15)'; g.lineWidth=1; g.setLineDash([3,5]); g.beginPath(); g.moveTo(px,pad.t-30); g.lineTo(px,H-pad.b+40); g.stroke(); g.setLineDash([]);
     g.save(); for(let i=0;i<3;i++){ g.beginPath(); g.arc(px,py,24-i*6,0,7); g.fillStyle='rgba(226,87,74,'+(0.05+i*0.055)+')'; g.fill(); }
-    g.beginPath(); g.arc(px,py,11,0,7); g.fillStyle='#fff'; g.fill(); g.lineWidth=4.5; g.strokeStyle=C.red; g.stroke(); g.restore();
-    // callout pill with the phase name, big, dropped into the clear band away from the labels
-    const label=(P.phase||'').toUpperCase(); g.font='900 25px -apple-system,sans-serif'; const tw=g.measureText(label).width;
-    const pillW=tw+34, pillH=46, low=py>H*0.6;
-    const pillX=Math.max(8,Math.min(W-pillW-8,px-pillW/2)), pillY=low? Math.min(py-pillH-40, H*0.2) : Math.max(py+42, H*0.72);
-    g.strokeStyle=C.red; g.lineWidth=2.5; g.beginPath(); g.moveTo(px,py); g.lineTo(px, low?pillY+pillH:pillY); g.stroke();
-    g.save(); g.shadowColor='rgba(226,87,74,.45)'; g.shadowBlur=18; g.fillStyle=C.red; rr(pillX,pillY,pillW,pillH,12); g.fill(); g.restore();
-    g.fillStyle='#fff'; g.textAlign='center'; g.textBaseline='middle'; g.font='900 25px -apple-system,sans-serif'; g.fillText(label,pillX+pillW/2,pillY+pillH/2+1);
-    g.textBaseline='alphabetic'; g.fillStyle=C.text; g.font='800 11px -apple-system,sans-serif'; g.fillText('◉ YOU ARE HERE', pillX+pillW/2, low? pillY-9 : pillY+pillH+18);
+    g.beginPath(); g.arc(px,py,10,0,7); g.fillStyle='#fff'; g.fill(); g.lineWidth=4.5; g.strokeStyle=C.red; g.stroke(); g.restore();
+    // phase pill: to the lower-right in the road-ahead if there is room, else dropped below
+    const label=(P.phase||'').toUpperCase(); g.font='900 24px -apple-system,sans-serif'; const tw=g.measureText(label).width;
+    const pillW=tw+32, pillH=44, room=W-px;
+    let pillX, pillY;
+    if(room > pillW+40){ pillX=Math.min(W-pillW-8, px+22); pillY=Math.min(H-pillH-40, py+16); }
+    else { pillX=Math.max(8, Math.min(W-pillW-8, px-pillW/2)); pillY=Math.max(py+40, H*0.72); }
+    g.strokeStyle=C.red; g.lineWidth=2.5; g.beginPath(); g.moveTo(px,py); g.lineTo(pillX+(px<pillX?12:pillW-12), pillY); g.stroke();
+    g.save(); g.shadowColor='rgba(226,87,74,.45)'; g.shadowBlur=16; g.fillStyle=C.red; rr(pillX,pillY,pillW,pillH,11); g.fill(); g.restore();
+    g.fillStyle='#fff'; g.textAlign='center'; g.textBaseline='middle'; g.font='900 24px -apple-system,sans-serif'; g.fillText(label,pillX+pillW/2,pillY+pillH/2+1);
+    g.textBaseline='alphabetic'; g.fillStyle=C.text; g.font='800 11px -apple-system,sans-serif'; halo('◉ YOU ARE HERE'+(P.price_now?' · '+usd(P.price_now):''), pillX+pillW/2, pillY-9);
     // watermark
     g.save(); g.globalAlpha=.6; g.fillStyle=C.muted; g.font='600 12px -apple-system,sans-serif'; g.textAlign='right'; g.textBaseline='bottom'; g.fillText('bitcoin-daily.com',W-8,H-6); g.restore(); }
   R.psychology = D => { drawPsychology(D); new ResizeObserver(()=>drawPsychology(D)).observe($('chart').parentElement);
-    const P=D.charts.psychology; setRead('Bitcoin is about <b>'+P.since_top_days+' days</b> past its cycle top and <b>'+P.drawdown+'%</b> below it. On the market emotion curve that lands us around <b style="color:#e2574a">'+P.phase+'</b>'+(P.fng!=null?', with Fear and Greed at '+P.fng+' ('+P.fng_class+')':'')+'. The crowd is usually most wrong at the extremes.', true); return null; };
+    const P=D.charts.psychology; setRead('The <b style="color:#f7931a">bold line</b> is Bitcoin\'s real price this cycle, from the '+(P.price_low?'$'+Math.round(P.price_low/1000)+'k ':'')+'low up to today, traced over the crowd\'s emotional arc (the dashed guide). Bitcoin is about <b>'+P.since_top_days+' days</b> past its cycle top and <b>'+P.drawdown+'%</b> below it, which lands us around <b style="color:#e2574a">'+P.phase+'</b>'+(P.fng!=null?', with Fear and Greed at '+P.fng+' ('+P.fng_class+')':'')+'. The crowd is usually most wrong at the extremes.', true); return null; };
 
   R.halving = D => { const hv=D.charts.halving_eta; const cap=$('halving_cap');
     const dateEl=$('halving_date'); if(dateEl) dateEl.innerHTML='Estimated <b>'+fmtDate(hv.eta_date)+'</b>';
