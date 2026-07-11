@@ -204,38 +204,35 @@
     setRead('Bitcoin is around <b>'+fmtUSD(L.price)+'</b>, about <b>'+(L.vs_fair_pct>=0?'+':'')+L.vs_fair_pct+'%</b> '+(L.vs_fair_pct>=0?'above':'below')+' its power-law fair value of <b>'+fmtUSD(L.fair)+'</b>. That puts it about <b>'+Math.round(L.corridor_pos)+'%</b> of the way from the green support line up to the red resistance line. Stretching both axes by the same log amount is what turns fifteen years of history into one near-straight line.', L.vs_fair_pct<0);
     return ch; };
 
-  R.bottom_zone = D => { const B=D.charts.bottom_zone, s=B.series, gen=Date.UTC(2009,0,3);
-    const day=ds=>Math.max(1,(Date.parse(ds)-gen)/86400000), pt=f=>s.map(d=>({x:day(d.date),y:d[f]}));
-    const yr=y=>(Date.UTC(y,0,1)-gen)/86400000, years=[2011,2013,2015,2017,2019,2021,2023,2025,2027];
-    const lo=day(s[0].date), hi=day(s[s.length-1].date), winX=[day(B.window[0]),day(B.window[1])];
+  R.bottom_zone = D => { const B=D.charts.bottom_zone, s=B.series, labels=s.map(d=>d.date), val=f=>s.map(d=>d[f]);
+    const t0=Date.parse(labels[0]), t1=Date.parse(labels[labels.length-1]);
+    const nearest=ds=>{ const t=Date.parse(ds); let bi=0,bd=1e18; for(let i=0;i<labels.length;i++){ const dd=Math.abs(Date.parse(labels[i])-t); if(dd<bd){bd=dd;bi=i;} } return bi; };
+    const winI=[nearest(B.window[0]), nearest(B.window[1])];
     const windowShade={ id:'winb', beforeDatasetsDraw(ch){ const a=ch.chartArea,x=ch.scales.x,g=ch.ctx; if(!a) return;
-      let x0=x.getPixelForValue(winX[0]), x1=x.getPixelForValue(winX[1]); if(x1<a.left||x0>a.right) return; x0=Math.max(a.left,x0); x1=Math.min(a.right,x1);
+      let x0=x.getPixelForValue(winI[0]), x1=x.getPixelForValue(winI[1]); if(x1<a.left||x0>a.right) return; x0=Math.max(a.left,x0); x1=Math.min(a.right,x1);
       g.save(); g.fillStyle='rgba(78,201,122,.16)'; g.fillRect(x0,a.top,Math.max(2,x1-x0),a.bottom-a.top);
       g.fillStyle=C.teal; g.font='700 10px -apple-system,sans-serif'; g.textAlign='center'; g.textBaseline='top'; g.fillText('bottom window',(x0+x1)/2,a.top+2); g.restore(); } };
     const halvLines={ id:'halvb', afterDatasetsDraw(ch){ const a=ch.chartArea,x=ch.scales.x,g=ch.ctx; if(!a) return;
-      (B.halvings||[]).forEach(h=>{ const px=x.getPixelForValue(day(h)); if(px<a.left||px>a.right) return;
+      (B.halvings||[]).forEach(h=>{ const t=Date.parse(h); if(t<t0||t>t1) return; const px=x.getPixelForValue(nearest(h)); if(px<a.left||px>a.right) return;
         g.save(); g.strokeStyle='rgba(247,147,26,.4)'; g.lineWidth=1; g.setLineDash([5,4]); g.beginPath(); g.moveTo(px,a.top); g.lineTo(px,a.bottom); g.stroke(); g.restore(); }); } };
     const projLine={ id:'projb', afterDatasetsDraw(ch){ const a=ch.chartArea,x=ch.scales.x,y=ch.scales.y,g=ch.ctx; if(!a) return;
-      const py=y.getPixelForValue(B.proj.bottom); if(py<a.top||py>a.bottom) return; const cx=(x.getPixelForValue(winX[0])+x.getPixelForValue(winX[1]))/2;
+      const py=y.getPixelForValue(B.proj.bottom); if(py<a.top||py>a.bottom) return; const cx=(x.getPixelForValue(winI[0])+x.getPixelForValue(winI[1]))/2;
       g.save(); g.strokeStyle=C.orange; g.lineWidth=1.5; g.setLineDash([2,3]); g.beginPath(); g.moveTo(a.left,py); g.lineTo(a.right,py); g.stroke(); g.setLineDash([]);
       g.fillStyle=C.orange; g.beginPath(); g.arc(Math.min(a.right-4,Math.max(a.left+4,cx)),py,4,0,7); g.fill();
       g.font='700 11px -apple-system,sans-serif'; g.textAlign='right'; g.textBaseline='bottom'; g.fillText('projected bottom '+fmtUSD(B.proj.bottom)+' ('+B.proj.dd_pct+'%)',a.right-6,py-4); g.restore(); } };
     const botDots={ id:'botb', afterDatasetsDraw(ch){ const a=ch.chartArea,x=ch.scales.x,y=ch.scales.y,g=ch.ctx; if(!a) return;
-      (B.bottoms||[]).forEach(b=>{ const px=x.getPixelForValue(day(b.date)), py=y.getPixelForValue(b.price); if(px<a.left||px>a.right||py<a.top||py>a.bottom) return;
+      (B.bottoms||[]).forEach(b=>{ const t=Date.parse(b.date); if(t<t0||t>t1) return; const px=x.getPixelForValue(nearest(b.date)), py=y.getPixelForValue(b.price); if(px<a.left||px>a.right||py<a.top||py>a.bottom) return;
         g.save(); g.fillStyle=C.teal; g.strokeStyle='#0b0e14'; g.lineWidth=1.5; g.beginPath(); g.arc(px,py,4,0,7); g.fill(); g.stroke(); g.restore(); }); } };
-    const ch=new Chart($('chart'), { type:'line', data:{ datasets:[
-      { label:'Zone top', data:pt('zt'), borderColor:'rgba(0,0,0,0)', borderWidth:0, pointRadius:0, tension:0, order:6 },
-      { label:'Bottom zone', data:pt('zb'), borderColor:'rgba(0,0,0,0)', borderWidth:0, pointRadius:0, tension:0, fill:'-1', backgroundColor:'rgba(78,201,122,.15)', order:7 },
-      { label:'Support', data:pt('dn1'), borderColor:C.teal, borderWidth:2, pointRadius:0, tension:0, order:2 },
-      { label:'Power-law fair value', data:pt('fair'), borderColor:'rgba(247,147,26,.9)', borderWidth:1.8, borderDash:[6,4], pointRadius:0, tension:0, order:3 },
-      { label:'Price', data:pt('price'), borderColor:'#2f6fb0', borderWidth:2.6, pointRadius:0, tension:0, spanGaps:false, order:0 } ]},
+    const ch=new Chart($('chart'), { type:'line', data:{ labels:labels, datasets:[
+      { label:'Zone top', data:val('zt'), borderColor:'rgba(0,0,0,0)', borderWidth:0, pointRadius:0, tension:.2 },
+      { label:'Bottom zone', data:val('zb'), borderColor:'rgba(0,0,0,0)', borderWidth:0, pointRadius:0, tension:.2, fill:'-1', backgroundColor:'rgba(78,201,122,.15)' },
+      { label:'Support', data:val('dn1'), borderColor:C.teal, borderWidth:2, pointRadius:0, tension:.2 },
+      { label:'Power-law fair value', data:val('fair'), borderColor:'rgba(247,147,26,.9)', borderWidth:1.8, borderDash:[6,4], pointRadius:0, tension:.2 },
+      { label:'Price', data:val('price'), borderColor:'#2f6fb0', borderWidth:2.4, pointRadius:0, tension:.2, spanGaps:false } ]},
       options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ mode:'index', intersect:false,
           filter:it=>['Price','Power-law fair value','Support'].includes(it.dataset.label),
-          callbacks:{ title:it=>fmtDate(s[it[0].dataIndex].date), label:it=>it.dataset.label+' '+fmtUSD(it.parsed.y) } } },
-        scales:{ x:{ type:'logarithmic', grid:{display:false},
-            afterBuildTicks:ax=>{ ax.ticks=years.filter(y=>yr(y)>=lo&&yr(y)<=hi).map(y=>({value:yr(y)})); },
-            ticks:{ color:C.muted, font:{size:12}, autoSkip:false, callback:v=>{ const yy=new Date(gen+v*86400000).getUTCFullYear(); return years.includes(yy)?String(yy):''; } } },
-          y:logY() } }), plugins:[watermark, windowShade, halvLines, projLine, botDots] });
+          callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]), label:it=> it.parsed.y==null?null:it.dataset.label+' '+fmtUSD(it.parsed.y) } } },
+        scales:{ x:baseOpts().scales.x, y:logY() } }), plugins:[watermark, windowShade, halvLines, projLine, botDots] });
     const L=B.latest;
     const when = L.bottom_confirmed ? 'both the price AND the clock now agree - this is the bottom window'
       : (L.in_zone ? 'price is <b>in the zone</b>, but the clock says wait: the bottom window opens in <b>'+L.days_to_window+' days</b> (Oct-Nov 2026)'
