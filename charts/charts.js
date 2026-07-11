@@ -197,7 +197,7 @@
           filter:it=>it.dataset.label==='Price'||it.dataset.label==='Power-law fair value',
           callbacks:{ title:it=>fmtDate(dates[it[0].dataIndex]), label:it=>it.dataset.label+' '+fmtUSD(it.parsed.y) } } },
         scales:{ x:{ type:'logarithmic', grid:{display:false},
-            afterBuildTicks:ax=>{ ax.ticks=years.filter(y=>yr(y)>=lo&&yr(y)<=hi).map(y=>({value:yr(y)})); },
+            afterBuildTicks:ax=>{ const mn=ax.min!=null?ax.min:lo, mx=ax.max!=null?ax.max:hi; ax.ticks=years.filter(y=>yr(y)>=mn&&yr(y)<=mx).map(y=>({value:yr(y)})); },
             ticks:{ color:C.muted, font:{size:12}, autoSkip:false, callback:v=>{ const yy=new Date(gen+v*86400000).getUTCFullYear(); return years.includes(yy)?String(yy):''; } } },
           y:logY() } }), plugins:[watermark] });
     const L=P.latest;
@@ -263,6 +263,66 @@
       cheapLabel:'bottom-fishing zone (0.45)', hotLabel:'above DCA cost (1.2)' });
     const v=D.charts.ahr999.latest, buy=v<0.45;
     setRead('Now at <b>'+v.toFixed(2)+'</b>. '+(buy?'Below 0.45, the historical bottom-fishing zone.':v<1.2?'In the dollar-cost-averaging zone (0.45 to 1.2).':'Above the DCA zone, historically richer.'), buy); return ch; };
+
+  R.mvrv_z = D => { const ch=oscillator(D,'mvrv_z',{ field:'z', name:'MVRV Z-Score', cheap:0.1, hot:7,
+      cheapLabel:'bottom zone (0)', hotLabel:'top zone (7)', min:-1, max:10 });
+    const z=D.charts.mvrv_z.latest;
+    setRead('The MVRV Z-Score is <b>'+z.toFixed(2)+'</b>. It measures how far Bitcoin’s market value has stretched above what the market paid, in standard deviations. Readings above about <b>7</b> have marked cycle tops, and readings near or below <b>0</b> have marked bottoms. '+(z>=7?'That is up in the historic top zone.':z<=0.5?'That is down in the historic bottom zone.':'Right now it sits in the middle of its range.'), z<=0.5); return ch; };
+
+  R.volatility = D => { const s=D.charts.volatility.series, labels=s.map(d=>d.date);
+    const ch=new Chart($('chart'), { type:'line', data:{ labels, datasets:[ priceOverlay(s.map(d=>d.price)),
+      { label:'90-day volatility', data:s.map(d=>d.vol90), borderColor:'rgba(45,212,191,.7)', borderWidth:1.6, pointRadius:0, tension:.2, yAxisID:'y', order:2 },
+      { label:'30-day volatility', data:s.map(d=>d.vol30), borderColor:C.orange, borderWidth:1.8, pointRadius:0, tension:.2, yAxisID:'y', order:1 } ]},
+      options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]),
+        label:it=> it.datasetIndex===0 ? 'BTC '+fmtUSD(it.parsed.y) : it.dataset.label+' '+Math.round(it.parsed.y)+'%' } } },
+        scales:{ x:baseOpts().scales.x, y:{ position:'left', grid:{color:C.line}, ticks:{color:C.muted,font:{size:12},callback:v=>v+'%'}, suggestedMin:0 }, y2:priceAxis() } }),
+      plugins:[watermark, cycleMarks(D)] });
+    const l=D.charts.volatility.latest;
+    setRead('Bitcoin’s annualized volatility is about <b>'+Math.round(l.vol30)+'%</b> over the last 30 days ('+Math.round(l.vol90)+'% over 90 days). The long-run trend has been downward. Each cycle it swings a little less wildly as the asset grows, the same maturation you see across these charts.'); return ch; };
+
+  R.hashrate = D => { const s=D.charts.hashrate.series, labels=s.map(d=>d.date);
+    const ch=new Chart($('chart'), { type:'line', data:{ labels, datasets:[ priceOverlay(s.map(d=>d.price)),
+      { label:'Hash rate', data:s.map(d=>d.hashrate), borderColor:C.orange, borderWidth:2, pointRadius:0, tension:.15, yAxisID:'y', order:1 } ]},
+      options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]),
+        label:it=> it.datasetIndex===0 ? 'BTC '+fmtUSD(it.parsed.y) : 'Hash rate '+(it.parsed.y>=1?Math.round(it.parsed.y).toLocaleString():it.parsed.y.toFixed(2))+' EH/s' } } },
+        scales:{ x:baseOpts().scales.x, y:{ type:'logarithmic', position:'left', grid:{color:C.line}, ticks:{color:C.muted,font:{size:12},callback:v=>[0.001,0.01,0.1,1,10,100,1000].includes(v)?(v>=1?v+' EH':v+' EH'):''} }, y2:priceAxis() } }),
+      plugins:[watermark, cycleMarks(D)] });
+    const l=D.charts.hashrate.latest;
+    setRead('Bitcoin’s network hash rate is about <b>'+Math.round(l.hashrate).toLocaleString()+' EH/s</b>'+(l.hashrate>=l.ath*0.98?', at or near an all-time high':'')+'. More hash rate means more computing power defending the chain, so the network is harder and more expensive to attack. It has climbed relentlessly through every price crash.', true); return ch; };
+
+  R.hash_ribbons = D => { const o=D.charts.hash_ribbons, s=o.series, labels=s.map(d=>d.date);
+    const cap={ id:'cap', beforeDatasetsDraw(ch){ const a=ch.chartArea,x=ch.scales.x,g=ch.ctx; if(!a) return; g.save(); g.fillStyle='rgba(226,87,74,.11)';
+      for(let i=1;i<s.length;i++){ if(s[i].ma30<s[i].ma60){ const x0=x.getPixelForValue(i-1), x1=x.getPixelForValue(i); g.fillRect(x0,a.top,x1-x0,a.bottom-a.top); } } g.restore(); } };
+    const ch=new Chart($('chart'), { type:'line', data:{ labels, datasets:[ priceOverlay(s.map(d=>d.price)),
+      { label:'60-day average', data:s.map(d=>d.ma60), borderColor:'#e0603a', borderWidth:1.8, pointRadius:0, tension:.15, yAxisID:'y', order:2 },
+      { label:'30-day average', data:s.map(d=>d.ma30), borderColor:'#4ec97a', borderWidth:1.8, pointRadius:0, tension:.15, yAxisID:'y', order:1 } ]},
+      options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]),
+        label:it=> it.datasetIndex===0 ? 'BTC '+fmtUSD(it.parsed.y) : it.dataset.label+' '+(it.parsed.y>=1?Math.round(it.parsed.y).toLocaleString():it.parsed.y.toFixed(2))+' EH/s' } } },
+        scales:{ x:baseOpts().scales.x, y:{ type:'logarithmic', position:'left', grid:{color:C.line}, ticks:{color:C.muted,font:{size:12},callback:v=>[0.01,0.1,1,10,100,1000].includes(v)?v+' EH':''} }, y2:priceAxis() } }),
+      plugins:[watermark, cap, cycleMarks(D)] });
+    setRead('The <b style="color:#4ec97a">30-day</b> and <b style="color:#e0603a">60-day</b> hash-rate averages. When the 30-day dips below the 60-day (the shaded bands), miners are switching off, which has clustered near price bottoms. '+(o.latest.capitulating?'Right now the 30-day is <b>below</b> the 60-day, a sign of miner stress.':'Right now the 30-day is <b>above</b> the 60-day, so miners are healthy.'), !o.latest.capitulating); return ch; };
+
+  R.active_addresses = D => { const s=D.charts.active_addresses.series, labels=s.map(d=>d.date);
+    const ch=new Chart($('chart'), { type:'line', data:{ labels, datasets:[ priceOverlay(s.map(d=>d.price)),
+      { label:'Active addresses', data:s.map(d=>d.active), borderColor:C.orange, borderWidth:2, pointRadius:0, tension:.15, yAxisID:'y', order:1 } ]},
+      options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]),
+        label:it=> it.datasetIndex===0 ? 'BTC '+fmtUSD(it.parsed.y) : Math.round(it.parsed.y).toLocaleString()+' active addresses' } } },
+        scales:{ x:baseOpts().scales.x, y:{ position:'left', grid:{color:C.line}, ticks:{color:C.muted,font:{size:12},callback:v=>v>=1e6?(v/1e6).toFixed(1)+'M':Math.round(v/1e3)+'k'} }, y2:priceAxis() } }),
+      plugins:[watermark, cycleMarks(D)] });
+    const l=D.charts.active_addresses.latest;
+    setRead('About <b>'+Math.round(l).toLocaleString()+'</b> Bitcoin addresses are active on an average day. It is a rough gauge of how many people are actually using the network, and over the long run it has broadly risen and fallen with price.', true); return ch; };
+
+  R.supply = D => { const s=D.charts.supply.series, labels=s.map(d=>d.date);
+    const ch=new Chart($('chart'), { type:'line', data:{ labels, datasets:[
+      { label:'Supply', data:s.map(d=>d.supply), borderColor:'rgba(154,167,189,.7)', borderWidth:1.6, pointRadius:0, tension:.1, yAxisID:'y2', order:2 },
+      { label:'Inflation rate', data:s.map(d=>d.inflation), borderColor:C.orange, borderWidth:2, pointRadius:0, tension:.1, yAxisID:'y', order:1 } ]},
+      options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]),
+        label:it=> it.dataset.label==='Supply' ? 'Supply '+it.parsed.y.toFixed(2)+'M BTC' : 'Inflation '+it.parsed.y.toFixed(2)+'% a year' } } },
+        scales:{ x:baseOpts().scales.x, y:{ position:'left', grid:{color:C.line}, ticks:{color:C.muted,font:{size:12},callback:v=>v+'%'}, suggestedMin:0 },
+          y2:{ position:'right', grid:{display:false}, min:0, max:21, ticks:{color:'rgba(154,167,189,.75)',font:{size:11},callback:v=>v+'M'} } } }),
+      plugins:[watermark, halvingLines(D)] });
+    const l=D.charts.supply.latest;
+    setRead('New bitcoin is created at about <b>'+l.inflation.toFixed(2)+'%</b> a year, and <b>'+l.pct_mined+'%</b> of the eventual 21 million have already been mined. Every four years the halving cuts new issuance in half, which is why the orange inflation line steps down while the grey supply line flattens toward the 21 million cap.', true); return ch; };
 
   R.fng = D => { const o=D.charts.fng, s=o.series, labels=s.map(d=>d.date), col=fngColor(o.latest);
     drawFngGauge(o.latest);
@@ -588,6 +648,12 @@
       case 'bottom_zone': return c.latest.in_zone ? 'in the zone, '+c.latest.days_to_window+'d to window' : 'proj bottom $'+Math.round(c.proj.bottom/1000)+'k';
       case 'rainbow': return '"'+c.current_band+'" band';
       case 'ahr999': return 'AHR999 '+c.latest.toFixed(2);
+      case 'mvrv_z': return 'Z-Score '+c.latest.toFixed(2);
+      case 'volatility': return Math.round(c.latest.vol30)+'% vol (30d)';
+      case 'hashrate': return Math.round(c.latest.hashrate).toLocaleString()+' EH/s';
+      case 'hash_ribbons': return c.latest.capitulating ? 'miners capitulating' : 'miners healthy';
+      case 'active_addresses': return Math.round(c.latest/1000)+'k active/day';
+      case 'supply': return c.latest.pct_mined+'% mined, '+c.latest.inflation.toFixed(2)+'% infl';
       case 'ma2y': return c.latest.mult.toFixed(2)+'x the 2-year MA';
       case 'drawdown': return c.now.dd+'% below the top';
       case 'cycle_band': return c.now.mult.toFixed(2)+'x, '+c.now.pos;
