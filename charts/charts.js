@@ -367,23 +367,35 @@
                  y:{ grid:{color:C.line}, ticks:{color:C.muted,font:{size:12},callback:v=>(v>=0?'+':'')+'$'+v+'m'} },
                  y2:{ position:'right', grid:{display:false}, ticks:{color:C.orange,font:{size:12},callback:v=>'$'+v+'B'} } } }),
       plugins:[watermark] });
-    const l=E.latest, tot=E.total, S=E.summary;
+    const l=E.latest, S=E.summary, n=s.length;
     const money=(n,dec)=>(n<0?'-$':'+$')+Math.abs(n).toLocaleString(undefined,{maximumFractionDigits:dec});
-    // a $-millions figure -> compact card value ($X.XXB for a billion+, else $Xm; a flat day reads +$0)
-    const fmtM=n=>{ const a=Math.abs(n), sgn=n<0?'-$':'+$'; return a<0.5?'+$0':(a>=1000?sgn+(a/1000).toFixed(2)+'B':sgn+Math.round(a).toLocaleString()+'m'); };
-    const cls=n=> n>0?'up':(n<0?'neg':'');
+    // a $-millions figure -> compact value ($X.XXB for a billion+, else $Xm; a flat total reads +$0)
+    const fmtM=v=>{ const a=Math.abs(v), sgn=v<0?'-$':'+$'; return a<0.5?'+$0':(a>=1000?sgn+(a/1000).toFixed(2)+'B':sgn+Math.round(a).toLocaleString()+'m'); };
+    const cls=v=> v>0?'up':(v<0?'neg':'');
+    // trailing-window net over the last k days we hold (capped by how much history we have)
+    const win=k=>{ const a=Math.max(0,n-k); let sum=0; for(let i=a;i<n;i++) sum+=s[i].net; return {sum, from:s[a].date, to:s[n-1].date, days:n-a}; };
+    const w7=win(7), w30=win(30);
     const box=$('etf_cards');
     if(box && S){
       const cards=[
         ['Total Net Inflow', S.all_time_total, 'Since the January 2024 launch'],
+        ['Last 7 Days', w7.sum, fmtDate(w7.from)+' – '+fmtDate(w7.to)],
+        ['Last 30 Days', w30.sum, w30.days<30 ? w30.days+' days so far (filling in)' : fmtDate(w30.from)+' – '+fmtDate(w30.to)],
         ['Daily Net Inflow', l.net, fmtDate(l.date)],
         ['Record Inflow Day', S.record_inflow, 'Biggest single day ever'],
         ['Average Daily Flow', S.avg_daily, 'Per trading day since launch'] ];
       box.innerHTML = cards.map(c=>'<div class="ch-stat"><div class="l">'+c[0]+'</div><div class="n '+cls(c[1])+'">'+fmtM(c[1])+'</div><div class="s">'+c[2]+'</div></div>').join('')
-        + '<p class="ch-hint" style="grid-column:1/-1;margin:2px 0 0">Net flows via Farside Investors, updated '+fmtDate(l.date)+'. These track money into and out of the funds, not the funds’ total assets or trading volume.</p>';
+        + '<p class="ch-hint" style="grid-column:1/-1;margin:2px 0 0">Net flows via Farside Investors, updated '+fmtDate(l.date)+'. Farside exposes about three weeks publicly, so the 30-day and longer windows fill in as this page accumulates history.</p>';
     }
+    // live total for whatever span the chart is currently showing (recomputes on zoom / reset via ch.$onView)
+    const winEl=$('etf_window');
+    ch.$onView = ()=>{ if(!winEl) return; const sc=ch.scales.x;
+      let a=Math.max(0,Math.ceil(sc.min)), b=Math.min(n-1,Math.floor(sc.max)); if(b<a){a=0;b=n-1;}
+      let sum=0; for(let i=a;i<=b;i++) sum+=s[i].net;
+      winEl.innerHTML='Net over the range shown, <b>'+fmtDate(s[a].date)+' – '+fmtDate(s[b].date)+'</b> ('+(b-a+1)+' days): <b style="color:'+(sum>=0?'var(--accent-2)':'#e2574a')+'">'+fmtM(sum)+'</b>. Drag across the chart to total any span.'; };
+    ch.$onView();
     setRead((S?'All-time net inflow into the US spot ETFs is <b>'+money(S.all_time_total/1000,2)+' billion</b> since the January 2024 launch. ':'')
-      +'The latest day was <b>'+money(l.net,0)+'m</b> ('+fmtDate(l.date)+'). Over the roughly three-week window charted below, net is <b>'+money(tot/1000,2)+' billion</b>. Green bars are inflow days, red are outflow days.', l.net>=0);
+      +'The latest day was <b>'+money(l.net,0)+'m</b> ('+fmtDate(l.date)+'). Green bars are inflow days, red are outflow days, and the orange line is the running total.', l.net>=0);
     return ch; };
 
   R.analogs = D => { const AA=D.charts.analogs, colors=['#f7931a','#2dd4bf','#e0b23a','#a06cd5','#e2574a'];
@@ -496,10 +508,10 @@
     let syncing=false;
     charts.forEach(c=>{ c.options.plugins.zoom = { zoom:{ drag:{ enabled:true, backgroundColor:'rgba(247,147,26,.15)', borderColor:C.orange, borderWidth:1 },
         wheel:{enabled:false}, pinch:{enabled:true}, mode:'x',
-        onZoomComplete:({chart})=>{ if(syncing || charts.length<2) return; syncing=true; const r=chart.scales.x;
-          charts.forEach(o=>{ if(o!==chart) o.zoomScale('x',{min:r.min,max:r.max},'none'); }); syncing=false; } }, pan:{enabled:false} };
+        onZoomComplete:({chart})=>{ if(!syncing && charts.length>=2){ syncing=true; const r=chart.scales.x;
+          charts.forEach(o=>{ if(o!==chart) o.zoomScale('x',{min:r.min,max:r.max},'none'); }); syncing=false; } if(chart.$onView) chart.$onView(); } }, pan:{enabled:false} };
       c.update('none'); });
-    const rz=$('resetzoom'); if(rz){ if(charts.length){ rz.onclick=()=>{ syncing=true; charts.forEach(c=>c.resetZoom&&c.resetZoom()); syncing=false; }; } else { rz.style.display='none'; } }
+    const rz=$('resetzoom'); if(rz){ if(charts.length){ rz.onclick=()=>{ syncing=true; charts.forEach(c=>c.resetZoom&&c.resetZoom()); syncing=false; charts.forEach(c=>c.$onView&&c.$onView()); }; } else { rz.style.display='none'; } }
     const lg=$('logtoggle'); if(lg && ch && ch.options.scales.y && ch.options.scales.y.type==='logarithmic'){
       lg.onclick=()=>{ const log=ch.options.scales.y.type==='logarithmic'; ch.options.scales.y.type=log?'linear':'logarithmic';
         ch.options.scales.y.ticks.callback = log ? (v=>v>=1000?'$'+(v/1000)+'k':'$'+v) : logTick; lg.textContent=log?'Linear scale':'Log scale'; lg.classList.toggle('active',!log); ch.update(); }; }

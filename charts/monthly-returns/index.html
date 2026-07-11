@@ -17,7 +17,7 @@
   <meta name="twitter:title" content="Bitcoin Monthly Returns Chart (Live) | Seasonality Heatmap by Year" />
   <meta name="twitter:image" content="https://bitcoin-daily.com/charts/og/monthly-returns.png" />
   <link rel="stylesheet" href="/styles.css?v=2" />
-  <link rel="stylesheet" href="/charts/charts.css?v=13" />
+  <link rel="stylesheet" href="/charts/charts.css?v=14" />
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"Bitcoin Monthly Returns Chart (Live) | Seasonality Heatmap by Year","url":"https://bitcoin-daily.com/charts/monthly-returns/","isPartOf":{"@type":"WebSite","name":"Bitcoin Daily","url":"https://bitcoin-daily.com/"},"breadcrumb":{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Charts","item":"https://bitcoin-daily.com/charts/"},{"@type":"ListItem","position":2,"name":"Monthly returns","item":"https://bitcoin-daily.com/charts/monthly-returns/"}]}}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Dataset","name":"Bitcoin Monthly Returns (Live Heatmap)","description":"Live Bitcoin monthly and quarterly returns heatmap. Every month since 2010 color-coded green or red, with the historical average and median for each month. Bitcoin seasonality at a glance.","url":"https://bitcoin-daily.com/charts/monthly-returns/","keywords":["Bitcoin","Monthly returns","BTC","on-chain","market cycle","live chart"],"creator":{"@type":"Organization","name":"Bitcoin Daily","url":"https://bitcoin-daily.com/"},"isAccessibleForFree":true,"license":"https://bitcoin-daily.com/","distribution":{"@type":"DataDownload","encodingFormat":"application/json","contentUrl":"https://bitcoin-daily.com/charts/charts_data.json"}}</script>
 </head>
@@ -68,7 +68,7 @@
   </footer>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js"></script>
-  <script src="/charts/charts.js?v=24"></script>
+  <script src="/charts/charts.js?v=25"></script>
   <script>
   fetch('/charts/charts_data.json',{cache:'no-store'}).then(function(r){return r.json();}).then(function(D){
     document.getElementById('asof').textContent='Live reading as of '+BDCharts.fmtDate(D.as_of)+'. Bitcoin at '+BDCharts.fmtUSD(D.price)+'.';
