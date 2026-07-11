@@ -404,24 +404,45 @@
     const box=cv.parentElement, dpr=window.devicePixelRatio||1, W=box.clientWidth, H=box.clientHeight;
     cv.style.width=W+'px'; cv.style.height=H+'px'; cv.width=W*dpr; cv.height=H*dpr;
     const g=cv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,W,H);
-    const pad={l:24,r:24,t:54,b:64};
-    const kf=[[0.02,0.30,'Disbelief'],[0.11,0.37,'Hope'],[0.21,0.46,'Optimism'],[0.31,0.57,'Belief'],[0.40,0.74,'Thrill'],[0.46,0.94,'Euphoria'],[0.55,0.73,'Complacency'],[0.62,0.60,'Anxiety'],[0.69,0.49,'Denial'],[0.76,0.35,'Panic'],[0.83,0.20,'Capitulation'],[0.89,0.10,'Depression'],[0.99,0.24,'']];
+    const rr=(x,y,w,h,r)=>{ g.beginPath(); if(g.roundRect){ g.roundRect(x,y,w,h,r); } else { g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); } };
+    const pad={l:20,r:20,t:78,b:80};
+    // [x, height, label, color, big?]
+    const kf=[[0.02,0.28,'Disbelief','#5b9bd5',0],[0.11,0.36,'Hope','#4ea3c9',0],[0.20,0.46,'Optimism','#43b581',0],[0.30,0.57,'Belief','#5bbf5b',0],[0.39,0.74,'Thrill','#d4a017',0],[0.46,0.95,'Euphoria','#f7931a',1],[0.55,0.73,'Complacency','#f0a35e',0],[0.62,0.60,'Anxiety','#e07b3a',0],[0.69,0.49,'Denial','#e2574a',0],[0.76,0.35,'Panic','#c0392b',0],[0.83,0.20,'Capitulation','#8e44ad',1],[0.89,0.10,'Depression','#3b6fb0',0],[0.99,0.26,'','#43b581',0]];
     const X=t=>pad.l+t*(W-pad.l-pad.r), Y=h=>H-pad.b-h*(H-pad.t-pad.b);
-    g.beginPath(); g.moveTo(X(kf[0][0]),Y(kf[0][1]));
-    for(let i=1;i<kf.length;i++){ const a=kf[i-1],b=kf[i], cx=(X(a[0])+X(b[0]))/2; g.bezierCurveTo(cx,Y(a[1]),cx,Y(b[1]),X(b[0]),Y(b[1])); }
-    g.lineWidth=3.4; g.lineJoin='round'; const grad=g.createLinearGradient(0,0,W,0); grad.addColorStop(0,'#4ec97a'); grad.addColorStop(0.46,C.orange); grad.addColorStop(0.6,'#e2574a'); grad.addColorStop(0.89,'#2f6fb0'); grad.addColorStop(1,'#4ec97a'); g.strokeStyle=grad; g.stroke();
-    g.font='600 11px -apple-system,sans-serif'; g.textAlign='center';
-    kf.forEach(k=>{ if(!k[2]) return; g.fillStyle=C.muted; g.fillText(k[2], X(k[0]), Y(k[1])+(k[1]>0.55?-11:19)); });
+    const pathTo=()=>{ g.moveTo(X(kf[0][0]),Y(kf[0][1])); for(let i=1;i<kf.length;i++){ const a=kf[i-1],b=kf[i], cx=(X(a[0])+X(b[0]))/2; g.bezierCurveTo(cx,Y(a[1]),cx,Y(b[1]),X(b[0]),Y(b[1])); } };
+    const grad=g.createLinearGradient(0,0,W,0); grad.addColorStop(0,'#5b9bd5'); grad.addColorStop(0.30,'#43b581'); grad.addColorStop(0.46,C.orange); grad.addColorStop(0.60,'#e2574a'); grad.addColorStop(0.83,'#8e44ad'); grad.addColorStop(1,'#3b6fb0');
+    // soft gradient fill under the curve for weight
+    g.beginPath(); pathTo(); g.lineTo(X(0.99),H-pad.b+50); g.lineTo(X(0.02),H-pad.b+50); g.closePath();
+    const fg=g.createLinearGradient(0,Y(1),0,Y(0)); fg.addColorStop(0,'rgba(247,147,26,.16)'); fg.addColorStop(1,'rgba(247,147,26,.012)'); g.fillStyle=fg; g.fill();
+    // thick glowing curve
+    g.save(); g.shadowColor='rgba(247,147,26,.4)'; g.shadowBlur=16; g.beginPath(); pathTo(); g.lineWidth=6; g.lineJoin='round'; g.lineCap='round'; g.strokeStyle=grad; g.stroke(); g.restore();
+    // eyebrow
+    g.textAlign='left'; g.textBaseline='alphabetic'; g.fillStyle=C.muted; g.font='800 12px -apple-system,sans-serif'; g.fillText('THE MARKET EMOTION CYCLE', pad.l, 28);
     // top / bottom of the 4-year cycle
-    g.fillStyle=C.orange; g.font='700 11px -apple-system,sans-serif'; g.fillText('▲ cycle top', X(0.46), 20);
-    g.fillStyle='#2f6fb0'; g.fillText('cycle bottom ▼', X(0.89), H-16);
+    g.textAlign='center'; g.fillStyle=C.orange; g.font='800 12.5px -apple-system,sans-serif'; g.fillText('▲ THE CYCLE TOP', X(0.46), 50);
+    g.fillStyle='#3b6fb0'; g.fillText('THE CYCLE BOTTOM ▼', X(0.90), H-22);
+    // marker position first, so the labels can clear its column
     const hAt=t=>{ let a=kf[0],b=kf[kf.length-1]; for(let i=1;i<kf.length;i++){ if(kf[i][0]>=t){a=kf[i-1];b=kf[i];break;} } return a[1]+(b[1]-a[1])*((t-a[0])/(b[0]-a[0]+1e-9)); };
     const px=X(P.position), py=Y(hAt(P.position));
-    g.strokeStyle='rgba(232,237,246,.25)'; g.lineWidth=1; g.setLineDash([3,4]); g.beginPath(); g.moveTo(px,pad.t-14); g.lineTo(px,H-pad.b+30); g.stroke(); g.setLineDash([]);
-    g.beginPath(); g.arc(px,py,10,0,7); g.fillStyle='#e8edf6'; g.fill(); g.lineWidth=4; g.strokeStyle=C.red; g.stroke();
-    g.fillStyle=C.text; g.font='800 13px -apple-system,sans-serif'; g.textAlign=px>W-90?'right':'center'; g.fillText('YOU ARE HERE', px, py-19);
-    g.fillStyle=C.red; g.font='800 15px -apple-system,sans-serif'; g.fillText(P.phase, px, py+30);
-    g.save(); g.globalAlpha=.6; g.fillStyle=C.muted; g.font='600 12px -apple-system,sans-serif'; g.textAlign='right'; g.textBaseline='bottom'; g.fillText('bitcoin-daily.com',W-6,H-4); g.restore(); }
+    // bold, color-coded phase labels (skip the current phase and anything sitting under the marker column)
+    const cur=(P.phase||'').toLowerCase();
+    kf.forEach(k=>{ if(!k[2] || k[2].toLowerCase()===cur || Math.abs(X(k[0])-px)<34) return; const big=k[4]; g.textAlign='center'; g.fillStyle=k[3];
+      g.font=(big?'800 ':'700 ')+(big?16.5:11.5)+'px -apple-system,sans-serif'; g.fillText(big?k[2].toUpperCase():k[2], X(k[0]), Y(k[1])-(big?20:12)); });
+    // ---- YOU ARE HERE ----
+    g.strokeStyle='rgba(232,237,246,.16)'; g.lineWidth=1; g.setLineDash([3,5]); g.beginPath(); g.moveTo(px,pad.t-34); g.lineTo(px,H-pad.b+38); g.stroke(); g.setLineDash([]);
+    // glow rings + dot
+    g.save(); for(let i=0;i<3;i++){ g.beginPath(); g.arc(px,py,24-i*6,0,7); g.fillStyle='rgba(226,87,74,'+(0.05+i*0.055)+')'; g.fill(); }
+    g.beginPath(); g.arc(px,py,11,0,7); g.fillStyle='#fff'; g.fill(); g.lineWidth=4.5; g.strokeStyle=C.red; g.stroke(); g.restore();
+    // callout pill with the phase name, big, dropped into the clear band away from the labels
+    const label=(P.phase||'').toUpperCase(); g.font='900 25px -apple-system,sans-serif'; const tw=g.measureText(label).width;
+    const pillW=tw+34, pillH=46, low=py>H*0.6;
+    const pillX=Math.max(8,Math.min(W-pillW-8,px-pillW/2)), pillY=low? Math.min(py-pillH-40, H*0.2) : Math.max(py+42, H*0.72);
+    g.strokeStyle=C.red; g.lineWidth=2.5; g.beginPath(); g.moveTo(px,py); g.lineTo(px, low?pillY+pillH:pillY); g.stroke();
+    g.save(); g.shadowColor='rgba(226,87,74,.45)'; g.shadowBlur=18; g.fillStyle=C.red; rr(pillX,pillY,pillW,pillH,12); g.fill(); g.restore();
+    g.fillStyle='#fff'; g.textAlign='center'; g.textBaseline='middle'; g.font='900 25px -apple-system,sans-serif'; g.fillText(label,pillX+pillW/2,pillY+pillH/2+1);
+    g.textBaseline='alphabetic'; g.fillStyle=C.text; g.font='800 11px -apple-system,sans-serif'; g.fillText('◉ YOU ARE HERE', pillX+pillW/2, low? pillY-9 : pillY+pillH+18);
+    // watermark
+    g.save(); g.globalAlpha=.6; g.fillStyle=C.muted; g.font='600 12px -apple-system,sans-serif'; g.textAlign='right'; g.textBaseline='bottom'; g.fillText('bitcoin-daily.com',W-8,H-6); g.restore(); }
   R.psychology = D => { drawPsychology(D); new ResizeObserver(()=>drawPsychology(D)).observe($('chart').parentElement);
     const P=D.charts.psychology; setRead('Bitcoin is about <b>'+P.since_top_days+' days</b> past its cycle top and <b>'+P.drawdown+'%</b> below it. On the market emotion curve that lands us around <b style="color:#e2574a">'+P.phase+'</b>'+(P.fng!=null?', with Fear and Greed at '+P.fng+' ('+P.fng_class+')':'')+'. The crowd is usually most wrong at the extremes.', true); return null; };
 
