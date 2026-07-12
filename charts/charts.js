@@ -264,6 +264,26 @@
     const v=D.charts.ahr999.latest, buy=v<0.45;
     setRead('Now at <b>'+v.toFixed(2)+'</b>. '+(buy?'Below 0.45, the historical bottom-fishing zone.':v<1.2?'In the dollar-cost-averaging zone (0.45 to 1.2).':'Above the DCA zone, historically richer.'), buy); return ch; };
 
+  R.halving_corr = D => { const H=D.charts.halving_corr, cyc=H.cycles;
+    const COL={'2012':'#5b9bd5','2016':'#a06cd5','2020':'#2dd4bf','2024':'#f7931a'};
+    const ds=cyc.map(cy=>({ label:cy.name+(cy.current?' (now)':''), data:cy.path.map(p=>({x:p.day,y:p.roi})),
+      borderColor:COL[cy.name]||'#9aa7bd', borderWidth:cy.current?3.4:1.8, pointRadius:0, tension:.15, order:cy.current?0:1 }));
+    const tick={0:'Halving',365:'+1 yr',730:'+2 yr',1095:'+3 yr',1460:'+4 yr'};
+    const today={ id:'tdl', afterDatasetsDraw(ch){ const a=ch.chartArea,x=ch.scales.x,g=ch.ctx; if(!a) return; const px=x.getPixelForValue(H.current_day);
+      if(px<a.left||px>a.right) return; g.save(); g.strokeStyle='rgba(232,237,246,.4)'; g.lineWidth=1; g.setLineDash([4,4]); g.beginPath(); g.moveTo(px,a.top); g.lineTo(px,a.bottom); g.stroke(); g.setLineDash([]);
+      g.fillStyle=C.text; g.font='700 10px -apple-system,sans-serif'; g.textAlign='center'; g.fillText('we are here', px, a.top+11); g.restore(); } };
+    const ch=new Chart($('chart'), { type:'line', data:{ datasets:ds },
+      options: baseOpts({ interaction:{mode:'nearest',intersect:false},
+        plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>'Day '+it[0].parsed.x+' ('+(it[0].parsed.x/30.4).toFixed(1)+' months in)', label:it=>it.dataset.label+' '+it.parsed.y.toFixed(2)+'x' } } },
+        scales:{ x:{ type:'linear', grid:{display:false}, min:0, max:1460, afterBuildTicks:ax=>{ ax.ticks=[0,365,730,1095,1460].map(v=>({value:v})); }, ticks:{ color:C.muted, font:{size:12}, callback:v=>tick[v]||'' } },
+          y:{ type:'logarithmic', grid:{color:C.line}, ticks:{color:C.muted,font:{size:12},callback:v=>[0.5,1,2,5,10,25,50,100].includes(v)?v+'x':''}, title:{display:true,text:'return since the halving',color:C.muted,font:{size:11}} } } }),
+      plugins:[watermark, today] });
+    const box=$('corr_cards');
+    if(box){ box.innerHTML = H.corr.map((c,i)=>'<div class="ch-stat'+(i===0?' up':'')+'"><div class="l">vs the '+c.name+' cycle</div><div class="n">'+c.r.toFixed(2)+'</div><div class="s">'+(i===0?'closest match':'correlation')+' &middot; '+c.weeks+' weeks</div></div>').join(''); }
+    const peak=n=>{ const cy=cyc.find(c=>c.name===n); return cy?Math.max.apply(null,cy.path.map(p=>p.roi)):0; };
+    const cur=cyc.find(c=>c.current), roiNow=cur.path[cur.path.length-1].roi;
+    setRead('About <b>'+H.current_months+' months</b> past its halving, this cycle is up roughly <b>'+roiNow.toFixed(2)+'x</b> from the halving price, the most muted cycle so far. Past cycles peaked near <b>'+Math.round(peak('2012'))+'x</b> (2012), '+Math.round(peak('2016'))+'x (2016) and '+Math.round(peak('2020'))+'x (2020), versus about '+peak('2024').toFixed(1)+'x this time. Its shape correlates most closely with the <b style="color:'+(COL[H.closest]||C.orange)+'">'+H.closest+' cycle (r = '+H.closest_r.toFixed(2)+')</b>.'); return ch; };
+
   R.mvrv_z = D => { const ch=oscillator(D,'mvrv_z',{ field:'z', name:'MVRV Z-Score', cheap:0.1, hot:7,
       cheapLabel:'bottom zone (0)', hotLabel:'top zone (7)', min:-1, max:10 });
     const z=D.charts.mvrv_z.latest;
@@ -662,6 +682,7 @@
       case 'monthly_returns': { const mo=new Date().getMonth(), nm=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][mo], a=c.avg[mo+1]; return a==null?'monthly seasonality':nm+' avg '+(a>=0?'+':'')+a.toFixed(1)+'%'; }
       case 'analogs': { const A=c.BTC||Object.values(c)[0]; const t=A.analogs[0]; return 'closest: '+t.date.slice(0,4)+', next '+(t.fwd>=0?'+':'')+t.fwd+'%'; }
       case 'psychology': return c.phase+' phase';
+      case 'halving_corr': return 'closest to '+c.closest+' (r '+c.closest_r.toFixed(2)+')';
       case 'fng': return c.latest+' - '+c.classification;
       case 'miner_cost': return fmtUSD(c.latest.cost)+' to mine one';
       case 'etf_flows': return c.summary ? 'all-time +$'+(c.summary.all_time_total/1000).toFixed(1)+'B' : 'latest '+(c.latest.net>=0?'+':'')+'$'+c.latest.net+'m';
