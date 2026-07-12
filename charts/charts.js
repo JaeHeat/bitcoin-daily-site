@@ -272,17 +272,29 @@
     const today={ id:'tdl', afterDatasetsDraw(ch){ const a=ch.chartArea,x=ch.scales.x,g=ch.ctx; if(!a) return; const px=x.getPixelForValue(H.current_day);
       if(px<a.left||px>a.right) return; g.save(); g.strokeStyle='rgba(232,237,246,.4)'; g.lineWidth=1; g.setLineDash([4,4]); g.beginPath(); g.moveTo(px,a.top); g.lineTo(px,a.bottom); g.stroke(); g.setLineDash([]);
       g.fillStyle=C.text; g.font='700 10px -apple-system,sans-serif'; g.textAlign='center'; g.fillText('we are here', px, a.top+11); g.restore(); } };
+    const tops={ id:'tops', afterDatasetsDraw(ch){ const a=ch.chartArea,x=ch.scales.x,y=ch.scales.y,g=ch.ctx; if(!a) return;
+      cyc.forEach(cy=>{ const px=x.getPixelForValue(cy.top_day), py=y.getPixelForValue(cy.top_roi); if(px<a.left||px>a.right) return;
+        g.beginPath(); g.arc(px,py,3.6,0,7); g.fillStyle=COL[cy.name]||'#9aa7bd'; g.fill(); g.lineWidth=1.2; g.strokeStyle='#0b0e14'; g.stroke(); }); } };
     const ch=new Chart($('chart'), { type:'line', data:{ datasets:ds },
       options: baseOpts({ interaction:{mode:'nearest',intersect:false},
         plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>'Day '+it[0].parsed.x+' ('+(it[0].parsed.x/30.4).toFixed(1)+' months in)', label:it=>it.dataset.label+' '+it.parsed.y.toFixed(2)+'x' } } },
         scales:{ x:{ type:'linear', grid:{display:false}, min:0, max:1460, afterBuildTicks:ax=>{ ax.ticks=[0,365,730,1095,1460].map(v=>({value:v})); }, ticks:{ color:C.muted, font:{size:12}, callback:v=>tick[v]||'' } },
           y:{ type:'logarithmic', grid:{color:C.line}, ticks:{color:C.muted,font:{size:12},callback:v=>[0.5,1,2,5,10,25,50,100].includes(v)?v+'x':''}, title:{display:true,text:'return since the halving',color:C.muted,font:{size:11}} } } }),
-      plugins:[watermark, today] });
-    const box=$('corr_cards');
-    if(box){ box.innerHTML = H.corr.map((c,i)=>'<div class="ch-stat'+(i===0?' up':'')+'"><div class="l">vs the '+c.name+' cycle</div><div class="n">'+c.r.toFixed(2)+'</div><div class="s">'+(i===0?'closest match':'correlation')+' &middot; '+c.weeks+' weeks</div></div>').join(''); }
-    const peak=n=>{ const cy=cyc.find(c=>c.name===n); return cy?Math.max.apply(null,cy.path.map(p=>p.roi)):0; };
-    const cur=cyc.find(c=>c.current), roiNow=cur.path[cur.path.length-1].roi;
-    setRead('About <b>'+H.current_months+' months</b> past its halving, this cycle is up roughly <b>'+roiNow.toFixed(2)+'x</b> from the halving price, the most muted cycle so far. Past cycles peaked near <b>'+Math.round(peak('2012'))+'x</b> (2012), '+Math.round(peak('2016'))+'x (2016) and '+Math.round(peak('2020'))+'x (2020), versus about '+peak('2024').toFixed(1)+'x this time. Its shape correlates most closely with the <b style="color:'+(COL[H.closest]||C.orange)+'">'+H.closest+' cycle (r = '+H.closest_r.toFixed(2)+')</b>.'); return ch; };
+      plugins:[watermark, today, tops] });
+    const bearWeeks=Math.round((H.current_day-H.current_top_day)/7);
+    const peak=n=>{ const cy=cyc.find(c=>c.name===n); return cy?cy.top_roi:0; };
+    const roiNow=cyc.find(c=>c.current).path.slice(-1)[0].roi;
+    const cards=list=>{ const box=$('corr_cards'); if(!box) return;
+      if(!list||!list.length){ box.innerHTML='<p class="ch-hint" style="grid-column:1/-1;margin:0">This phase has not started yet for the current cycle.</p>'; return; }
+      box.innerHTML=list.map((c,i)=>'<div class="ch-stat'+(i===0?' up':'')+'"><div class="l">vs the '+c.name+' cycle</div><div class="n">'+c.r.toFixed(2)+'</div><div class="s">'+(i===0?'closest match':'correlation')+' &middot; '+c.weeks+' weeks</div></div>').join(''); };
+    const reads={
+      full: ()=>'Across the whole cycle so far, this one is up roughly <b>'+roiNow.toFixed(2)+'x</b> from its halving, the most muted cycle yet (past cycles peaked near <b>'+Math.round(peak('2012'))+'x</b>, '+Math.round(peak('2016'))+'x and '+Math.round(peak('2020'))+'x). Its overall path correlates most with the <b style="color:'+(COL[H.closest]||C.orange)+'">'+H.closest+' cycle (r = '+H.closest_r.toFixed(2)+')</b>. Use the buttons to split it into the bull run-up and the bear decline.',
+      bull: ()=>{ const l=(H.corr_bull||[])[0]; return 'The <b>bull</b> phase runs from the halving up to the cycle top (the dots). This cycle topped about <b>'+(H.current_top_day/30.4).toFixed(1)+' months</b> in, at roughly '+H.current_top_roi.toFixed(2)+'x. '+(l?'Its run-up shape most resembles the <b style="color:'+(COL[l.name]||C.orange)+'">'+l.name+' bull (r = '+l.r.toFixed(2)+')</b>.':''); },
+      bear: ()=>{ const l=(H.corr_bear||[])[0]; return l ? 'The <b>bear</b> phase is the decline from the cycle top. This cycle is <b>'+bearWeeks+' weeks</b> into its drawdown, and that partial decline most resembles the <b style="color:'+(COL[l.name]||C.orange)+'">'+l.name+' bear (r = '+l.r.toFixed(2)+')</b>. It is not finished, so this compares the drop so far against past drops at the same age.' : 'This cycle has not topped yet, so the bear phase has not begun.'; } };
+    const show=ph=>{ cards(ph==='bull'?H.corr_bull:ph==='bear'?H.corr_bear:H.corr); setRead(reads[ph]());
+      const tg=$('phase_toggle'); if(tg) tg.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.ph===ph)); };
+    const tg=$('phase_toggle'); if(tg) tg.querySelectorAll('button').forEach(b=>b.onclick=()=>show(b.dataset.ph));
+    show('full'); return ch; };
 
   R.mvrv_z = D => { const ch=oscillator(D,'mvrv_z',{ field:'z', name:'MVRV Z-Score', cheap:0.1, hot:7,
       cheapLabel:'bottom zone (0)', hotLabel:'top zone (7)', min:-1, max:10 });
