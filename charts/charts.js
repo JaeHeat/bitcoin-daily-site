@@ -264,6 +264,27 @@
     const v=D.charts.ahr999.latest, buy=v<0.45;
     setRead('Now at <b>'+v.toFixed(2)+'</b>. '+(buy?'Below 0.45, the historical bottom-fishing zone.':v<1.2?'In the dollar-cost-averaging zone (0.45 to 1.2).':'Above the DCA zone, historically richer.'), buy); return ch; };
 
+  R.mstr = D => { const M=D.charts.mstr, s=M.series, labels=s.map(d=>d.date), cost=M.avg_cost;
+    const ch=new Chart($('chart'), { type:'line', data:{ labels, datasets:[
+      { label:'Strategy avg cost', data:s.map(()=>cost), borderColor:'rgba(154,167,189,.75)', borderWidth:1.4, borderDash:[6,4], pointRadius:0, yAxisID:'y', order:2 },
+      { label:'BTC price', data:s.map(d=>d.price), borderWidth:2.4, pointRadius:0, tension:.15, yAxisID:'y', order:1,
+        segment:{ borderColor:c=> c.p1.parsed.y>=cost ? '#4ec97a' : '#e2574a' } } ]},
+      options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]),
+        label:it=> it.dataset.label==='BTC price' ? 'BTC '+fmtUSD(it.parsed.y) : 'Avg cost '+fmtUSD(cost) } } },
+        scales:{ x:baseOpts().scales.x, y:logY() } }), plugins:[watermark] });
+    const mny=n=>{ const a=Math.abs(n); return (n<0?'-$':'$')+(a>=1e9?(a/1e9).toFixed(2)+'B':a>=1e6?(a/1e6).toFixed(1)+'M':Math.round(a).toLocaleString()); };
+    const box=$('mstr_cards');
+    if(box){ const up=M.pnl_usd>=0; const cards=[
+      ['Bitcoin held', Math.round(M.holdings).toLocaleString()+' BTC', M.pct_supply+'% of all bitcoin', ''],
+      ['Average cost', fmtUSD(M.avg_cost), 'per bitcoin, all buys', ''],
+      ['Total invested', mny(M.cost_usd), 'cost basis', ''],
+      ['Current value', mny(M.value_usd), 'at '+fmtUSD(M.btc_price)+' per BTC', ''],
+      ['Unrealized '+(up?'profit':'loss'), mny(M.pnl_usd), (M.pnl_pct>=0?'+':'')+M.pnl_pct+'%', up?'up':'neg'],
+      ['BTC price now', fmtUSD(M.btc_price), (M.btc_price>=M.avg_cost?'above':'below')+' the '+fmtUSD(M.avg_cost)+' avg cost', M.btc_price>=M.avg_cost?'up':'neg'] ];
+      box.innerHTML = cards.map(c=>'<div class="ch-stat"><div class="l">'+c[0]+'</div><div class="n '+c[3]+'">'+c[1]+'</div><div class="s">'+c[2]+'</div></div>').join('')
+        + '<p class="ch-hint" style="grid-column:1/-1;margin:2px 0 0">Holdings and cost basis via CoinGecko public-treasury data, as of '+fmtDate(M.as_of)+'. The price line is green when BTC traded above Strategy’s average cost, red when below.</p>'; }
+    setRead('Strategy (formerly MicroStrategy) holds <b>'+Math.round(M.holdings).toLocaleString()+' BTC</b>, about <b>'+M.pct_supply+'%</b> of all the bitcoin that will ever exist, bought for <b>'+mny(M.cost_usd)+'</b> at an average of <b>'+fmtUSD(M.avg_cost)+'</b> each. At '+fmtUSD(M.btc_price)+' the stack is worth <b>'+mny(M.value_usd)+'</b>, '+(M.pnl_usd>=0?'an unrealized <b style="color:#4ec97a">profit</b> of ':'an unrealized <b style="color:#e2574a">loss</b> of ')+'<b>'+mny(Math.abs(M.pnl_usd))+'</b> ('+(M.pnl_pct>=0?'+':'')+M.pnl_pct+'%).', M.pnl_usd>=0); return ch; };
+
   R.halving_corr = D => { const H=D.charts.halving_corr, cyc=H.cycles; let curPhase='full'; const BB=H.bear_bottoms;
     const COL={'2012':'#5b9bd5','2016':'#a06cd5','2020':'#2dd4bf','2024':'#f7931a'};
     const ds=cyc.map(cy=>({ label:cy.name+(cy.current?' (now)':''), data:cy.path.map(p=>({x:p.day,y:p.roi})),
@@ -714,6 +735,7 @@
       case 'fng': return c.latest+' - '+c.classification;
       case 'miner_cost': return fmtUSD(c.latest.cost)+' to mine one';
       case 'etf_flows': return c.summary ? 'all-time +$'+(c.summary.all_time_total/1000).toFixed(1)+'B' : 'latest '+(c.latest.net>=0?'+':'')+'$'+c.latest.net+'m';
+      case 'mstr': return Math.round(c.holdings/1000)+'k BTC, '+(c.pnl_pct>=0?'+':'')+c.pnl_pct+'%';
       case 'm2_vs_btc': return '$'+c.m2_latest_t+'T M2, corr '+c.corr_yoy;
       case 'pmi_vs_btc': return 'corr '+c.corr_mom+', near zero';
       case 'sp500_vs_btc': return 'avg corr '+c.full_avg+', not 0.87';
