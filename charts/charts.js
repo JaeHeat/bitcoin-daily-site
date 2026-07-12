@@ -264,7 +264,7 @@
     const v=D.charts.ahr999.latest, buy=v<0.45;
     setRead('Now at <b>'+v.toFixed(2)+'</b>. '+(buy?'Below 0.45, the historical bottom-fishing zone.':v<1.2?'In the dollar-cost-averaging zone (0.45 to 1.2).':'Above the DCA zone, historically richer.'), buy); return ch; };
 
-  R.halving_corr = D => { const H=D.charts.halving_corr, cyc=H.cycles;
+  R.halving_corr = D => { const H=D.charts.halving_corr, cyc=H.cycles; let curPhase='full'; const BB=H.bear_bottoms;
     const COL={'2012':'#5b9bd5','2016':'#a06cd5','2020':'#2dd4bf','2024':'#f7931a'};
     const ds=cyc.map(cy=>({ label:cy.name+(cy.current?' (now)':''), data:cy.path.map(p=>({x:p.day,y:p.roi})),
       borderColor:COL[cy.name]||'#9aa7bd', borderWidth:cy.current?3.4:1.8, pointRadius:0, tension:.15, order:cy.current?0:1 }));
@@ -275,23 +275,39 @@
     const tops={ id:'tops', afterDatasetsDraw(ch){ const a=ch.chartArea,x=ch.scales.x,y=ch.scales.y,g=ch.ctx; if(!a) return;
       cyc.forEach(cy=>{ const px=x.getPixelForValue(cy.top_day), py=y.getPixelForValue(cy.top_roi); if(px<a.left||px>a.right) return;
         g.beginPath(); g.arc(px,py,3.6,0,7); g.fillStyle=COL[cy.name]||'#9aa7bd'; g.fill(); g.lineWidth=1.2; g.strokeStyle='#0b0e14'; g.stroke(); }); } };
+    const bottomBox={ id:'bbox', afterDatasetsDraw(ch){ if(curPhase!=='bottom'||!BB) return; const a=ch.chartArea,x=ch.scales.x,y=ch.scales.y,g=ch.ctx; if(!a) return;
+      const cx=x.getPixelForValue(H.current_day), cyp=y.getPixelForValue(cyc.find(c=>c.current).path.slice(-1)[0].roi);
+      const x0=x.getPixelForValue(BB.proj_day.min), x1=x.getPixelForValue(BB.proj_day.max), yT=y.getPixelForValue(BB.proj_roi.shallow), yB=y.getPixelForValue(BB.proj_roi.deep);
+      g.save(); g.strokeStyle='rgba(78,201,122,.4)'; g.setLineDash([2,4]); g.lineWidth=1.5; g.beginPath(); g.moveTo(cx,cyp); g.lineTo((x0+x1)/2,(yT+yB)/2); g.stroke();
+      g.fillStyle='rgba(78,201,122,.13)'; g.strokeStyle='rgba(78,201,122,.6)'; g.lineWidth=1; g.setLineDash([4,3]); g.fillRect(x0,yT,x1-x0,yB-yT); g.strokeRect(x0,yT,x1-x0,yB-yT); g.setLineDash([]);
+      g.fillStyle='#4ec97a'; g.font='700 10px -apple-system,sans-serif'; g.textAlign='center'; g.textBaseline='bottom'; g.fillText('where past bears bottomed', (x0+x1)/2, yT-5); g.restore(); } };
     const ch=new Chart($('chart'), { type:'line', data:{ datasets:ds },
       options: baseOpts({ interaction:{mode:'nearest',intersect:false},
         plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>'Day '+it[0].parsed.x+' ('+(it[0].parsed.x/30.4).toFixed(1)+' months in)', label:it=>it.dataset.label+' '+it.parsed.y.toFixed(2)+'x' } } },
         scales:{ x:{ type:'linear', grid:{display:false}, min:0, max:1460, afterBuildTicks:ax=>{ ax.ticks=[0,365,730,1095,1460].map(v=>({value:v})); }, ticks:{ color:C.muted, font:{size:12}, callback:v=>tick[v]||'' } },
           y:{ type:'logarithmic', grid:{color:C.line}, ticks:{color:C.muted,font:{size:12},callback:v=>[0.5,1,2,5,10,25,50,100].includes(v)?v+'x':''}, title:{display:true,text:'return since the halving',color:C.muted,font:{size:11}} } } }),
-      plugins:[watermark, today, tops] });
+      plugins:[watermark, today, tops, bottomBox] });
     const bearWeeks=Math.round((H.current_day-H.current_top_day)/7);
     const peak=n=>{ const cy=cyc.find(c=>c.name===n); return cy?cy.top_roi:0; };
     const roiNow=cyc.find(c=>c.current).path.slice(-1)[0].roi;
+    const wk=d=>Math.round(d/7);
     const cards=list=>{ const box=$('corr_cards'); if(!box) return;
       if(!list||!list.length){ box.innerHTML='<p class="ch-hint" style="grid-column:1/-1;margin:0">This phase has not started yet for the current cycle.</p>'; return; }
       box.innerHTML=list.map((c,i)=>'<div class="ch-stat'+(i===0?' up':'')+'"><div class="l">vs the '+c.name+' cycle</div><div class="n">'+c.r.toFixed(2)+'</div><div class="s">'+(i===0?'closest match':'correlation')+' &middot; '+c.weeks+' weeks</div></div>').join(''); };
+    const bottomCards=()=>{ const box=$('corr_cards'); if(!box) return; if(!BB){ box.innerHTML=''; return; }
+      const c=[['Typical bear drop', BB.depth.med+'%', 'from '+BB.depth.max+'% to '+BB.depth.min+'%', false],
+        ['Typical bear length', wk(BB.length.med)+' weeks', wk(BB.length.min)+' to '+wk(BB.length.max)+' weeks to the low', false],
+        ['This cycle so far', BB.current.depth_pct+'%', wk(BB.current.days_since_top)+' weeks into the decline', true]];
+      box.innerHTML=c.map(x=>'<div class="ch-stat'+(x[3]?' up':'')+'"><div class="l">'+x[0]+'</div><div class="n">'+x[1]+'</div><div class="s">'+x[2]+'</div></div>').join(''); };
     const reads={
-      full: ()=>'Across the whole cycle so far, this one is up roughly <b>'+roiNow.toFixed(2)+'x</b> from its halving, the most muted cycle yet (past cycles peaked near <b>'+Math.round(peak('2012'))+'x</b>, '+Math.round(peak('2016'))+'x and '+Math.round(peak('2020'))+'x). Its overall path correlates most with the <b style="color:'+(COL[H.closest]||C.orange)+'">'+H.closest+' cycle (r = '+H.closest_r.toFixed(2)+')</b>. Use the buttons to split it into the bull run-up and the bear decline.',
+      full: ()=>'Across the whole cycle so far, this one is up roughly <b>'+roiNow.toFixed(2)+'x</b> from its halving, the most muted cycle yet (past cycles peaked near <b>'+Math.round(peak('2012'))+'x</b>, '+Math.round(peak('2016'))+'x and '+Math.round(peak('2020'))+'x). Its overall path correlates most with the <b style="color:'+(COL[H.closest]||C.orange)+'">'+H.closest+' cycle (r = '+H.closest_r.toFixed(2)+')</b>. Use the buttons to split it into the bull run-up, the bear decline, and where past bears bottomed.',
       bull: ()=>{ const l=(H.corr_bull||[])[0]; return 'The <b>bull</b> phase runs from the halving up to the cycle top (the dots). This cycle topped about <b>'+(H.current_top_day/30.4).toFixed(1)+' months</b> in, at roughly '+H.current_top_roi.toFixed(2)+'x. '+(l?'Its run-up shape most resembles the <b style="color:'+(COL[l.name]||C.orange)+'">'+l.name+' bull (r = '+l.r.toFixed(2)+')</b>.':''); },
-      bear: ()=>{ const l=(H.corr_bear||[])[0]; return l ? 'The <b>bear</b> phase is the decline from the cycle top. This cycle is <b>'+bearWeeks+' weeks</b> into its drawdown, and that partial decline most resembles the <b style="color:'+(COL[l.name]||C.orange)+'">'+l.name+' bear (r = '+l.r.toFixed(2)+')</b>. It is not finished, so this compares the drop so far against past drops at the same age.' : 'This cycle has not topped yet, so the bear phase has not begun.'; } };
-    const show=ph=>{ cards(ph==='bull'?H.corr_bull:ph==='bear'?H.corr_bear:H.corr); setRead(reads[ph]());
+      bear: ()=>{ const l=(H.corr_bear||[])[0]; return l ? 'The <b>bear</b> phase is the decline from the cycle top. This cycle is <b>'+bearWeeks+' weeks</b> into its drawdown, and that partial decline most resembles the <b style="color:'+(COL[l.name]||C.orange)+'">'+l.name+' bear (r = '+l.r.toFixed(2)+')</b>. It is not finished, so this compares the drop so far against past drops at the same age.' : 'This cycle has not topped yet, so the bear phase has not begun.'; },
+      bottom: ()=>{ if(!BB) return 'Not enough completed cycles to project a bottom.'; return 'In the three past cycles the bear fell between <b>'+BB.depth.max+'%</b> and <b>'+BB.depth.min+'%</b> from the top and took <b>'+wk(BB.length.min)+' to '+wk(BB.length.max)+' weeks</b> to reach the low. This cycle is <b>'+wk(BB.current.days_since_top)+' weeks</b> in and down <b>'+BB.current.depth_pct+'%</b>. If it rhymed with those, the low would land in the shaded zone. But the sample is only <b>three</b> bears, the drawdowns have been shrinking each cycle, and this cycle is far more muted, so read it as a rough historical range, not a forecast. For the actual timing model, see the <a href="/cycle/">Satoshi Clock</a>.'; } };
+    const show=ph=>{ curPhase=ph;
+      if(ph==='bottom') bottomCards(); else cards(ph==='bull'?H.corr_bull:ph==='bear'?H.corr_bear:H.corr);
+      setRead(reads[ph]());
+      ch.options.scales.y.min = (ph==='bottom' && BB) ? Math.max(0.1, BB.proj_roi.deep*0.8) : undefined; ch.update('none');
       const tg=$('phase_toggle'); if(tg) tg.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.ph===ph)); };
     const tg=$('phase_toggle'); if(tg) tg.querySelectorAll('button').forEach(b=>b.onclick=()=>show(b.dataset.ph));
     show('full'); return ch; };
