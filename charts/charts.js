@@ -409,21 +409,23 @@
     setRead('Extreme fear (under 25) has clustered around cycle bottoms, extreme greed (over 75) around tops. A contrarian read.', o.latest<=25); return ch; };
 
   R.altseason = D => { const M=D.charts.altseason, co=M.coins||[], labels=co.map(c=>c.sym);
+    const win=M.window||'30-day', is90=win==='90-day', val=c=>is90?c.chg90:c.chg;
     drawFngGauge(M.index, 'alt-gauge');
     const col=fngColor(M.index), num=$('alt-num'), cls=$('alt-cls'), sub=$('alt-sub');
     if(num){ num.textContent=M.index; num.style.color=col; }
     if(cls){ cls.textContent=M.classification; cls.style.color=col; }
-    if(sub){ sub.innerHTML='<b>'+M.beat+' of '+M.total+'</b> top coins are beating Bitcoin over the last 30 days'; }
+    const building=(!is90 && M.days_collected!=null) ? ' &middot; <span style="color:var(--muted)">building the 90-day index: '+M.days_collected+' of '+M.days_needed+' days collected</span>' : '';
+    if(sub){ sub.innerHTML='<b>'+M.beat+' of '+M.total+'</b> top coins are beating Bitcoin over the last '+win.replace('-day',' days')+building; }
     const zeroLine={ id:'zl', afterDatasetsDraw(ch){ const a=ch.chartArea,y=ch.scales.y,g=ch.ctx; if(!a) return; const py=y.getPixelForValue(0);
       g.save(); g.strokeStyle='rgba(255,255,255,.45)'; g.lineWidth=1; g.beginPath(); g.moveTo(a.left,py); g.lineTo(a.right,py); g.stroke();
       g.fillStyle=C.muted; g.font='700 10px -apple-system,sans-serif'; g.textAlign='left'; g.textBaseline='bottom'; g.fillText('Bitcoin (0%)', a.left+4, py-2); g.restore(); } };
     const ch=new Chart($('chart'), { type:'bar', data:{ labels, datasets:[
-      { label:'30d vs BTC', data:co.map(c=>c.chg), backgroundColor:co.map(c=>c.chg>=0?'rgba(46,160,67,.85)':'rgba(226,87,74,.85)'), borderWidth:0 } ]},
-      options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>labels[it[0].dataIndex], label:it=>(it.parsed.y>=0?'+':'')+it.parsed.y+'% vs BTC (30d)' } } },
+      { label:win+' vs BTC', data:co.map(c=>val(c)), backgroundColor:co.map(c=>val(c)>=0?'rgba(46,160,67,.85)':'rgba(226,87,74,.85)'), borderWidth:0 } ]},
+      options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>labels[it[0].dataIndex], label:it=>(it.parsed.y>=0?'+':'')+it.parsed.y+'% vs BTC ('+win+')' } } },
         scales:{ x:{ grid:{display:false}, ticks:{color:C.muted,font:{size:9},maxRotation:90,minRotation:90,autoSkip:false} },
           y:{ grid:{color:C.line}, ticks:{color:C.muted,font:{size:12},callback:v=>(v>=0?'+':'')+v+'%'} } } }),
       plugins:[watermark, zeroLine] });
-    setRead('The Altcoin Season Index is <b>'+M.index+'/100</b> ('+M.classification+'). It is the share of the top '+M.total+' coins beating Bitcoin over the last 30 days: above 75 is altcoin season, below 25 is Bitcoin season. Each green bar is a coin that beat Bitcoin, each red bar one that lagged it.', M.index>=75); return ch; };
+    setRead('The Altcoin Season Index is <b>'+M.index+'/100</b> ('+M.classification+'). It is the share of the top '+M.total+' coins beating Bitcoin over the last '+win.replace('-day',' days')+': above 75 is altcoin season, below 25 is Bitcoin season. Each green bar is a coin that beat Bitcoin, each red bar one that lagged it.'+(!is90?' We are collecting daily prices to turn this into a true 90-day index ('+M.days_collected+'/'+M.days_needed+' days so far).':''), M.index>=75); return ch; };
 
   R.ma2y = D => { const s=D.charts.ma2y.series, labels=s.map(d=>d.date);
     const ch=new Chart($('chart'), { type:'line',
