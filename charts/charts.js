@@ -116,8 +116,10 @@
     [['#e2574a',0,20],['#f0883e',20,40],['#d9b44a',40,60],['#8cc84b',60,80],['#2ea043',80,100]].forEach(s=>{
       g.beginPath(); g.lineWidth=lw; g.strokeStyle=s[0]; g.arc(cx,cy,R,Math.PI+(s[1]/100)*Math.PI+ (s[1]?0.012:0), Math.PI+(s[2]/100)*Math.PI-0.012); g.stroke(); });
     const ang=Math.PI+(Math.max(0,Math.min(100,v))/100)*Math.PI;
-    g.beginPath(); g.moveTo(cx,cy); g.lineTo(cx+Math.cos(ang)*(R+3), cy+Math.sin(ang)*(R+3)); g.strokeStyle='#e8edf6'; g.lineWidth=3; g.lineCap='round'; g.stroke();
-    g.beginPath(); g.arc(cx,cy,6,0,7); g.fillStyle='#e8edf6'; g.fill(); }
+    const mx=cx+Math.cos(ang)*R, my=cy+Math.sin(ang)*R;      // marker sits ON the arc at the value (no center needle to cross the number)
+    g.save(); g.shadowColor='rgba(0,0,0,.55)'; g.shadowBlur=5;
+    g.beginPath(); g.arc(mx,my,9,0,7); g.fillStyle='#0b0e14'; g.fill();
+    g.shadowBlur=0; g.beginPath(); g.arc(mx,my,6,0,7); g.fillStyle='#e8edf6'; g.fill(); g.restore(); }
 
   // big correlation-number cards in the hero of the correlation charts (M2 / PMI / S&P)
   function setCorrStats(cards){ const el=$('corr-stats'); if(!el) return;
@@ -417,8 +419,17 @@
     const building=(!is90 && M.days_collected!=null) ? ' &middot; <span style="color:var(--muted)">building the 90-day index: '+M.days_collected+' of '+M.days_needed+' days collected</span>' : '';
     if(sub){ sub.innerHTML='<b>'+M.beat+' of '+M.total+'</b> top coins are beating Bitcoin over the last '+win.replace('-day',' days')+building; }
     const zeroLine={ id:'zl', afterDatasetsDraw(ch){ const a=ch.chartArea,y=ch.scales.y,g=ch.ctx; if(!a) return; const py=y.getPixelForValue(0);
-      g.save(); g.strokeStyle='rgba(255,255,255,.45)'; g.lineWidth=1; g.beginPath(); g.moveTo(a.left,py); g.lineTo(a.right,py); g.stroke();
-      g.fillStyle=C.muted; g.font='700 10px -apple-system,sans-serif'; g.textAlign='left'; g.textBaseline='bottom'; g.fillText('Bitcoin (0%)', a.left+4, py-2); g.restore(); } };
+      g.save();
+      // corner guides so it's obvious the bars are measured against Bitcoin
+      g.font='700 10px -apple-system,sans-serif'; g.textAlign='right';
+      g.fillStyle='rgba(46,160,67,.9)'; g.textBaseline='top'; g.fillText('above the line = beat Bitcoin', a.right-6, a.top+4);
+      g.fillStyle='rgba(226,87,74,.9)'; g.textBaseline='bottom'; g.fillText('below the line = lagged Bitcoin', a.right-6, a.bottom-4);
+      // the bold orange Bitcoin baseline (0%)
+      g.strokeStyle=C.orange; g.lineWidth=2.5; g.beginPath(); g.moveTo(a.left,py); g.lineTo(a.right,py); g.stroke();
+      g.font='800 11px -apple-system,sans-serif'; const lbl='BITCOIN  0%', lw=g.measureText(lbl).width;
+      g.fillStyle='#0b0e14'; g.fillRect(a.left, py-15, lw+12, 15);
+      g.fillStyle=C.orange; g.textAlign='left'; g.textBaseline='bottom'; g.fillText(lbl, a.left+6, py-3);
+      g.restore(); } };
     const ch=new Chart($('chart'), { type:'bar', data:{ labels, datasets:[
       { label:win+' vs BTC', data:co.map(c=>val(c)), backgroundColor:co.map(c=>val(c)>=0?'rgba(46,160,67,.85)':'rgba(226,87,74,.85)'), borderWidth:0 } ]},
       options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>labels[it[0].dataIndex], label:it=>(it.parsed.y>=0?'+':'')+it.parsed.y+'% vs BTC ('+win+')' } } },
