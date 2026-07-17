@@ -356,17 +356,30 @@
     const l=D.charts.hashrate.latest;
     setRead('Bitcoin’s network hash rate is about <b>'+Math.round(l.hashrate).toLocaleString()+' EH/s</b>'+(l.hashrate>=l.ath*0.98?', at or near an all-time high':'')+'. More hash rate means more computing power defending the chain, so the network is harder and more expensive to attack. It has climbed relentlessly through every price crash.', true); return ch; };
 
-  R.hash_ribbons = D => { const o=D.charts.hash_ribbons, s=o.series, labels=s.map(d=>d.date);
-    const cap={ id:'cap', beforeDatasetsDraw(ch){ const a=ch.chartArea,x=ch.scales.x,g=ch.ctx; if(!a) return; g.save(); g.fillStyle='rgba(226,87,74,.11)';
-      for(let i=1;i<s.length;i++){ if(s[i].ma30<s[i].ma60){ const x0=x.getPixelForValue(i-1), x1=x.getPixelForValue(i); g.fillRect(x0,a.top,x1-x0,a.bottom-a.top); } } g.restore(); } };
+  R.hash_ribbons = D => { const o=D.charts.hash_ribbons;
+    // The 30d and 60d hash-rate MAs sit within ~1px of each other on a log axis, so the signal is invisible as two
+    // lines. Plot their RATIO (30d/60d) as an oscillator around 1.0: below 1 = capitulation, above 1 = healthy.
+    const s=o.series.filter(d=> d.date>='2014-01-01' && d.ma30!=null && d.ma60), labels=s.map(d=>d.date), ratio=s.map(d=>d.ma30/d.ma60);
+    const capShade={ id:'cap', beforeDatasetsDraw(ch){ const a=ch.chartArea,x=ch.scales.x,g=ch.ctx; if(!a) return; g.save(); g.fillStyle='rgba(226,87,74,.10)';
+      for(let i=1;i<ratio.length;i++){ if(ratio[i]<1){ const x0=x.getPixelForValue(i-1), x1=x.getPixelForValue(i); g.fillRect(x0,a.top,x1-x0,a.bottom-a.top); } } g.restore(); } };
+    const baseLine={ id:'bl', afterDatasetsDraw(ch){ const a=ch.chartArea,y=ch.scales.y,g=ch.ctx; if(!a) return; const py=y.getPixelForValue(1);
+      g.save(); g.strokeStyle='rgba(255,255,255,.5)'; g.lineWidth=1.5; g.beginPath(); g.moveTo(a.left,py); g.lineTo(a.right,py); g.stroke();
+      g.font='700 10px -apple-system,sans-serif'; g.textBaseline='bottom'; g.textAlign='right'; g.fillStyle='rgba(78,201,122,.9)'; g.fillText('above = miners healthy', a.right-6, py-3);
+      g.textBaseline='top'; g.fillStyle='rgba(226,87,74,.9)'; g.fillText('below = miners capitulating', a.right-6, py+3);
+      g.textAlign='left'; g.fillStyle=C.muted; g.textBaseline='bottom'; g.fillText('30d = 60d', a.left+4, py-3); g.restore(); } };
+    const buyDots={ id:'buy', afterDatasetsDraw(ch){ const a=ch.chartArea,x=ch.scales.x,y=ch.scales.y,g=ch.ctx; if(!a) return;
+      for(let i=1;i<ratio.length;i++){ if(ratio[i-1]<1 && ratio[i]>=1){ const px=x.getPixelForValue(i), py=y.getPixelForValue(ratio[i]); if(px<a.left||px>a.right) continue;
+        g.save(); g.fillStyle='#4ec97a'; g.strokeStyle='#0b0e14'; g.lineWidth=1.5; g.beginPath(); g.arc(px,py,4,0,7); g.fill(); g.stroke(); g.restore(); } } } };
     const ch=new Chart($('chart'), { type:'line', data:{ labels, datasets:[ priceOverlay(s.map(d=>d.price)),
-      { label:'60-day average', data:s.map(d=>d.ma60), borderColor:'#e0603a', borderWidth:1.8, pointRadius:0, tension:.15, yAxisID:'y', order:2 },
-      { label:'30-day average', data:s.map(d=>d.ma30), borderColor:'#4ec97a', borderWidth:1.8, pointRadius:0, tension:.15, yAxisID:'y', order:1 } ]},
+      { label:'30d / 60d hash rate', data:ratio, borderWidth:2.4, pointRadius:0, tension:.15, yAxisID:'y', order:1,
+        segment:{ borderColor:c=> c.p1.parsed.y>=1 ? '#4ec97a' : '#e2574a' },
+        fill:{ target:{value:1}, above:'rgba(78,201,122,.10)', below:'rgba(226,87,74,.18)' } } ]},
       options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]),
-        label:it=> it.datasetIndex===0 ? 'BTC '+fmtUSD(it.parsed.y) : it.dataset.label+' '+(it.parsed.y>=1?Math.round(it.parsed.y).toLocaleString():it.parsed.y.toFixed(2))+' EH/s' } } },
-        scales:{ x:baseOpts().scales.x, y:{ type:'logarithmic', position:'left', grid:{color:C.line}, ticks:{color:C.muted,font:{size:12},callback:v=>[0.01,0.1,1,10,100,1000].includes(v)?v+' EH':''} }, y2:priceAxis() } }),
-      plugins:[watermark, cap, cycleMarks(D)] });
-    setRead('The <b style="color:#4ec97a">30-day</b> and <b style="color:#e0603a">60-day</b> hash-rate averages. When the 30-day dips below the 60-day (the shaded bands), miners are switching off, which has clustered near price bottoms. '+(o.latest.capitulating?'Right now the 30-day is <b>below</b> the 60-day, a sign of miner stress.':'Right now the 30-day is <b>above</b> the 60-day, so miners are healthy.'), !o.latest.capitulating); return ch; };
+        label:it=> it.datasetIndex===0 ? 'BTC '+fmtUSD(it.parsed.y) : '30d/60d '+it.parsed.y.toFixed(3)+(it.parsed.y<1?' (capitulation)':'') } } },
+        scales:{ x:baseOpts().scales.x, y:{ position:'left', grid:{color:C.line}, min:0.8, suggestedMax:1.15, ticks:{color:C.muted,font:{size:12},callback:v=>v.toFixed(2)} }, y2:priceAxis() } }),
+      plugins:[watermark, capShade, baseLine, buyDots] });
+    const cur=ratio[ratio.length-1];
+    setRead('This is the ratio of the <b>30-day</b> to the <b>60-day</b> hash-rate average. When it drops <b style="color:#e2574a">below 1.0</b> (the red zone) the 30-day has fallen under the 60-day, meaning miners are switching machines off, which has clustered near price bottoms. The <b style="color:#4ec97a">green dots</b> mark the recovery cross back above 1.0, historically a good long-term buy. Right now the ratio is <b>'+cur.toFixed(3)+'</b>, so '+(o.latest.capitulating?'miners are <b style="color:#e2574a">capitulating</b>.':'miners are <b style="color:#4ec97a">healthy</b>.'), !o.latest.capitulating); return ch; };
 
   R.active_addresses = D => { const s=D.charts.active_addresses.series, labels=s.map(d=>d.date);
     const ch=new Chart($('chart'), { type:'line', data:{ labels, datasets:[ priceOverlay(s.map(d=>d.price)),

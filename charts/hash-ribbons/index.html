@@ -46,9 +46,9 @@
           <div class="ch-main">
             <div class="ch-hero"><h1>Bitcoin Hash Ribbons (Live Chart)</h1><p class="lead">A miner-capitulation signal built from the 30-day and 60-day hash-rate averages. The shaded stretches are where miners are switching off.</p><p class="ch-asof" id="asof">Loading the latest reading...</p></div>
             <div class="ch-panel">
-  <p class="cap">The 30-day and 60-day hash-rate moving averages on a log left axis, with BTC price on the right. Shaded bands mark capitulation, when the 30-day is below the 60-day.</p>
+  <p class="cap">The ratio of the 30-day to the 60-day hash-rate average. Below 1.0 (red) the 30-day has fallen under the 60-day: miners are switching off. Green dots mark the recovery cross back above 1.0. BTC price is overlaid on the right.</p>
   <div class="ch-read" id="read"></div>
-  <div class="ch-legend"><span><span class="ch-sw line" style="background:#4ec97a"></span>30-day average</span><span><span class="ch-sw line" style="background:#e0603a"></span>60-day average</span><span><span class="ch-sw line" style="background:#9aa7bd"></span>BTC price (right, log)</span></div>
+  <div class="ch-legend"><span><span class="ch-sw line" style="background:#4ec97a"></span>Healthy (30d above 60d)</span><span><span class="ch-sw line" style="background:#e2574a"></span>Capitulating (30d below 60d)</span><span><span class="ch-sw line" style="background:#9aa7bd"></span>BTC price (right, log)</span></div>
   <div class="ch-controls"><button class="ch-btn" id="resetzoom">Reset zoom</button><button class="ch-btn" id="save">Save image</button></div><p class="ch-hint">Drag across the chart to zoom into any span. Reset zoom to go back.</p>
   <div class="ch-chart"><canvas id="chart"></canvas></div>
   
@@ -70,7 +70,7 @@
   </footer>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js"></script>
-  <script src="/charts/charts.js?v=35"></script>
+  <script src="/charts/charts.js?v=36"></script>
   <script>
   fetch('/charts/charts_data.json',{cache:'no-store'}).then(function(r){return r.json();}).then(function(D){
     var _a=document.getElementById('asof'); if(_a){ _a.textContent='Live reading as of '+BDCharts.fmtDate(D.as_of)+'. Bitcoin at '+BDCharts.fmtUSD(D.price)+'.'; }
