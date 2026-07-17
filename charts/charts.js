@@ -217,11 +217,6 @@
     const halvLines={ id:'halvb', afterDatasetsDraw(ch){ const a=ch.chartArea,x=ch.scales.x,g=ch.ctx; if(!a) return;
       (B.halvings||[]).forEach(h=>{ const t=Date.parse(h); if(t<t0||t>t1) return; const px=x.getPixelForValue(nearest(h)); if(px<a.left||px>a.right) return;
         g.save(); g.strokeStyle='rgba(247,147,26,.4)'; g.lineWidth=1; g.setLineDash([5,4]); g.beginPath(); g.moveTo(px,a.top); g.lineTo(px,a.bottom); g.stroke(); g.restore(); }); } };
-    const projLine={ id:'projb', afterDatasetsDraw(ch){ const a=ch.chartArea,x=ch.scales.x,y=ch.scales.y,g=ch.ctx; if(!a) return;
-      const py=y.getPixelForValue(B.proj.bottom); if(py<a.top||py>a.bottom) return; const cx=(x.getPixelForValue(winI[0])+x.getPixelForValue(winI[1]))/2;
-      g.save(); g.strokeStyle=C.orange; g.lineWidth=1.5; g.setLineDash([2,3]); g.beginPath(); g.moveTo(a.left,py); g.lineTo(a.right,py); g.stroke(); g.setLineDash([]);
-      g.fillStyle=C.orange; g.beginPath(); g.arc(Math.min(a.right-4,Math.max(a.left+4,cx)),py,4,0,7); g.fill();
-      g.font='700 11px -apple-system,sans-serif'; g.textAlign='right'; g.textBaseline='bottom'; g.fillText('projected bottom '+fmtUSD(B.proj.bottom)+' ('+B.proj.dd_pct+'%)',a.right-6,py-4); g.restore(); } };
     const botDots={ id:'botb', afterDatasetsDraw(ch){ const a=ch.chartArea,x=ch.scales.x,y=ch.scales.y,g=ch.ctx; if(!a) return;
       (B.bottoms||[]).forEach(b=>{ const t=Date.parse(b.date); if(t<t0||t>t1) return; const px=x.getPixelForValue(nearest(b.date)), py=y.getPixelForValue(b.price); if(px<a.left||px>a.right||py<a.top||py>a.bottom) return;
         g.save(); g.fillStyle=C.teal; g.strokeStyle='#0b0e14'; g.lineWidth=1.5; g.beginPath(); g.arc(px,py,4,0,7); g.fill(); g.stroke(); g.restore(); }); } };
@@ -234,12 +229,12 @@
       options: baseOpts({ plugins:{ legend:{display:false}, tooltip:{ mode:'index', intersect:false,
           filter:it=>['Price','Power-law fair value','Support'].includes(it.dataset.label),
           callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]), label:it=> it.parsed.y==null?null:it.dataset.label+' '+fmtUSD(it.parsed.y) } } },
-        scales:{ x:baseOpts().scales.x, y:logY() } }), plugins:[watermark, windowShade, halvLines, projLine, botDots] });
+        scales:{ x:baseOpts().scales.x, y:logY() } }), plugins:[watermark, windowShade, halvLines, botDots] });
     const L=B.latest;
     const when = L.bottom_confirmed ? 'both the price AND the clock now agree - this is the bottom window'
       : (L.in_zone ? 'price is <b>in the zone</b>, but the clock says wait: the bottom window opens in <b>'+L.days_to_window+' days</b> (Oct-Nov 2026)'
                    : 'price is <b>'+(L.spring<-1.5?'below the zone (deep capitulation)':'above the zone')+'</b>');
-    setRead('Bitcoin is around <b>'+fmtUSD(L.price)+'</b>, about <b>'+L.drawdown_pct+'%</b> from its all-time high and well below its power-law fair value. So '+when+'. Every past cycle low (the teal dots) printed inside this green zone, and their median projects a bottom near <b>'+fmtUSD(B.proj.bottom)+'</b> (about '+B.proj.dd_pct+'% down). A confirmed bottom needs the price in the zone AND the clock in the window. Right now we have the first, not yet the second.', L.in_zone);
+    setRead('Bitcoin is around <b>'+fmtUSD(L.price)+'</b>, about <b>'+L.drawdown_pct+'%</b> from its all-time high and well below its power-law fair value. So '+when+'. Every past cycle low (the teal dots) printed inside this green zone. A confirmed bottom needs the price in the zone AND the clock in the window. Right now we have the first, not yet the second.', L.in_zone);
     return ch; };
 
   R.rainbow = D => { const o=D.charts.rainbow, s=o.series, labels=s.map(d=>d.date), center=s.map(d=>d.center);
