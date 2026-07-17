@@ -73,9 +73,9 @@
   <script src="/charts/charts.js?v=33"></script>
   <script>
   fetch('/charts/charts_data.json',{cache:'no-store'}).then(function(r){return r.json();}).then(function(D){
-    document.getElementById('asof').textContent='Live reading as of '+BDCharts.fmtDate(D.as_of)+'. Bitcoin at '+BDCharts.fmtUSD(D.price)+'.';
+    var _a=document.getElementById('asof'); if(_a){ _a.textContent='Live reading as of '+BDCharts.fmtDate(D.as_of)+'. Bitcoin at '+BDCharts.fmtUSD(D.price)+'.'; }
     BDCharts.render('miner_cost', D);
-  }).catch(function(e){document.getElementById('asof').textContent='Could not load the latest reading.';console.error(e);});
+  }).catch(function(e){var _a=document.getElementById('asof'); if(_a){_a.textContent='Could not load the latest reading.';} console.error(e);});
   </script>
 </body>
 </html>
