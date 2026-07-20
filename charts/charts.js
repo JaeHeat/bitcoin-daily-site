@@ -464,7 +464,7 @@
         scales:{ x:baseOpts().scales.x, y:{ position:'left', min:0, max:100, grid:{color:C.line}, afterFit:yW, ticks:{color:C.muted,font:{size:12}} } } }),
       plugins:[cycleMarks(D), thresholds([{v:70,c:'#2ea043',t:'alt season'},{v:30,c:'#e2574a',t:'bitcoin season'}])] });
     BDCharts.chart2 = bot;
-    setRead('The compass reads <b>'+L.phase+'</b> at <b>'+Math.round(L.score)+'/100</b>. Bitcoin dominance is '+(L.btcd_up?'rising':'falling')+' ('+L.btcd+'%) and BTC price is '+(L.price_up?'rising':'falling')+'. The top panel is the altcoin market cap (TOTAL3, everything except Bitcoin and Ethereum). Alts have run when the score pushes toward 100 (dominance falling while price rises) and bled hardest toward 0 (dominance rising while price falls).', L.phase==='Alt season');
+    setRead('The compass reads <b>'+L.phase+'</b> at <b>'+Math.round(L.score)+'/100</b>. Bitcoin dominance is '+(L.btcd_up?'rising':'falling')+' ('+L.btcd+'%), BTC price is '+(L.price_up?'rising':'falling')+', and ETH/BTC is '+(L.ethbtc_up?'rising (ETH leading)':'falling (ETH lagging)')+'. Alt season is confirmed only when all three line up (dominance falling, price rising, ETH leading); when dominance and price are favorable but ETH is not confirming yet, it reads Alt setup. Top panel is the altcoin market cap (TOTAL3).', L.phase==='Alt season');
     return top; };
 
   R.ma2y = D => { const s=D.charts.ma2y.series, labels=s.map(d=>d.date);
