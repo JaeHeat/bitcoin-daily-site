@@ -446,6 +446,27 @@
       plugins:[watermark, zeroLine] });
     setRead('The Altcoin Season Index is <b>'+M.index+'/100</b> ('+M.classification+'). It is the share of the top '+M.total+' coins beating Bitcoin over the last '+win.replace('-day',' days')+': above 75 is altcoin season, below 25 is Bitcoin season. Each green bar is a coin that beat Bitcoin, each red bar one that lagged it.'+(!is90?' We are collecting daily prices to turn this into a true 90-day index ('+M.days_collected+'/'+M.days_needed+' days so far).':''), M.index>=75); return ch; };
 
+  // Altseason Compass: split chart -> altcoin market cap (TOTAL3) on top, the 0-100 score oscillator below
+  const compassColor = v => v>=70?'#2ea043':v>=50?'#8cc84b':v>30?'#f0883e':'#e2574a';
+  const t3tick = v => v>=1e12?'$'+(v/1e12).toFixed(1)+'T':v>=1e9?'$'+Math.round(v/1e9)+'B':'$'+Math.round(v/1e6)+'M';
+  R.compass = D => { const o=D.charts.compass; if(!o) return null; const s=o.series, labels=s.map(d=>d.date), L=o.latest;
+    const yW = sc => { sc.width = 58; }, pad = { padding:{ right:14, top:4 } };
+    const top = new Chart($('chart'), { type:'line',
+      data:{ labels, datasets:[{ label:'Altcoin market cap', data:s.map(d=>d.total3), borderColor:C.orange, borderWidth:2, pointRadius:0, tension:.15 }] },
+      options: baseOpts({ layout:pad, plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]), label:it=>'Alts (TOTAL3) '+t3tick(it.parsed.y) } } },
+        scales:{ x:{ grid:{display:false}, ticks:{display:false} },
+          y:{ type:'logarithmic', position:'left', grid:{color:C.line}, afterFit:yW, ticks:{color:C.muted,font:{size:12},callback:t3tick} } } }),
+      plugins:[watermark, cycleMarks(D)] });
+    const bot = new Chart($('chart2'), { type:'line',
+      data:{ labels, datasets:[{ label:'Altseason score', data:s.map(d=>d.score), borderColor:C.orange, borderWidth:2, pointRadius:0, tension:.15,
+        segment:{ borderColor:c=>compassColor(c.p1.parsed.y) }, fill:{ target:{value:50}, above:'rgba(46,160,67,.15)', below:'rgba(226,87,74,.13)' } }] },
+      options: baseOpts({ layout:pad, plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]), label:it=>'Altseason score '+Math.round(it.parsed.y) } } },
+        scales:{ x:baseOpts().scales.x, y:{ position:'left', min:0, max:100, grid:{color:C.line}, afterFit:yW, ticks:{color:C.muted,font:{size:12}} } } }),
+      plugins:[cycleMarks(D), thresholds([{v:70,c:'#2ea043',t:'alt season'},{v:30,c:'#e2574a',t:'bitcoin season'}])] });
+    BDCharts.chart2 = bot;
+    setRead('The compass reads <b>'+L.phase+'</b> at <b>'+Math.round(L.score)+'/100</b>. Bitcoin dominance is '+(L.btcd_up?'rising':'falling')+' ('+L.btcd+'%) and BTC price is '+(L.price_up?'rising':'falling')+'. The top panel is the altcoin market cap (TOTAL3, everything except Bitcoin and Ethereum). Alts have run when the score pushes toward 100 (dominance falling while price rises) and bled hardest toward 0 (dominance rising while price falls).', L.phase==='Alt season');
+    return top; };
+
   R.ma2y = D => { const s=D.charts.ma2y.series, labels=s.map(d=>d.date);
     const ch=new Chart($('chart'), { type:'line',
       data:{ labels, datasets:[
@@ -762,6 +783,7 @@
       case 'active_addresses': return Math.round(c.latest/1000)+'k active/day';
       case 'supply': return c.latest.pct_mined+'% mined, '+c.latest.inflation.toFixed(2)+'% infl';
       case 'ma2y': return c.latest.mult.toFixed(2)+'x the 2-year MA';
+      case 'compass': return c.latest.phase+', '+Math.round(c.latest.score)+'/100';
       case 'drawdown': return c.now.dd+'% below the top';
       case 'cycle_band': return c.now.mult.toFixed(2)+'x, '+c.now.pos;
       case 'metcalfe': return Math.round(c.latest)+'% of network trend';
