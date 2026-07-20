@@ -450,6 +450,10 @@
   const compassColor = v => v>=70?'#2ea043':v>=50?'#8cc84b':v>30?'#f0883e':'#e2574a';
   const t3tick = v => v>=1e12?'$'+(v/1e12).toFixed(1)+'T':v>=1e9?'$'+Math.round(v/1e9)+'B':'$'+Math.round(v/1e6)+'M';
   R.compass = D => { const o=D.charts.compass; if(!o) return null; const s=o.series, labels=s.map(d=>d.date), L=o.latest;
+    if($('cmp-gauge')) drawFngGauge(L.score, 'cmp-gauge');            // hero dial (0-100), like the altcoin season index
+    var _n=$('cmp-num'), _c=$('cmp-cls');
+    if(_n){ _n.innerHTML=Math.round(L.score)+'<span style="font-size:.42em;opacity:.55"> / 100</span>'; _n.style.color=compassColor(L.score); }
+    if(_c){ _c.textContent=L.phase; _c.style.color=compassColor(L.score); }
     const yW = sc => { sc.width = 58; }, pad = { padding:{ right:14, top:4 } };
     const top = new Chart($('chart'), { type:'line',
       data:{ labels, datasets:[{ label:'Altcoin market cap', data:s.map(d=>d.total3), borderColor:C.orange, borderWidth:2, pointRadius:0, tension:.15 }] },
