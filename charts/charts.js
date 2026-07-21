@@ -446,7 +446,7 @@
       plugins:[watermark, zeroLine] });
     setRead('The Altcoin Season Index is <b>'+M.index+'/100</b> ('+M.classification+'). It is the share of the top '+M.total+' coins beating Bitcoin over the last '+win.replace('-day',' days')+': above 75 is altcoin season, below 25 is Bitcoin season. Each green bar is a coin that beat Bitcoin, each red bar one that lagged it.'+(!is90?' We are collecting daily prices to turn this into a true 90-day index ('+M.days_collected+'/'+M.days_needed+' days so far).':''), M.index>=75); return ch; };
 
-  // Altseason Compass: split chart -> altcoin market cap (TOTAL3) on top, the 0-100 score oscillator below
+  // Altseason Radar: split chart -> altcoin market cap (TOTAL3) on top, the 0-100 score oscillator below
   const compassColor = v => v>=70?'#2ea043':v>=50?'#8cc84b':v>30?'#f0883e':'#e2574a';
   const t3tick = v => v>=1e12?'$'+(v/1e12).toFixed(1)+'T':v>=1e9?'$'+Math.round(v/1e9)+'B':'$'+Math.round(v/1e6)+'M';
   R.compass = D => { const o=D.charts.compass; if(!o) return null; const s=o.series, labels=s.map(d=>d.date), L=o.latest;
@@ -468,7 +468,7 @@
         scales:{ x:baseOpts().scales.x, y:{ position:'left', min:0, max:100, grid:{color:C.line}, afterFit:yW, ticks:{color:C.muted,font:{size:12}} } } }),
       plugins:[cycleMarks(D), thresholds([{v:70,c:'#2ea043',t:'alt season'},{v:30,c:'#e2574a',t:'bitcoin season'}])] });
     BDCharts.chart2 = bot;
-    setRead('The compass reads <b>'+L.phase+'</b> at <b>'+Math.round(L.score)+'/100</b>. The market forces it tracks are '+(L.score>=50?'leaning toward altcoins':'pointing away from altcoins')+' right now. Alt season only registers when they all line up and the score pushes toward 100. The top panel is the altcoin market cap (TOTAL3, everything except Bitcoin and Ethereum).', L.phase==='Alt season');
+    setRead('The Radar reads <b>'+L.phase+'</b> at <b>'+Math.round(L.score)+'/100</b>. The market forces it tracks are '+(L.score>=50?'leaning toward altcoins':'pointing away from altcoins')+' right now. Alt season only registers when they all line up and the score pushes toward 100. The top panel is the altcoin market cap (TOTAL3, everything except Bitcoin and Ethereum).', L.phase==='Alt season');
     return top; };
 
   R.ma2y = D => { const s=D.charts.ma2y.series, labels=s.map(d=>d.date);
