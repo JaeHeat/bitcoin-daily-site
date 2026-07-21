@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Puell Multiple, Explained (Reading the Miners) | Bitcoin Daily</title>
+  <meta name="description" content="The Puell Multiple measures Bitcoin miner revenue vs the yearly average. Learn what the green and red zones mean and how this market signal has flagged cycle lows." />
+  <link rel="canonical" href="https://bitcoin-daily.com/blog/bitcoin-puell-multiple-explained.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="The Puell Multiple, Explained (Reading the Miners)" />
+  <meta property="og:description" content="The metric that tells you when Bitcoin miners are starving vs printing money." />
+  <meta property="og:url" content="https://bitcoin-daily.com/blog/bitcoin-puell-multiple-explained.html" />
+  <meta property="og:image" content="https://bitcoin-daily.com/assets/blog/bitcoin-puell-multiple-explained.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="The Puell Multiple, Explained (Reading the Miners)" />
+  <meta name="twitter:description" content="The metric that tells you when Bitcoin miners are starving vs printing money." />
+  <meta name="twitter:image" content="https://bitcoin-daily.com/assets/blog/bitcoin-puell-multiple-explained.png" />
+  <link rel="stylesheet" href="/styles.css?v=2" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "The Puell Multiple, Explained (Reading the Miners)",
+    "image": "https://bitcoin-daily.com/assets/blog/bitcoin-puell-multiple-explained.png",
+    "description": "The Puell Multiple measures Bitcoin miner revenue vs the yearly average. Learn what the green and red zones mean and how this market signal has flagged cycle lows.",
+    "datePublished": "2026-07-21",
+    "dateModified": "2026-07-21",
+    "mainEntityOfPage": "https://bitcoin-daily.com/blog/bitcoin-puell-multiple-explained.html",
+    "author": { "@type": "Person", "@id": "https://joshmolnar.com/#person", "name": "Josh Molnar", "url": "https://joshmolnar.com/" },
+    "publisher": { "@id": "https://bitcoin-daily.com/#organization" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What is a good Puell Multiple for Bitcoin?", "acceptedAnswer": {"@type": "Answer", "text": "A Puell Multiple below 0.5 has historically appeared near major Bitcoin lows, suggesting miners are under significant financial stress. A reading above 3.5 has historically lined up with cycle peaks, though that ceiling has shrunk with each halving."}}, {"@type": "Question", "name": "Who created the Puell Multiple?", "acceptedAnswer": {"@type": "Answer", "text": "David Puell created the metric to measure the daily financial stress and profitability of Bitcoin miners relative to their 365-day average revenue in dollars."}}, {"@type": "Question", "name": "What happens to the Puell Multiple after a Bitcoin halving?", "acceptedAnswer": {"@type": "Answer", "text": "The halving cuts miner block rewards in half immediately, so if price does not double to compensate, the Puell Multiple drops sharply. This is one reason the metric often dips into the green zone around halving events."}}, {"@type": "Question", "name": "Does the Puell Multiple predict Bitcoin price?", "acceptedAnswer": {"@type": "Answer", "text": "It does not predict price directly. It measures miner revenue conditions that have historically clustered near market turning points, and it works best when combined with other signals rather than used on its own."}}, {"@type": "Question", "name": "Why does the Puell Multiple red zone shrink each cycle?", "acceptedAnswer": {"@type": "Answer", "text": "Each Bitcoin halving cuts the block reward in half, which reduces the maximum daily issuance miners can earn. That means the ratio can never spike as high as it did in previous cycles, so the peak reading shrinks alongside the shrinking reward."}}]}
+  </script>
+</head>
+<body>
+  <header class="site">
+    <div class="wrap nav">
+      <a class="brand" href="/">Bitcoin <span>Daily</span></a>
+      <button class="menu-toggle" aria-label="Menu" onclick="document.getElementById('nav').classList.toggle('open')">&#9776;</button>
+      <ul id="nav">
+        <li><a href="/cycle/">Cycle</a></li>
+        <li><a href="/charts/">Charts</a></li>
+        <li><a href="/blog/" class="active">Blog</a></li>
+        <li><a href="https://bitcoindaily.vip" rel="noopener">Community</a></li>
+        <li><a href="https://bitcoindaily.app" rel="noopener">Consulting</a></li>
+        <li><a href="https://joshmolnar.com/" rel="noopener">Founder</a></li>
+        <li><a class="cta" href="https://bitcoindaily.vip" rel="noopener">Join the Community</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+    <section class="block" style="border-bottom:none">
+      <div class="wrap">
+        <article class="post">
+          <h1>The Puell Multiple, Explained (Reading the Miners)</h1>
+          <div class="meta">By <a href="https://joshmolnar.com/" rel="noopener">Josh Molnar</a> &middot; July 2026 &middot; 5 min read</div>
+
+          <figure class="post-hero">
+            <img src="/assets/blog/bitcoin-puell-multiple-explained.png" alt="Bitcoin daily price chart on July 21 2026, illustrating the market context behind Puell Multiple miner revenue analysis" />
+          </figure>
+<p>Bitcoin miners are one of the only groups in crypto who are forced to sell. They pay electric bills in dollars. They pay rent, salaries, and equipment loans in dollars. Every day they mine new Bitcoin, and a large portion of what they mine has to go straight to market just to cover those costs.</p>
+
+<p>When miners are hurting financially, they sell whatever they have. When they are doing extremely well, they can hold and wait. The Puell Multiple tracks this: how much miners are earning today, compared to what they have earned on average over the past year.</p>
+
+<h2>What the Puell Multiple Actually Measures</h2>
+
+<p>The calculation is straightforward. Take today&rsquo;s total Bitcoin mining revenue in dollars. Divide it by the average daily mining revenue over the last 365 days.</p>
+
+<p>A result of 1.0 means miners are earning exactly their yearly average. Normal.</p>
+
+<p>A result of 0.3 means they are earning 30 cents for every dollar they averaged over the past year. They are underwater. Electric bills do not stop, so they sell whatever they can to stay alive.</p>
+
+<p>A result of 4.0 means they are earning four times their yearly average. They are doing well and can afford to hold their coins instead of dumping them.</p>
+
+<p>David Puell built this metric to measure that financial stress signal. When miners are under pressure, it shows up here before it shows up anywhere else.</p>
+
+<h2>When the Number Goes Low (The Green Zone)</h2>
+
+<p>Every time the Puell Multiple has dropped below 0.5, Bitcoin has been near a significant price low.</p>
+
+<p>Think about the situation those miners are in. They are earning half of what they normally earn. Weaker operations go out of business entirely. The ones still running sell at a loss just to keep the lights on. That forced selling adds to the price decline.</p>
+
+<p>But here is what follows. Once the weakest miners shut down, the selling pressure from them disappears. There is nobody left to force the price lower. Historically, that is when the floor has tended to hold.</p>
+
+<p>This pattern appeared in the 2015 crash, the 2018 crash, and the 2022 crash. It does not pinpoint the exact bottom day. But when the Puell Multiple drops into that zone, it signals that miner capitulation is underway, and that has historically been one of the classic ingredients of a Bitcoin market bottom.</p>
+
+<h2>When the Number Goes High (The Red Zone)</h2>
+
+<p>When the Puell Multiple climbs above 3.5, miners are earning several times their yearly average. They can hold. They can buy more equipment. The market feels like it will keep going up.</p>
+
+<p>Historically, that level of miner prosperity has lined up with cycle peaks. Not because the miners are doing anything wrong, but because extreme miner revenue is a side effect of a price that has run very far, very fast.</p>
+
+<p>One important detail: the red zone ceiling has shrunk with every cycle. In 2013 the metric peaked near 10. In 2017 it peaked near 7. In 2021 the peak was around 3.5. Each halving compresses the signal because the block reward is smaller each time. Do not wait for a reading of 8 or 9 before taking notice. That number may not come back.</p>
+
+<h2>How the Halving Resets the Puell Multiple</h2>
+
+<p>Every four years, the Bitcoin block reward gets cut in half. The day that happens, miners instantly earn 50% less Bitcoin per block. If the price does not immediately double to compensate, their daily revenue in dollars drops sharply overnight.</p>
+
+<p>This is why the Puell Multiple tends to dip right after every halving. Miners who cannot survive on the lower reward shut down. The most efficient operations absorb their market share. Then as demand catches up and price rises, the metric climbs again.</p>
+
+<p>The halving is the reset button. The recovery that follows is what has powered the next price cycle in every epoch so far.</p>
+
+<h2>What the Metric Cannot Tell You</h2>
+
+<p>The Puell Multiple is one signal, not a complete picture. A reading below 0.5 tells you miners are stressed. It does not tell you how long that stress period will last. Bitcoin spent months in that territory during both the 2018 and 2022 price drops before prices recovered.</p>
+
+<p>The metric gets more useful when multiple indicators say the same thing at the same time. If the Puell Multiple drops into the green zone while the <a href="/blog/bitcoin-mvrv-ratio-explained.html">MVRV ratio falls below 1</a> and prices approach <a href="/blog/cost-to-mine-one-bitcoin.html">what it actually costs to mine one Bitcoin</a>, that cluster of signals is much harder to dismiss than any single reading alone.</p>
+
+<p>One signal is a yellow flag. Several independent signals pointing the same direction at the same time is worth paying serious attention to.</p>
+
+<h2>Where Things Stand Right Now</h2>
+
+<p>You can check the current Puell Multiple reading on <a href="/charts/puell-multiple/">the live Puell Multiple chart</a>. As of July 2026, Bitcoin is well below the highs it set in 2024 and 2025, and the metric is nowhere near the red zone that has historically lined up with cycle peaks.</p>
+
+<p>What the metric is showing right now is not euphoria. It is something closer to the quiet that tends to come after a long stretch of miner pain.</p>
+          <h2>Common questions</h2>
+          <h3>What is a good Puell Multiple for Bitcoin?</h3>
+          <p>A Puell Multiple below 0.5 has historically appeared near major Bitcoin lows, suggesting miners are under significant financial stress. A reading above 3.5 has historically lined up with cycle peaks, though that ceiling has shrunk with each halving.</p>
+          <h3>Who created the Puell Multiple?</h3>
+          <p>David Puell created the metric to measure the daily financial stress and profitability of Bitcoin miners relative to their 365-day average revenue in dollars.</p>
+          <h3>What happens to the Puell Multiple after a Bitcoin halving?</h3>
+          <p>The halving cuts miner block rewards in half immediately, so if price does not double to compensate, the Puell Multiple drops sharply. This is one reason the metric often dips into the green zone around halving events.</p>
+          <h3>Does the Puell Multiple predict Bitcoin price?</h3>
+          <p>It does not predict price directly. It measures miner revenue conditions that have historically clustered near market turning points, and it works best when combined with other signals rather than used on its own.</p>
+          <h3>Why does the Puell Multiple red zone shrink each cycle?</h3>
+          <p>Each Bitcoin halving cuts the block reward in half, which reduces the maximum daily issuance miners can earn. That means the ratio can never spike as high as it did in previous cycles, so the peak reading shrinks alongside the shrinking reward.</p>
+          <h2>Keep reading</h2>
+          <ul>
+            <li><a href="/blog/bitcoin-mvrv-ratio-explained.html">Bitcoin MVRV Ratio, Explained (What Is a Good MVRV?)</a></li>
+            <li><a href="/blog/cost-to-mine-one-bitcoin.html">What Does It Cost to Mine One Bitcoin?</a></li>
+          </ul>
+          <p>We break down the market like this every day, free on <a href="https://www.instagram.com/bitcoin.daily/" rel="noopener">Instagram</a> and <a href="https://www.youtube.com/@BitcoinDailyTV" rel="noopener">YouTube</a>, and in depth inside the <a href="https://bitcoindaily.vip" rel="noopener">community</a>.</p>
+          <p><em>Education, not financial advice. Trading involves real risk.</em></p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site">
+    <div class="wrap row">
+      <div>&copy; 2026 Bitcoin Daily &middot; Founded by <a href="https://joshmolnar.com/" rel="noopener">Josh Molnar</a></div>
+      <div><a href="/cycle/">Cycle</a> &middot; <a href="/charts/">Charts</a> &middot; <a href="/blog/">Blog</a> &middot; <a href="https://bitcoindaily.vip" rel="noopener">Community</a> &middot; <a href="mailto:info@bitcoin-daily.com">info@bitcoin-daily.com</a></div>
+    </div>
+  </footer>
+</body>
+</html>
