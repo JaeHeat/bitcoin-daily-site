@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Why Every Famous Bitcoin Top Indicator Failed at the Same Time | Bitcoin Daily</title>
+  <meta name="description" content="Pi Cycle, MVRV and the Mayer Multiple all went silent at Bitcoin's record top in October 2025. I ran the full history to find out why. One signal survived, and it comes with two dated predictions." />
+  <link rel="canonical" href="https://bitcoin-daily.com/blog/why-every-bitcoin-top-indicator-failed.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Why Every Famous Bitcoin Top Indicator Failed at the Same Time" />
+  <meta property="og:description" content="Every famous top indicator stayed silent at Bitcoin's biggest top ever. My new research explains why, and puts a dated bottom call on the record." />
+  <meta property="og:url" content="https://bitcoin-daily.com/blog/why-every-bitcoin-top-indicator-failed.html" />
+  <meta property="og:image" content="https://bitcoin-daily.com/assets/blog/why-every-bitcoin-top-indicator-failed.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Why Every Famous Bitcoin Top Indicator Failed at the Same Time" />
+  <meta name="twitter:description" content="Every famous top indicator stayed silent at Bitcoin's biggest top ever. My new research explains why, and puts a dated bottom call on the record." />
+  <meta name="twitter:image" content="https://bitcoin-daily.com/assets/blog/why-every-bitcoin-top-indicator-failed.png" />
+  <link rel="stylesheet" href="/styles.css?v=2" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Why Every Famous Bitcoin Top Indicator Failed at the Same Time",
+    "image": "https://bitcoin-daily.com/assets/blog/why-every-bitcoin-top-indicator-failed.png",
+    "description": "Pi Cycle, MVRV and the Mayer Multiple all went silent at Bitcoin's record top in October 2025. I ran the full history to find out why. One signal survived, and it comes with two dated predictions.",
+    "datePublished": "2026-07-22",
+    "dateModified": "2026-07-22",
+    "mainEntityOfPage": "https://bitcoin-daily.com/blog/why-every-bitcoin-top-indicator-failed.html",
+    "author": { "@type": "Person", "@id": "https://joshmolnar.com/#person", "name": "Josh Molnar", "url": "https://joshmolnar.com/" },
+    "publisher": { "@id": "https://bitcoin-daily.com/#organization" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Why did Bitcoin's top indicators fail at the October 2025 top?", "acceptedAnswer": {"@type": "Answer", "text": "Because they are fixed trigger lines and Bitcoin's swings shrink every cycle. MVRV's peak fell from 5.88 to 4.72 to 3.96 to 2.74 across the last four cycles, and the Mayer Multiple's peak fell from 8.26 to 1.52, so the market stopped reaching the lines. The decay began three cycles before a Bitcoin ETF existed, so ETFs are not the explanation."}}, {"@type": "Question", "name": "What is the Bitcoin halving clock?", "acceptedAnswer": {"@type": "Answer", "text": "It is the finding that Bitcoin's cycle tops keep landing 525 to 546 days after each halving. In 10,000 simulated random markets, none clustered that tightly under the study's primary test, and even the most conservative variant put the odds near 1 in 1,000."}}, {"@type": "Question", "name": "When does the study call the Bitcoin cycle bottom?", "acceptedAnswer": {"@type": "Answer", "text": "The paper puts a cycle bottom window between October 5 and November 16, 2026 on the record. If the bottom lands before October 5, the model takes the loss in public."}}, {"@type": "Question", "name": "Where can I read the research?", "acceptedAnswer": {"@type": "Answer", "text": "The full study, Bitcoin Runs on a Clock, is on SSRN at https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6977940, and a plain-English walkthrough is at https://bitcoin-daily.com/research."}}]}
+  </script>
+</head>
+<body>
+  <header class="site">
+    <div class="wrap nav">
+      <a class="brand" href="/">Bitcoin <span>Daily</span></a>
+      <button class="menu-toggle" aria-label="Menu" onclick="document.getElementById('nav').classList.toggle('open')">&#9776;</button>
+      <ul id="nav">
+        <li><a href="/cycle/">Cycle</a></li>
+        <li><a href="/charts/">Charts</a></li>
+        <li><a href="/blog/" class="active">Blog</a></li>
+        <li><a href="https://bitcoindaily.vip" rel="noopener">Community</a></li>
+        <li><a href="https://bitcoindaily.app" rel="noopener">Consulting</a></li>
+        <li><a href="https://joshmolnar.com/" rel="noopener">Founder</a></li>
+        <li><a class="cta" href="https://bitcoindaily.vip" rel="noopener">Join the Community</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+    <section class="block" style="border-bottom:none">
+      <div class="wrap">
+        <article class="post">
+          <h1>Why Every Famous Bitcoin Top Indicator Failed at the Same Time</h1>
+          <div class="meta">By <a href="https://joshmolnar.com/" rel="noopener">Josh Molnar</a> &middot; July 2026 &middot; 5 min read</div>
+
+          <figure class="post-hero">
+            <img src="/assets/blog/why-every-bitcoin-top-indicator-failed.png" alt="Chart showing Bitcoin MVRV peaks falling from 5.88 to 2.74 across four cycles, never reaching the fixed trigger line at the October 2025 top" />
+            <figcaption>From the SSRN study 'Bitcoin Runs on a Clock'</figcaption>
+          </figure>
+<p>On October 6, 2025, Bitcoin printed the biggest top in its history, near $126,000. Every famous indicator built to call that exact moment stayed silent. Pi Cycle never crossed. MVRV never reached its danger zone. The Mayer Multiple was not even close.</p>
+
+<p>For roughly a decade those tools flagged Bitcoin's cycle tops, sometimes within days. Then, at the largest top ever, all of them went quiet at the same time. Most post-mortems blamed bad luck or the ETFs. I am a data scientist, so I did the only thing that settles an argument like this. I ran the full history.</p>
+
+<p>What I found became a research paper, <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6977940" rel="noopener">"Bitcoin Runs on a Clock,"</a> now live on SSRN. The short version is that the silence was structural. The indicators did not break in 2025. They were always going to break.</p>
+
+<h2>The alarm bolted to the wall</h2>
+<p>Picture a flood alarm bolted to a wall at a fixed height. It works perfectly for years because the water always rises past it. Then the floods start getting smaller. The water still rises, but it stops reaching the sensor. The alarm goes silent. Not because the flood stopped happening, but because the alarm was built for bigger waves.</p>
+
+<p>That is what happened to Bitcoin's top indicators. Every one of them is a line drawn at a fixed height, and Bitcoin's price swings shrink every cycle.</p>
+
+<p>Line the peaks up and it is impossible to miss. <a href="/blog/bitcoin-mvrv-ratio-explained.html">MVRV</a>, which compares Bitcoin's price to the average price everyone paid for their coins, peaked at 5.88, then 4.72, then 3.96, then just 2.74 across the last four cycles. The <a href="/blog/bitcoin-mayer-multiple-explained.html">Mayer Multiple</a> went from 8.26 to 1.52. The waves got smaller every single cycle. The trigger lines never moved.</p>
+
+<p>The popular excuse is that ETF custody distorted the on-chain data. But this decay started three cycles before a Bitcoin ETF existed. The signals never missed before because the wave was always big enough to touch the line. That was never skill.</p>
+
+<h2>The one thing that did not decay</h2>
+<p>Here is where it gets interesting. The size of each cycle keeps shrinking. The timing does not.</p>
+
+<p>Bitcoin's cycle tops keep landing 525 to 546 days after each halving, the supply cut written into Bitcoin's code. Four cycles, one narrow window.</p>
+
+<p>To make sure that was not a fluke, the study runs a brutal test. Simulate 10,000 random markets and look for timing that clusters that tightly. Under the primary test, zero of the 10,000 produced it. Even the most conservative version put the odds near 1 in 1,000.</p>
+
+<p>So the loudest debate in crypto right now, whether the <a href="/blog/is-the-bitcoin-4-year-cycle-dead.html">four-year cycle is dead</a>, has an answer where both sides are half right. The amplitude is dying. The clock is not.</p>
+
+<h2>Two dated calls, on the record</h2>
+<p>A model that only explains the past is a bedtime story. So the paper makes two dated predictions.</p>
+
+<p>First, a cycle bottom between October 5 and November 16, 2026. Those are committed dates, not a vibe. If the bottom lands before October 5, the model takes the loss in public.</p>
+
+<p>Second, the next cycle top 525 to 546 days after the next halving, which currently points to late 2029.</p>
+
+<p>Plenty of analysts are calling an October bottom right now. The difference is that this window comes from the same halving arithmetic that called the October 2025 top in advance, and it ships with public code anyone can rerun.</p>
+
+<h2>My receipt includes a miss</h2>
+<p>On January 11, 2025, nearly nine months ahead of time, I posted a <a href="https://youtu.be/m8wvCwnI_Qk" rel="noopener">video</a> telling my audience Bitcoin would top in October 2025. It topped on October 6.</p>
+
+<p>That same cycle, I also called a top price of $150,000 to $200,000. The actual high was near $126,000. Right on when, wrong on how much.</p>
+
+<p>I am not hiding that miss. It is the entire thesis of the paper playing out in public. The timing held. The size came up short, exactly the way a shrinking market says it should.</p>
+
+<h2>Check my work</h2>
+<p>Everything in the study is built to be checked. The trend fit only uses data that was available at each point in time, so there is no hindsight baked in. Statistics that failed a shuffle test were thrown out instead of reported. The pattern repeats on a second data source and on a second asset, Ethereum. The code is public, so anyone can rerun it and get the identical numbers.</p>
+
+<p>The full paper is on <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6977940" rel="noopener">SSRN</a>, and the plain-English walkthrough lives at <a href="/research/">bitcoin-daily.com/research</a>. Read it, then try to break it. That is the whole point of putting dates on the record.</p>
+          <h2>Common questions</h2>
+          <h3>Why did Bitcoin's top indicators fail at the October 2025 top?</h3>
+          <p>Because they are fixed trigger lines and Bitcoin's swings shrink every cycle. MVRV's peak fell from 5.88 to 4.72 to 3.96 to 2.74 across the last four cycles, and the Mayer Multiple's peak fell from 8.26 to 1.52, so the market stopped reaching the lines. The decay began three cycles before a Bitcoin ETF existed, so ETFs are not the explanation.</p>
+          <h3>What is the Bitcoin halving clock?</h3>
+          <p>It is the finding that Bitcoin's cycle tops keep landing 525 to 546 days after each halving. In 10,000 simulated random markets, none clustered that tightly under the study's primary test, and even the most conservative variant put the odds near 1 in 1,000.</p>
+          <h3>When does the study call the Bitcoin cycle bottom?</h3>
+          <p>The paper puts a cycle bottom window between October 5 and November 16, 2026 on the record. If the bottom lands before October 5, the model takes the loss in public.</p>
+          <h3>Where can I read the research?</h3>
+          <p>The full study, Bitcoin Runs on a Clock, is on SSRN at https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6977940, and a plain-English walkthrough is at https://bitcoin-daily.com/research.</p>
+          <h2>Keep reading</h2>
+          <ul>
+            <li><a href="/blog/bitcoin-runs-on-a-clock-research-paper.html">Bitcoin Runs on a Clock. The Research Paper</a></li>
+            <li><a href="/blog/is-the-bitcoin-4-year-cycle-dead.html">Is the Bitcoin 4-Year Cycle Dead? I Tested It</a></li>
+            <li><a href="/blog/bitcoin-pi-cycle-top-indicator.html">The Pi Cycle Top Indicator, Explained</a></li>
+          </ul>
+          <p>We break down the market like this every day, free on <a href="https://www.instagram.com/bitcoin.daily/" rel="noopener">Instagram</a> and <a href="https://www.youtube.com/@BitcoinDailyTV" rel="noopener">YouTube</a>, and in depth inside the <a href="https://bitcoindaily.vip" rel="noopener">community</a>.</p>
+          <p><em>Education, not financial advice. Trading involves real risk.</em></p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site">
+    <div class="wrap row">
+      <div>&copy; 2026 Bitcoin Daily &middot; Founded by <a href="https://joshmolnar.com/" rel="noopener">Josh Molnar</a></div>
+      <div><a href="/cycle/">Cycle</a> &middot; <a href="/charts/">Charts</a> &middot; <a href="/blog/">Blog</a> &middot; <a href="https://bitcoindaily.vip" rel="noopener">Community</a> &middot; <a href="mailto:info@bitcoin-daily.com">info@bitcoin-daily.com</a></div>
+    </div>
+  </footer>
+</body>
+</html>
