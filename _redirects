@@ -24,3 +24,18 @@
 /guides/bitcoin-vs-gold-deep-dive.pdf  /guides/bitcoin-vs-gold-deep-dive/  301
 /guides/do-whales-really-control-bitcoin.pdf  /guides/do-whales-really-control-bitcoin/  301
 /guides/bitcoin-177-event-study.pdf  /guides/bitcoin-177-event-study/  301
+
+# Legacy URLs from the previous owner's WordPress crypto-news site.
+# These showed as 36 "Not found (404)" in Search Console. The ones below carry
+# real user intent (or possible residual backlinks) so they map to the closest
+# live equivalent. Everything else, including the spam/gibberish paths, is left
+# to 404 on purpose, which is the correct answer for URLs that should not exist.
+/prices/          /charts/   301
+/about-us/        /          301
+/contact/         /          301
+/strategy         /blog/     301
+/tag/*            /blog/     301
+/category/*       /blog/     301
+/market/*         /blog/     301
+/cryptocurrency/* /blog/     301
+/2020/*           /blog/     301
