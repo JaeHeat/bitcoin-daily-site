@@ -42,3 +42,5 @@
 /altcoin/*        /blog/     301
 /bitcoin/*        /blog/     301
 /blockchain/*     /blog/     301
+/guides/august-playbook.pdf  /guides/august-playbook/  301
+/guides/summer-playbook.pdf  /guides/summer-playbook/  301
