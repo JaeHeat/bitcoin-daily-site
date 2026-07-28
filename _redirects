@@ -39,3 +39,6 @@
 /market/*         /blog/     301
 /cryptocurrency/* /blog/     301
 /2020/*           /blog/     301
+/altcoin/*        /blog/     301
+/bitcoin/*        /blog/     301
+/blockchain/*     /blog/     301
