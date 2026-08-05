@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Is Bitcoin Safer on an Exchange? What the Coldcard Hack Actually Proved | Bitcoin Daily</title>
+  <meta name="description" content="A cold wallet that was never online lost more than $130 million. That restarted the exchange versus self-custody argument, and the number everyone is quoting does not say what they think it says." />
+  <link rel="canonical" href="https://bitcoin-daily.com/blog/is-bitcoin-safer-on-an-exchange.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Is Bitcoin Safer on an Exchange? What the Coldcard Hack Actually Proved" />
+  <meta property="og:description" content="1.57 million coins lost in self-custody against 1.51 million on exchanges. Same size, completely different story, because 98% of the self-custody losses happened before 2020." />
+  <meta property="og:url" content="https://bitcoin-daily.com/blog/is-bitcoin-safer-on-an-exchange.html" />
+  <link rel="stylesheet" href="/styles.css?v=2" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Is Bitcoin Safer on an Exchange? What the Coldcard Hack Actually Proved",
+    "description": "A cold wallet that was never online lost more than $130 million. That restarted the exchange versus self-custody argument, and the number everyone is quoting does not say what they think it says.",
+    "datePublished": "2026-08-05",
+    "dateModified": "2026-08-05",
+    "mainEntityOfPage": "https://bitcoin-daily.com/blog/is-bitcoin-safer-on-an-exchange.html",
+    "author": { "@type": "Person", "@id": "https://joshmolnar.com/#person", "name": "Josh Molnar", "url": "https://joshmolnar.com/" },
+    "publisher": { "@id": "https://bitcoin-daily.com/#organization" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is it safer to keep Bitcoin on an exchange or in self-custody?", "acceptedAnswer": {"@type": "Answer", "text": "Neither is universally safer, and the totals being quoted do not settle it. River's 2025 report shows 1.57 million bitcoin lost in self-custody against 1.51 million on exchanges, but 98% of the self-custody losses happened before 2020, while exchange losses continued afterward. Self-custody also covers far more coins over far more years, so its larger raw total comes off a much larger base."}}, {"@type": "Question", "name": "What happened in the Coldcard hack?", "acceptedAnswer": {"@type": "Answer", "text": "Coldcard firmware 4.0.0, shipped in March 2021, routed seed generation to a software random number generator instead of the device's hardware one. Recovery phrases carried around 72 bits of randomness instead of 128, making them reconstructable. Attackers rebuilt private keys offline and swept the coins. Reported losses passed $130 million between July 30 and August 4, 2026."}}, {"@type": "Question", "name": "Which Coldcard devices are affected?", "acceptedAnswer": {"@type": "Answer", "text": "Mk2 and Mk3 on firmware 4.0.1 through 4.1.9, Mk4 and Mk5 before version 5.6.0, and the Q before 1.5.0Q. Edge builds before 6.6.0X and 6.6.0QX are also affected. TAPSIGNER, OPENDIME and SATSCARD are not. What matters is the firmware version your phrase was created on, not the version installed today."}}, {"@type": "Question", "name": "Does updating Coldcard firmware fix the vulnerability?", "acceptedAnswer": {"@type": "Answer", "text": "No. A recovery phrase that was guessable when it was generated stays guessable forever, regardless of later updates. If your phrase was created on affected firmware you need to generate an entirely new seed on patched firmware and migrate your funds to it, keeping the old backup until the move is confirmed."}}, {"@type": "Question", "name": "What is the safest way to store Bitcoin?", "acceptedAnswer": {"@type": "Answer", "text": "Spread it across at least two independent methods rather than trusting any single one. The Coldcard exploit hit every owner of one brand simultaneously, which is the failure mode a single hardware wallet cannot protect against. Adding your own dice rolls when generating a phrase, using a passphrase, testing backups before funding them, and storing backups in separate locations all remove single points of failure."}}]}
+  </script>
+  <!-- Cloudflare Web Analytics --><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "a646682a2f904c8b90a2f706d30c760f"}'></script><!-- End Cloudflare Web Analytics -->
+</head>
+<body>
+  <header class="site">
+    <div class="wrap nav">
+      <a class="brand" href="/">Bitcoin <span>Daily</span></a>
+      <button class="menu-toggle" aria-label="Menu" onclick="document.getElementById('nav').classList.toggle('open')">&#9776;</button>
+      <ul id="nav">
+        <li><a href="/cycle/">Cycle</a></li>
+        <li><a href="/charts/">Charts</a></li>
+        <li><a href="/blog/" class="active">Blog</a></li>
+        <li><a href="https://bitcoindaily.vip" rel="noopener">Community</a></li>
+        <li><a href="https://bitcoindaily.app" rel="noopener">Consulting</a></li>
+        <li><a href="https://joshmolnar.com/" rel="noopener">Founder</a></li>
+        <li><a class="cta" href="https://bitcoindaily.vip" rel="noopener">Join the Community</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+    <section class="block" style="border-bottom:none">
+      <div class="wrap">
+        <article class="post">
+          <h1>Is Bitcoin Safer on an Exchange? What the Coldcard Hack Actually Proved</h1>
+          <div class="meta">By <a href="https://joshmolnar.com/" rel="noopener">Josh Molnar</a> &middot; August 2026 &middot; 8 min read</div>
+
+<p class="lead">On July 30, Bitcoin started disappearing from wallets that had never been connected to the internet. By August 4 the running total passed $130 million. Nobody was phished, no malware was installed, and no device was stolen. The wallets were sitting exactly where their owners left them.</p>
+
+<p>Within days the incident had been turned into an argument. If cold storage can fail like this, the reasoning went, maybe leaving your coins on an exchange was the safer choice all along. That argument leans on a specific pair of numbers, and those numbers do not support the weight being put on them.</p>
+
+<h2>What actually broke</h2>
+
+<p>A hardware wallet protects your Bitcoin with a secret recovery phrase, and that phrase has to be built out of genuine randomness. If the randomness is real, the phrase cannot be guessed by anyone, ever, with any amount of computing power. The entire security model rests on that one assumption.</p>
+
+<p>In March 2021, Coinkite shipped Coldcard firmware version 4.0.0. One line in it routed seed generation away from the device's dedicated hardware random number generator and into a software fallback, seeded with chip data that was not secret. The phrases those devices produced carried roughly 72 bits of randomness instead of the 128 bits a recovery phrase is supposed to have.</p>
+
+<p>That gap sounds modest. It is not. It is the difference between a number nobody can ever guess and a number that a determined attacker can work through. Once researchers understood the flaw, private keys could be rebuilt offline and the coins swept straight off the blockchain.</p>
+
+<p><b>Being offline was never the thing that failed.</b> The device did its job of staying disconnected. The problem was that the phrase it handed you was weak from the moment it was created. An airgap protects a secret. It cannot protect a secret that was already guessable.</p>
+
+<p>The bug sat there for five years before anyone noticed.</p>
+
+<h2>Which devices are affected</h2>
+
+<p>A lot of coverage reported that only the Mk3 was at risk. Coinkite's own advisory says otherwise, and if you own one of these it is worth reading the actual list rather than a summary of it.</p>
+
+<ul>
+<li><b>Mk2 and Mk3</b>, firmware 4.0.1 through 4.1.9. Fixed in 4.2.0 or later.</li>
+<li><b>Mk4 and Mk5</b>, anything before 5.6.0. Fixed in 5.6.0 or later.</li>
+<li><b>Q</b>, anything before 1.5.0Q. Fixed in 1.5.0Q or later.</li>
+<li><b>Edge builds</b>, before 6.6.0X on Mk4 and Mk5, or before 6.6.0QX on the Q.</li>
+<li><b>TAPSIGNER, OPENDIME and SATSCARD</b> are not affected.</li>
+</ul>
+
+<p>Two groups came through this untouched. Anyone who added 50 or more of their own private dice rolls during setup, because those rolls put real randomness back into the phrase. And most people running a strong, unique passphrase on top of their recovery phrase.</p>
+
+<p>The detail that matters most, and the one most easily missed, is this. <b>What counts is the firmware version your phrase was created on, not the version running on the device today.</b> The weakness was baked into the phrase at birth. Updating the firmware does not repair a phrase that was already weak. If you are affected, you need a completely new seed and a migration to it. If you cannot remember which firmware you set the wallet up on, the safe assumption is that you are exposed.</p>
+
+<h2>The claim that exchanges are statistically safer</h2>
+
+<p>Shortly after the hack, an analyst posted two figures from River's 2025 custody report. The founder of Binance read them and concluded that storing coins on an exchange is statistically safer than holding them yourself.</p>
+
+<ul>
+<li><b>1.57 million</b> bitcoin permanently lost in self-custody</li>
+<li><b>1.51 million</b> bitcoin lost on exchanges</li>
+</ul>
+
+<p>Two nearly identical numbers. If you stop reading there, self-custody looks no safer than an exchange, and possibly slightly worse. But the same report contains a third number that changes the meaning of the first two entirely.</p>
+
+<h2>98% of those losses happened before 2020</h2>
+
+<p>River's estimate is that <b>98% of the 1.57 million lost in self-custody was lost before 2020.</b></p>
+
+<p>Those are not modern security failures. They are coins from an era when Bitcoin traded for pennies and nobody thought of a wallet file as money. Wiped drives. Discarded laptops. Passwords for accounts that were worth nothing at the time. That number is a story about 2011, and it says almost nothing about whether a hardware wallet you set up recently is safe.</p>
+
+<p>The exchange column does not have that property. Losses there kept accumulating well after 2020. River records more than 100,000 bitcoin lost in 2022 alone at platforms offering yield products, plus roughly $2.6 billion lost to embezzlement at exchanges since 2020. One column largely stopped growing. The other did not.</p>
+
+<h2>The second problem: the two piles are not the same size</h2>
+
+<p>There is a further issue with setting those totals side by side, and it is the kind of mistake that turns up constantly in crypto arguments.</p>
+
+<p>Most Bitcoin has always been held by people themselves. Self-custody covers far more coins, held across far more years, than anything sitting on an exchange. A much larger pile will lose more coins in absolute terms even if it is meaningfully safer per coin.</p>
+
+<p>Comparing raw totals without accounting for how much was held each way, and for how long, is not a comparison. To make a real claim about which is safer you would need a rate, and neither side has published one.</p>
+
+<h2>What the other side gets right</h2>
+
+<p>It would be easy to stop here and declare the argument won. That would be dishonest, because the counter-argument contains a point that genuinely cuts against everything above.</p>
+
+<p>Exchange hacks are loud. They make the news, they get investigated, they get counted. Losses in self-custody are quiet and personal, and most of them are never reported to anyone. <b>The self-custody figure is therefore probably an undercount, and nobody can tell you by how much.</b> That is a fair objection and it deserves to be stated plainly.</p>
+
+<p>Two other points also hold up. A handful of collapsed exchanges drag the exchange column down disproportionately, and some exchanges have covered user losses out of their own funds after a hack. It is also worth noting that the actual conclusion offered was that a balanced approach is probably best, which is a good deal closer to the truth than the headline the post turned into.</p>
+
+<p>Both columns are estimates. Both are probably low. That is the honest position.</p>
+
+<h2>Every method has exactly one way it dies</h2>
+
+<p>The whole debate was about which single basket is safest. The Coldcard failure is the clearest possible evidence that this is the wrong question to be asking.</p>
+
+<p>One line of code, written in 2021, reached every owner of one brand at the same moment. It did not matter how carefully any of them had stored the device, how good their backups were, or how disciplined they had been. They shared a single point of failure and most of them had no idea it existed.</p>
+
+<p>Every storage method has one. They are just different:</p>
+
+<ul>
+<li><b>On an exchange.</b> Company failure, insider theft, a freeze or seizure, a hack. It does survive your own mistakes, fire, and a lost device.</li>
+<li><b>One hardware wallet.</b> A firmware or supply-chain bug, a destroyed backup, theft, or you dying without leaving a plan. It survives an exchange collapsing.</li>
+<li><b>Two wallets from the same brand.</b> The same firmware bug, hitting both at once. It survives one device breaking.</li>
+<li><b>Two wallets from different brands.</b> Your own backup mistakes. It survives any single vendor's bug.</li>
+<li><b>Multisig with keys held separately.</b> Losing track of the setup itself. It survives any one key being lost or stolen.</li>
+</ul>
+
+<p>The last two rows never came up in the argument. They are not a compromise between the two positions. They are the answer to a better question.</p>
+
+<h2>What to actually do</h2>
+
+<p>None of this requires being technical. It requires refusing to let one thing hold everything.</p>
+
+<ul>
+<li><b>Split across at least two independent methods.</b> Two of the same device from the same maker is one point of failure wearing a disguise.</li>
+<li><b>Add your own randomness</b> when you generate a phrase. The dice-roll users walked away from this week untouched.</li>
+<li><b>Use a passphrase</b> on top of your recovery phrase, and store it separately from the phrase.</li>
+<li><b>Test your backup</b> by restoring it before you trust it with real money. An untested backup is a guess.</li>
+<li><b>Keep backups in separate physical places.</b> Fire, flood and burglary are boring and they take far more coins than exploits do.</li>
+<li><b>Verify receive addresses on the device screen.</b> Your computer can lie to you. The screen is the entire point of the device.</li>
+<li><b>Write down who gets access if something happens to you.</b> A large share of that 1.57 million was never stolen. It was simply lost.</li>
+<li><b>Re-check when firmware updates land.</b> This bug sat quietly for five years.</li>
+</ul>
+
+<p>Spreading things out has a real cost. More backups to track, more setups to remember, more ways to confuse your future self a decade from now. That price is genuine and worth weighing honestly. Losing everything to a single bug is a larger one.</p>
+
+<h2>The bottom line</h2>
+
+<p>The people who came through this week intact were not the ones who picked the right brand. Plenty of careful, well-informed people owned the affected device. They were the ones who never let a single thing hold all of it.</p>
+
+<p>Education, not financial advice.</p>
+          <h2>Common questions</h2>
+          <h3>Is it safer to keep Bitcoin on an exchange or in self-custody?</h3>
+          <p>Neither is universally safer, and the totals being quoted do not settle it. River's 2025 report shows 1.57 million bitcoin lost in self-custody against 1.51 million on exchanges, but 98% of the self-custody losses happened before 2020, while exchange losses continued afterward. Self-custody also covers far more coins over far more years, so its larger raw total comes off a much larger base.</p>
+          <h3>What happened in the Coldcard hack?</h3>
+          <p>Coldcard firmware 4.0.0, shipped in March 2021, routed seed generation to a software random number generator instead of the device's hardware one. Recovery phrases carried around 72 bits of randomness instead of 128, making them reconstructable. Attackers rebuilt private keys offline and swept the coins. Reported losses passed $130 million between July 30 and August 4, 2026.</p>
+          <h3>Which Coldcard devices are affected?</h3>
+          <p>Mk2 and Mk3 on firmware 4.0.1 through 4.1.9, Mk4 and Mk5 before version 5.6.0, and the Q before 1.5.0Q. Edge builds before 6.6.0X and 6.6.0QX are also affected. TAPSIGNER, OPENDIME and SATSCARD are not. What matters is the firmware version your phrase was created on, not the version installed today.</p>
+          <h3>Does updating Coldcard firmware fix the vulnerability?</h3>
+          <p>No. A recovery phrase that was guessable when it was generated stays guessable forever, regardless of later updates. If your phrase was created on affected firmware you need to generate an entirely new seed on patched firmware and migrate your funds to it, keeping the old backup until the move is confirmed.</p>
+          <h3>What is the safest way to store Bitcoin?</h3>
+          <p>Spread it across at least two independent methods rather than trusting any single one. The Coldcard exploit hit every owner of one brand simultaneously, which is the failure mode a single hardware wallet cannot protect against. Adding your own dice rolls when generating a phrase, using a passphrase, testing backups before funding them, and storing backups in separate locations all remove single points of failure.</p>
+          <h2>Keep reading</h2>
+          <ul>
+            <li><a href="/blog/how-to-set-a-stop-loss-in-crypto.html">How to Set a Stop Loss in Crypto</a></li>
+            <li><a href="/blog/is-bitcoin-a-good-investment.html">Is Bitcoin a Good Investment? The Honest Answer</a></li>
+          </ul>
+          <p>We break down the market like this every day, free on <a href="https://www.instagram.com/bitcoin.daily/" rel="noopener">Instagram</a> and <a href="https://www.youtube.com/@BitcoinDailyTV" rel="noopener">YouTube</a>, and in depth inside the <a href="https://bitcoindaily.vip" rel="noopener">community</a>.</p>
+          <p><em>Education, not financial advice. Trading involves real risk.</em></p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site">
+    <div class="wrap row">
+      <div>&copy; 2026 Bitcoin Daily &middot; Founded by <a href="https://joshmolnar.com/" rel="noopener">Josh Molnar</a></div>
+      <div><a href="/cycle/">Cycle</a> &middot; <a href="/charts/">Charts</a> &middot; <a href="/blog/">Blog</a> &middot; <a href="https://bitcoindaily.vip" rel="noopener">Community</a> &middot; <a href="mailto:info@bitcoin-daily.com">info@bitcoin-daily.com</a></div>
+    </div>
+  </footer>
+</body>
+</html>
