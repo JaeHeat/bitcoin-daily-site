@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The 4-Year Cycle Is Measured Wrong | Bitcoin Daily</title>
+  <meta name="description" content="Bitcoin's halving is an exact 210,000-block period, not a four-year one. Re-measured in blocks, the last three cycle tops land in a 1,695-block band and the 2013 anomaly mostly disappears." />
+  <link rel="canonical" href="https://bitcoin-daily.com/blog/bitcoin-4-year-cycle-blocks.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="The 4-Year Cycle Is Measured Wrong" />
+  <meta property="og:description" content="The four years came from a Satoshi email, not the code. Measured in blocks, Bitcoin's cycle tops cluster three times tighter than the calendar suggests." />
+  <meta property="og:url" content="https://bitcoin-daily.com/blog/bitcoin-4-year-cycle-blocks.html" />
+  <link rel="stylesheet" href="/styles.css?v=2" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "The 4-Year Cycle Is Measured Wrong",
+    "description": "Bitcoin's halving is an exact 210,000-block period, not a four-year one. Re-measured in blocks, the last three cycle tops land in a 1,695-block band and the 2013 anomaly mostly disappears.",
+    "datePublished": "2026-08-14",
+    "dateModified": "2026-08-14",
+    "mainEntityOfPage": "https://bitcoin-daily.com/blog/bitcoin-4-year-cycle-blocks.html",
+    "author": { "@type": "Person", "@id": "https://joshmolnar.com/#person", "name": "Josh Molnar", "url": "https://joshmolnar.com/" },
+    "publisher": { "@id": "https://bitcoin-daily.com/#organization" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is Bitcoin's cycle really four years?", "acceptedAnswer": {"@type": "Answer", "text": "No. The halving is defined in the protocol as every 210,000 blocks, not every four years. At a ten-minute block target that works out to 1,458 days, or 3.99 years, and the chain does not run exactly on target. The four-year figure comes from Satoshi's January 2009 email describing the schedule, not from the code."}}, {"@type": "Question", "name": "Where do Bitcoin cycle tops land in block terms?", "acceptedAnswer": {"@type": "Answer", "text": "The last three mature tops landed 77,901 to 79,596 blocks after their own halving, a spread of 1,695 blocks or about twelve days of mining. The same three tops measured on a calendar spread across 21 days, so the block coordinate is roughly a third tighter."}}, {"@type": "Question", "name": "Why does measuring in blocks make a difference?", "acceptedAnswer": {"@type": "Answer", "text": "Because block production drifts. Bitcoin targets 144 blocks a day but between 2011 and 2013 it averaged nearer 170, about 15% fast, since difficulty only re-tunes every 2,016 blocks and lagged the arrival of the first serious mining hardware. Measuring a block-defined event on a calendar means the ruler stretches while the event stays put."}}, {"@type": "Question", "name": "Where do Bitcoin cycle bottoms land in blocks?", "acceptedAnswer": {"@type": "Answer", "text": "The three prior bottoms landed 128,910 to 133,934 blocks after their halving, near 132,000. That is a 5,024-block band, about 35 days of mining, which is three times wider than the 1,695-block top band. The bottoms are the weaker half of the clock and should be treated with less confidence than the tops."}}, {"@type": "Question", "name": "Was the 2013 top really early?", "acceptedAnswer": {"@type": "Answer", "text": "Partly. It landed 62,280 blocks after its halving against a mature band of 77,901 to 79,596. In days it sits at 0.693 of the mature average, but in blocks it sits at 0.801, so roughly a third of its apparent earliness was the 2011 to 2013 chain running about 15% fast rather than the market behaving differently."}}]}
+  </script>
+  <!-- Cloudflare Web Analytics --><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "a646682a2f904c8b90a2f706d30c760f"}'></script><!-- End Cloudflare Web Analytics -->
+</head>
+<body>
+  <header class="site">
+    <div class="wrap nav">
+      <a class="brand" href="/">Bitcoin <span>Daily</span></a>
+      <button class="menu-toggle" aria-label="Menu" onclick="document.getElementById('nav').classList.toggle('open')">&#9776;</button>
+      <ul id="nav">
+        <li><a href="/cycle/">Cycle</a></li>
+        <li><a href="/charts/">Charts</a></li>
+        <li><a href="/blog/" class="active">Blog</a></li>
+        <li><a href="https://bitcoindaily.vip" rel="noopener">Community</a></li>
+        <li><a href="https://bitcoindaily.app" rel="noopener">Consulting</a></li>
+        <li><a href="https://joshmolnar.com/" rel="noopener">Founder</a></li>
+        <li><a class="cta" href="https://bitcoindaily.vip" rel="noopener">Join the Community</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+    <section class="block" style="border-bottom:none">
+      <div class="wrap">
+        <article class="post">
+          <h1>The 4-Year Cycle Is Measured Wrong</h1>
+          <div class="meta">By <a href="https://joshmolnar.com/" rel="noopener">Josh Molnar</a> &middot; August 2026 &middot; 10 min read</div>
+
+<p class="lead">Ask about Bitcoin's four-year cycle and everyone has a position. It is dead, it is alive, it is stretching, it is being front-run. Almost every one of those arguments shares a hidden assumption, and the assumption is wrong.</p>
+
+<p>The cycle is not four years long. It never was. It is 210,000 blocks long, and that is a different thing.</p>
+
+<h2>Where the four came from</h2>
+
+<p>On 8 January 2009, five days after mining the genesis block, Satoshi Nakamoto described the monetary schedule to the Cryptography Mailing List. Coins would go to nodes that make blocks, <b>"with the amount cut in half every 4 years."</b></p>
+
+<p>That sentence is the origin of the four-year cycle. It is a plain-English summary written for an email list, and it is approximately right.</p>
+
+<p><b>The code says something else.</b> The rule is a single constant, SubsidyHalvingInterval = 210000 blocks, fixed at block zero and adjustable by nobody. Not four years. Not any number of years. A block count.</p>
+
+<p>Four years is what 210,000 blocks works out to if the network produces a block every ten minutes. Do the arithmetic and it is not even four. 210,000 blocks at ten minutes each is 2,100,000 minutes, which is 1,458 days, which is <b>3.99 years</b>. The headline number was already rounded before the chain did anything unexpected.</p>
+
+<h2>And the chain does not run on schedule</h2>
+
+<p>Bitcoin targets 144 blocks a day. It hits that on average across the long run, because difficulty re-tunes every 2,016 blocks to pull it back. But it drifts in between, and early on it drifted badly.</p>
+
+<p>Between 2011 and 2013 the network averaged roughly <b>170 blocks a day</b> against about <b>147</b> at maturity. The chain was running about 15% fast.</p>
+
+<p>The reason is structural. Difficulty only adjusts once every 2,016 blocks, roughly a fortnight. Between adjustments the network runs on a setting chosen for the hashrate that existed two weeks ago. If miners are switching on faster than that, every block in the gap arrives early and the correction always lands after the damage. In a mature network that error is small and self-cancelling. In 2011, with the first purpose-built mining hardware arriving in waves, it ran in one direction for two years.</p>
+
+<p>So if you measure a block-defined event on a calendar, and the block rate drifts, your ruler stretches and shrinks underneath you. The cycle stays where it is. Your measurement of it moves.</p>
+
+<h2>What happens when you switch units</h2>
+
+<p>Re-score the three mature cycle tops in blocks after their own halving and they land in a narrow band.</p>
+
+<ul>
+<li>December 2017 top: <b>79,596 blocks</b> after its halving</li>
+<li>November 2021 top: <b>78,781 blocks</b></li>
+<li>October 2025 top: <b>77,901 blocks</b></li>
+</ul>
+
+<p>That is a spread of <b>1,695 blocks</b> across three cycles spanning eleven years. At normal mining speed it is about twelve days' worth. The same three tops measured on the calendar spread across <b>21 days</b>. Same three events, roughly a third less scatter, purely from changing the unit.</p>
+
+<p><b>How unlikely is that cluster?</b> The research generates 10,000 synthetic Bitcoin histories by block-bootstrapping its own daily returns, preserving volatility clustering and crash geometry, then runs the identical mechanical rule for identifying tops. <b>Zero of the 10,000 reproduce it.</b> Under a more forgiving construction that lets the null pick among candidate tops, 3 in 10,000 do.</p>
+
+<h2>Against the look-alike clocks</h2>
+
+<p>A four-year rhythm is not much of a finding on its own. Plenty of things happen every four years. So the halving gets tested head to head against clocks that look just like it, on the same data.</p>
+
+<ul>
+<li><b>The halving.</b> Holds the three tops inside a 1,723-block band.</li>
+<li><b>The US election cycle.</b> Needs 12,775 blocks.</li>
+<li><b>A fixed calendar period.</b> Needs 209,158, which is almost an entire epoch and means no alignment at all.</li>
+</ul>
+
+<p>One result looks backwards until you see why. In days, a fixed four-year clock at a random starting phase never matches the halving's cluster, so phase carries the signal. In blocks, a fixed 210,000-block clock at a random offset matches it 98.5% of the time. That is not a failure, it is the point restated. In block space the halving is an <i>exact</i> period rather than a drifting one, so any clock with the right period lands on the tops regardless of where it starts. Draw the period at random instead and only 0.9% match. The period is the thing, and the protocol is the only thing that fixes it.</p>
+
+<h2>2013 stops being strange</h2>
+
+<p>For years the 2013 top was the awkward one. It arrived early enough relative to its halving that it looked like a different regime, and plenty of theories were built on treating it as an exception.</p>
+
+<p>It landed 62,280 blocks after its halving, against a mature band of 77,901 to 79,596. Nobody is claiming it lands inside. The question is how far outside.</p>
+
+<p>In days it sits at 0.693 of the mature average. In blocks it sits at <b>0.801</b>. Still early, but roughly a third of its apparent earliness was never the market at all. It was the 2011 to 2013 chain running fast.</p>
+
+<p>There is a robustness test hiding in that. Force the 2013 top into the mature set, which is the most hostile version of the analysis, and the null widens from zero to 8 per 10,000 in days but only to 3 per 10,000 in blocks. The native coordinate is more robust to the cycle that fits worst.</p>
+
+<h2>The bottoms, partly</h2>
+
+<p>The bottoms need more care, and the honest answer is that they are the weaker half.</p>
+
+<p>Measured as a gap after the top, bear-market duration turns out to be largely intrinsic to how crashes behave, reproduced by about 40% of random histories. That statistic was demoted in the research and it stays demoted.</p>
+
+<p>What the block coordinate adds is a phase statistic the calendar could not resolve. The three bottoms' blocks-after-halving spread is reproduced by <b>1.7%</b> of random paths in day phase and only <b>0.16%</b> in block phase. A tenfold sharpening, and it survives conditioning on cycle structure.</p>
+
+<p><b>An old argument also dissolves.</b> In days it was genuinely unclear whether bottoms anchored to the previous halving or the next one, and the two answers disagreed by months. In blocks the question cannot even be asked, because blocks-since and blocks-until always sum to exactly 210,000. They are one statement written twice. The disagreement was the drifting calendar all along.</p>
+
+<h2>How much looser is the bottom?</h2>
+
+<p>It is easy to say the bottoms are weaker and leave it there. Here is the size of it, measured the same way for both turns.</p>
+
+<ul>
+<li><b>Tops.</b> A 1,695-block band. About 12 days of mining.</li>
+<li><b>Bottoms.</b> A 5,024-block band. About 35 days.</li>
+</ul>
+
+<p><b>Three times wider.</b> That is the honest gap between how well this clock times tops and how well it times bottoms, and it is why the tops carry the case while the bottoms are described as a weak prior worth watching. It is still a band, and 5,024 blocks inside a 210,000-block epoch is a small target. But anyone treating a bottom call with the same confidence as a top call is ignoring a threefold difference in precision.</p>
+
+<h2>This epoch, in numbers</h2>
+
+<p>The current epoch opened at block 840,000 in April 2024. Add the historical bands and the zones for this cycle are fixed, because the epoch length is fixed.</p>
+
+<ul>
+<li>Halving: block <b>840,000</b></li>
+<li>Historical top band: <b>917,901 to 919,596</b></li>
+<li>Actual top, October 2025: <b>917,901</b></li>
+<li>Historical bottom band: <b>968,910 to 973,934</b></li>
+<li>Next halving: block <b>1,050,000</b></li>
+</ul>
+
+<p>The October 2025 top landed inside the historical band and at its early edge. That is one more observation for the tops column, and it is the only part of this epoch already settled.</p>
+
+<p>A band is not a date. The chain reaches a given height when it reaches it, and the arrival depends on hashrate, which nobody schedules. Treat these as zones to watch, not appointments.</p>
+
+<h2>Where blocks make it worse</h2>
+
+<p>A framework that improved everything it touched would be the more suspicious one. The block coordinate costs something, and here is the full list.</p>
+
+<ul>
+<li>Cycle-shape overlay across cycles: 0.72 in days, <b>0.69 in blocks</b>. Worse.</li>
+<li>Volatility clock placebo: p = 0.19 in days, <b>p = 0.40 in blocks</b>. Worse.</li>
+<li>Top-to-bottom lag sharpening: 0.42% in days, <b>1.11% in blocks</b>. Worse.</li>
+<li>Bear-market duration evidence: none either way. Unchanged.</li>
+</ul>
+
+<p>The block clock times the cycle's discrete turns better than the calendar does. It does not organise the continuous path between those turns any better, and on volatility it is clearly worse.</p>
+
+<p>And the sample is three cycles. Three tops and three bottoms. Every number here rests on that, which is why the case leans on nulls and placebo tests rather than on the tightness of the band alone. A tight band across three points is easy to produce by accident. A band that 10,000 synthetic histories cannot reproduce is harder.</p>
+
+<h2>The narrow claim</h2>
+
+<p>This is not a machine that prints cycle dates, and it does not resolve whether the four-year cycle is dead. What it says is smaller and firmer. The halving keeps better time than the calendar does, and the calendar is what almost everyone has been using.</p>
+
+<p>When a system defines itself in one unit and you insist on measuring it in another, you will find anomalies that are not there and miss structure that is. That is worth more than any single cycle call.</p>
+
+<p>The full method, the nulls, and the robustness checks are in the research paper, free to read at arxiv.org/abs/2607.26188.</p>
+
+<p>Education, not financial advice.</p>
+          <h2>Common questions</h2>
+          <h3>Is Bitcoin's cycle really four years?</h3>
+          <p>No. The halving is defined in the protocol as every 210,000 blocks, not every four years. At a ten-minute block target that works out to 1,458 days, or 3.99 years, and the chain does not run exactly on target. The four-year figure comes from Satoshi's January 2009 email describing the schedule, not from the code.</p>
+          <h3>Where do Bitcoin cycle tops land in block terms?</h3>
+          <p>The last three mature tops landed 77,901 to 79,596 blocks after their own halving, a spread of 1,695 blocks or about twelve days of mining. The same three tops measured on a calendar spread across 21 days, so the block coordinate is roughly a third tighter.</p>
+          <h3>Why does measuring in blocks make a difference?</h3>
+          <p>Because block production drifts. Bitcoin targets 144 blocks a day but between 2011 and 2013 it averaged nearer 170, about 15% fast, since difficulty only re-tunes every 2,016 blocks and lagged the arrival of the first serious mining hardware. Measuring a block-defined event on a calendar means the ruler stretches while the event stays put.</p>
+          <h3>Where do Bitcoin cycle bottoms land in blocks?</h3>
+          <p>The three prior bottoms landed 128,910 to 133,934 blocks after their halving, near 132,000. That is a 5,024-block band, about 35 days of mining, which is three times wider than the 1,695-block top band. The bottoms are the weaker half of the clock and should be treated with less confidence than the tops.</p>
+          <h3>Was the 2013 top really early?</h3>
+          <p>Partly. It landed 62,280 blocks after its halving against a mature band of 77,901 to 79,596. In days it sits at 0.693 of the mature average, but in blocks it sits at 0.801, so roughly a third of its apparent earliness was the 2011 to 2013 chain running about 15% fast rather than the market behaving differently.</p>
+          <h2>Keep reading</h2>
+          <ul>
+            <li><a href="/blog/what-happened-to-the-stock-to-flow-model.html">What Happened to the Stock-to-Flow Model?</a></li>
+            <li><a href="/blog/best-performing-asset-of-the-decade.html">The Best-Performing Asset of the Decade</a></li>
+          </ul>
+          <p>We break down the market like this every day, free on <a href="https://www.instagram.com/bitcoin.daily/" rel="noopener">Instagram</a> and <a href="https://www.youtube.com/@BitcoinDailyTV" rel="noopener">YouTube</a>, and in depth inside the <a href="https://bitcoindaily.vip" rel="noopener">community</a>.</p>
+          <p><em>Education, not financial advice. Trading involves real risk.</em></p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site">
+    <div class="wrap row">
+      <div>&copy; 2026 Bitcoin Daily &middot; Founded by <a href="https://joshmolnar.com/" rel="noopener">Josh Molnar</a></div>
+      <div><a href="/cycle/">Cycle</a> &middot; <a href="/charts/">Charts</a> &middot; <a href="/blog/">Blog</a> &middot; <a href="https://bitcoindaily.vip" rel="noopener">Community</a> &middot; <a href="mailto:info@bitcoin-daily.com">info@bitcoin-daily.com</a></div>
+    </div>
+  </footer>
+</body>
+</html>
