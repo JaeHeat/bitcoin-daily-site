@@ -478,7 +478,7 @@
     const fuelBy = {}; s.forEach(d => fuelBy[d.date] = d.fuel);
     const priceBy = {}; s.forEach(d => priceBy[d.date] = d.price);
     const evs = (o.events||[]).filter(e => fuelBy[e.date] != null);
-    const evPts = c => evs.map(e => ({ x:e.date, y:c==='fuel'?fuelBy[e.date]:priceBy[e.date], _t:e.type, _oi:e.oi_drop, _px:e.px_2d }));
+    const evPts = c => evs.map(e => ({ x:e.date, y:c==='fuel'?(e.fuel_before!=null?e.fuel_before:fuelBy[e.date]):priceBy[e.date], _t:e.type, _oi:e.oi_drop, _px:e.px_2d }));
     const evSet = c => ({ type:'scatter', label:'Major squeeze', data:evPts(c), pointRadius:4.2, pointHoverRadius:6,
       pointBackgroundColor:ctx=>sqEvColor(ctx.raw&&ctx.raw._t), pointBorderColor:'#0a0d12', pointBorderWidth:1, showLine:false });
     const evTip = it => it.dataset.type==='scatter'
