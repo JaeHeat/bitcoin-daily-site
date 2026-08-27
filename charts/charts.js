@@ -471,6 +471,27 @@
     setRead('The Radar reads <b>'+L.phase+'</b> at <b>'+Math.round(L.score)+'/100</b>. The market forces it tracks are '+(L.score>=50?'leaning toward altcoins':'pointing away from altcoins')+' right now. Alt season only registers when they all line up and the score pushes toward 100. The top panel is the altcoin market cap (TOTAL3, everything except Bitcoin and Ethereum).', L.phase==='Alt season');
     return top; };
 
+  // Squeeze Risk: split chart -> BTC price on top, long/short squeeze-risk scores (0-100) below
+  const sqColor = v => v>65?'#e2574a':v>40?'#f0883e':'#2ea043';
+  R.squeeze = D => { const o=D.charts.squeeze; if(!o) return null; const s=o.series, labels=s.map(d=>d.date), L=o.latest;
+    const yW = sc => { sc.width = 58; }, pad = { padding:{ right:14, top:4 } };
+    const top = new Chart($('chart'), { type:'line',
+      data:{ labels, datasets:[{ label:'Bitcoin price', data:s.map(d=>d.price), borderColor:C.orange, borderWidth:2, pointRadius:0, tension:.15 }] },
+      options: baseOpts({ layout:pad, plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]), label:it=>'Bitcoin '+fmtUSD(it.parsed.y) } } },
+        scales:{ x:{ grid:{display:false}, ticks:{display:false} },
+          y:{ type:'logarithmic', position:'left', grid:{color:C.line}, afterFit:yW, ticks:{color:C.muted,font:{size:12},callback:v=>fmtUSD(v)} } } }),
+      plugins:[watermark] });
+    const bot = new Chart($('chart2'), { type:'line',
+      data:{ labels, datasets:[
+        { label:'Long-squeeze risk', data:s.map(d=>d.long), borderColor:'#e2574a', borderWidth:2, pointRadius:0, tension:.15 },
+        { label:'Short-squeeze risk', data:s.map(d=>d.short), borderColor:'#2ea043', borderWidth:2, pointRadius:0, tension:.15 } ]},
+      options: baseOpts({ layout:pad, plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]), label:it=>it.dataset.label+' '+Math.round(it.parsed.y)+'/100' } } },
+        scales:{ x:baseOpts().scales.x, y:{ position:'left', min:0, max:100, grid:{color:C.line}, afterFit:yW, ticks:{color:C.muted,font:{size:12}} } } }),
+      plugins:[thresholds([{v:65,c:'#e2574a',t:'high risk'},{v:40,c:'#f0883e',t:'elevated'}])] });
+    BDCharts.chart2 = bot;
+    setRead('Long-squeeze risk is <b style="color:'+sqColor(L.long)+'">'+Math.round(L.long)+'/100 ('+L.long_zone+')</b> and short-squeeze risk is <b style="color:'+sqColor(L.short)+'">'+Math.round(L.short)+'/100 ('+L.short_zone+')</b>. The leverage tank (open interest) sits at the '+Math.round(L.oi_pct)+'th percentile of the past year and funding at the '+Math.round(L.fund_pct)+'th percentile since 2022. Historically the big long squeezes fired with the tank above the 60th percentile, median the 95th.', L.long<=40 && L.short<=40);
+    return top; };
+
   R.ma2y = D => { const s=D.charts.ma2y.series, labels=s.map(d=>d.date);
     const ch=new Chart($('chart'), { type:'line',
       data:{ labels, datasets:[
@@ -788,6 +809,7 @@
       case 'supply': return c.latest.pct_mined+'% mined, '+c.latest.inflation.toFixed(2)+'% infl';
       case 'ma2y': return c.latest.mult.toFixed(2)+'x the 2-year MA';
       case 'compass': return c.latest.phase+', '+Math.round(c.latest.score)+'/100';
+      case 'squeeze': return 'long '+Math.round(c.latest.long)+', short '+Math.round(c.latest.short)+' /100';
       case 'drawdown': return c.now.dd+'% below the top';
       case 'cycle_band': return c.now.mult.toFixed(2)+'x, '+c.now.pos;
       case 'metcalfe': return Math.round(c.latest)+'% of network trend';
