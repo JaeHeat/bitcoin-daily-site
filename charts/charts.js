@@ -471,25 +471,42 @@
     setRead('The Radar reads <b>'+L.phase+'</b> at <b>'+Math.round(L.score)+'/100</b>. The market forces it tracks are '+(L.score>=50?'leaning toward altcoins':'pointing away from altcoins')+' right now. Alt season only registers when they all line up and the score pushes toward 100. The top panel is the altcoin market cap (TOTAL3, everything except Bitcoin and Ethereum).', L.phase==='Alt season');
     return top; };
 
-  // Squeeze Risk: split chart -> BTC price on top, long/short squeeze-risk scores (0-100) below
-  const sqColor = v => v>65?'#e2574a':v>40?'#f0883e':'#2ea043';
-  R.squeeze = D => { const o=D.charts.squeeze; if(!o) return null; const s=o.series, labels=s.map(d=>d.date), L=o.latest;
+  // Squeeze Fuel Gauge: BTC price on top, the fuel line (OI pctile vs trailing year) below with
+  // every historical MAJOR squeeze marked as a dot. One threshold (60) - the tested regime gate.
+  const sqEvColor = t => t==='long'?'#e2574a':t==='short'?'#2ea043':'#9aa7bd';
+  R.squeeze = D => { const o=D.charts.squeeze; if(!o) return null; const s=o.series, labels=s.map(d=>d.date), L=o.latest, ST=o.stats||{};
+    const fuelBy = {}; s.forEach(d => fuelBy[d.date] = d.fuel);
+    const priceBy = {}; s.forEach(d => priceBy[d.date] = d.price);
+    const evs = (o.events||[]).filter(e => fuelBy[e.date] != null);
+    const evPts = c => evs.map(e => ({ x:e.date, y:c==='fuel'?fuelBy[e.date]:priceBy[e.date], _t:e.type, _oi:e.oi_drop, _px:e.px_2d }));
+    const evSet = c => ({ type:'scatter', label:'Major squeeze', data:evPts(c), pointRadius:4.2, pointHoverRadius:6,
+      pointBackgroundColor:ctx=>sqEvColor(ctx.raw&&ctx.raw._t), pointBorderColor:'#0a0d12', pointBorderWidth:1, showLine:false });
+    const evTip = it => it.dataset.type==='scatter'
+      ? ('Major '+(it.raw._t==='mixed'?'flush':it.raw._t+' squeeze')+': OI '+it.raw._oi+'%, price '+(it.raw._px>=0?'+':'')+it.raw._px+'% in 2 days')
+      : null;
     const yW = sc => { sc.width = 58; }, pad = { padding:{ right:14, top:4 } };
     const top = new Chart($('chart'), { type:'line',
-      data:{ labels, datasets:[{ label:'Bitcoin price', data:s.map(d=>d.price), borderColor:C.orange, borderWidth:2, pointRadius:0, tension:.15 }] },
-      options: baseOpts({ layout:pad, plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]), label:it=>'Bitcoin '+fmtUSD(it.parsed.y) } } },
+      data:{ labels, datasets:[
+        { label:'Bitcoin price', data:s.map(d=>d.price), borderColor:C.orange, borderWidth:2, pointRadius:0, tension:.15 },
+        evSet('price') ] },
+      options: baseOpts({ layout:pad, plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]||it[0].raw.x), label:it=>evTip(it)||('Bitcoin '+fmtUSD(it.parsed.y)) } } },
         scales:{ x:{ grid:{display:false}, ticks:{display:false} },
           y:{ type:'logarithmic', position:'left', grid:{color:C.line}, afterFit:yW, ticks:{color:C.muted,font:{size:12},callback:v=>fmtUSD(v)} } } }),
       plugins:[watermark] });
     const bot = new Chart($('chart2'), { type:'line',
       data:{ labels, datasets:[
-        { label:'Long-squeeze risk', data:s.map(d=>d.long), borderColor:'#e2574a', borderWidth:2, pointRadius:0, tension:.15 },
-        { label:'Short-squeeze risk', data:s.map(d=>d.short), borderColor:'#2ea043', borderWidth:2, pointRadius:0, tension:.15 } ]},
-      options: baseOpts({ layout:pad, plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]), label:it=>it.dataset.label+' '+Math.round(it.parsed.y)+'/100' } } },
+        { label:'Squeeze fuel', data:s.map(d=>d.fuel), borderColor:C.orange, borderWidth:2, pointRadius:0, tension:.15,
+          fill:{ target:{value:60}, above:'rgba(226,87,74,.13)' } },
+        evSet('fuel') ] },
+      options: baseOpts({ layout:pad, plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:it=>fmtDate(labels[it[0].dataIndex]||it[0].raw.x), label:it=>evTip(it)||('Fuel '+Math.round(it.parsed.y)+'/100') } } },
         scales:{ x:baseOpts().scales.x, y:{ position:'left', min:0, max:100, grid:{color:C.line}, afterFit:yW, ticks:{color:C.muted,font:{size:12}} } } }),
-      plugins:[thresholds([{v:65,c:'#e2574a',t:'high risk'},{v:40,c:'#f0883e',t:'elevated'}])] });
+      plugins:[thresholds([{v:60,c:'#e2574a',t:'fueled zone'}])] });
     BDCharts.chart2 = bot;
-    setRead('Long-squeeze risk is <b style="color:'+sqColor(L.long)+'">'+Math.round(L.long)+'/100 ('+L.long_zone+')</b> and short-squeeze risk is <b style="color:'+sqColor(L.short)+'">'+Math.round(L.short)+'/100 ('+L.short_zone+')</b>. The leverage tank (open interest) sits at the '+Math.round(L.oi_pct)+'th percentile of the past year and funding at the '+Math.round(L.fund_pct)+'th percentile since 2022. Historically the big long squeezes fired with the tank above the 60th percentile, median the 95th.', L.long<=40 && L.short<=40);
+    const hi = L.fuel >= L.threshold;
+    setRead('Squeeze fuel is <b style="color:'+(hi?'#e2574a':'#2ea043')+'">'+Math.round(L.fuel)+'/100 ('+L.state+')</b>. '
+      +'The dots are every major liquidation squeeze since 2021: <b>'+ST.n_above+' of '+ST.n_major+'</b> fired with fuel above the 60 line, and a major squeeze inside 7 days runs about <b>'+ST.p_high+'%</b> in the fueled zone against <b>'+ST.p_low+'%</b> below it. '
+      +(hi?'The tank is full enough for a cascade, in either direction. Direction is not predictable, and the funding side ('+L.fund_side+', '+Math.round(L.fund_pct)+'th percentile) is context only.'
+           :'The tank is drained, so the violent chain-reaction moves rarely start here. Red dots were long squeezes, green were short squeezes, grey were two-sided flushes.'), !hi);
     return top; };
 
   R.ma2y = D => { const s=D.charts.ma2y.series, labels=s.map(d=>d.date);
@@ -809,7 +826,7 @@
       case 'supply': return c.latest.pct_mined+'% mined, '+c.latest.inflation.toFixed(2)+'% infl';
       case 'ma2y': return c.latest.mult.toFixed(2)+'x the 2-year MA';
       case 'compass': return c.latest.phase+', '+Math.round(c.latest.score)+'/100';
-      case 'squeeze': return 'long '+Math.round(c.latest.long)+', short '+Math.round(c.latest.short)+' /100';
+      case 'squeeze': return 'fuel '+Math.round(c.latest.fuel)+'/100, '+c.latest.state;
       case 'drawdown': return c.now.dd+'% below the top';
       case 'cycle_band': return c.now.mult.toFixed(2)+'x, '+c.now.pos;
       case 'metcalfe': return Math.round(c.latest)+'% of network trend';
