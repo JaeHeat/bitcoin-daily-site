@@ -788,6 +788,134 @@
       cnt.innerHTML=[[d,'days'],[h,'hours'],[m,'minutes'],[s,'seconds']].map(x=>'<div><div class="cn">'+x[0]+'</div><div class="cl">'+x[1]+'</div></div>').join(''); }
     tick(); setInterval(tick,1000); return null; };
 
+  // The Block Clock: the halving epoch measured in blocks, the protocol's own unit. Turn heights and the
+  // pre-registered bands come from charts.block_clock; the tip refreshes live from mempool.space every
+  // minute and falls back to an extrapolation at the trailing 30-day block pace if the feed is down.
+  R.block_clock = D => { const B=D.charts.block_clock; if(!B) return null;
+    const EP=B.epoch_blocks, H0=B.halving_height, HN=B.next_halving_height, bpd=B.bpd_30d||144, bt=B.bands.top, bb=B.bands.bottom;
+    const TOPC='#f7931a', LOWC='#4ec97a', E1C='#6b7280', t0=Date.parse(B.as_of_utc);
+    const ROW={1:3,2:2,3:1,4:0}, ROWLAB={3:'2012 halving',2:'2016 halving',1:'2020 halving',0:'2024 halving'};
+    const S={ tip:B.tip, live:false, failed:false };
+    const n=v=>Math.round(v).toLocaleString();
+    const md=(blocks,yr)=>new Date(Date.now()+Math.max(0,blocks)/bpd*864e5).toLocaleDateString('en-US', yr?{month:'short',year:'numeric'}:{month:'short',day:'numeric'});
+    const dayNow=()=>B.days_since_halving+(Date.now()-t0)/864e5;
+    let unit='blocks', ch=null;
+
+    function drawDial(){ const cv=$('bc-dial'); if(!cv) return; const Z=340, dpr=window.devicePixelRatio||1;
+      cv.width=Z*dpr; cv.height=Z*dpr; const g=cv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,Z,Z);
+      const cx=Z/2, cy=Z/2, R0=126, LW=20, off=S.tip-H0, ang=b=>-Math.PI/2+(b/EP)*Math.PI*2;
+      const ring=(a0,a1,col)=>{ g.beginPath(); g.arc(cx,cy,R0,a0,a1); g.lineWidth=LW; g.strokeStyle=col; g.stroke(); };
+      ring(0,Math.PI*2,'#121722');
+      ring(ang(0),ang(Math.min(Math.max(off,0),EP)),'rgba(232,237,246,.11)');
+      ring(ang(bt.lo),ang(bt.hi),TOPC); ring(ang(bb.lo),ang(bb.hi),LOWC);
+      for(let q=0;q<4;q++){ const a=ang(q*EP/4), r1=R0+LW/2+3, r2=R0+LW/2+(q?9:13);
+        g.beginPath(); g.moveTo(cx+Math.cos(a)*r1,cy+Math.sin(a)*r1); g.lineTo(cx+Math.cos(a)*r2,cy+Math.sin(a)*r2);
+        g.lineWidth=q?1.5:2.5; g.strokeStyle=q?'rgba(154,167,189,.55)':'#e8edf6'; g.stroke(); }
+      g.font='800 10px -apple-system,sans-serif'; g.textBaseline='middle';
+      g.fillStyle='#9aa7bd'; g.textAlign='center'; g.fillText('HALVING',cx,cy-(R0+LW/2+22));
+      const lab=(b,txt,col,side)=>{ const a=ang((b.lo+b.hi)/2), r=R0+LW/2+14;
+        g.fillStyle=col; g.textAlign=side; g.fillText(txt,cx+Math.cos(a)*r+(side==='left'?2:-2),cy+Math.sin(a)*r); };
+      lab(bt,'TOPS',TOPC,'left'); lab(bb,'LOWS',LOWC,'right');
+      B.turns.forEach(t=>{ const a=ang(t.blocks), r=R0-LW/2-9;
+        g.beginPath(); g.arc(cx+Math.cos(a)*r,cy+Math.sin(a)*r,4.2,0,Math.PI*2);
+        g.fillStyle=t.kind==='top'?(t.mature?TOPC:E1C):LOWC; g.fill(); });
+      // the dot orbits outside the ring: on the ring it would paint over a band edge the chain has not reached yet
+      const a=ang(off), c1=Math.cos(a), s1=Math.sin(a);
+      g.save(); g.strokeStyle='#e8edf6'; g.lineWidth=2.5; g.lineCap='round';
+      g.beginPath(); g.moveTo(cx+c1*(R0-LW/2-4),cy+s1*(R0-LW/2-4)); g.lineTo(cx+c1*(R0+LW/2+5),cy+s1*(R0+LW/2+5)); g.stroke();
+      const hx=cx+c1*(R0+LW/2+12), hy=cy+s1*(R0+LW/2+12); g.shadowColor='rgba(232,237,246,.7)'; g.shadowBlur=12;
+      g.beginPath(); g.arc(hx,hy,7,0,Math.PI*2); g.fillStyle='#0b0e14'; g.fill();
+      g.shadowBlur=0; g.beginPath(); g.arc(hx,hy,4.5,0,Math.PI*2); g.fillStyle='#e8edf6'; g.fill(); g.restore(); }
+
+    function sets(){ const pt=t=>({x:unit==='blocks'?t.blocks:t.days, y:ROW[t.epoch], t}), T=B.turns;
+      return [
+        { label:'Cycle tops', data:T.filter(t=>t.kind==='top'&&t.mature).map(pt), backgroundColor:TOPC, borderColor:'#0b0e14', borderWidth:2, pointRadius:8, pointHoverRadius:10 },
+        { label:'2013 top', data:T.filter(t=>t.kind==='top'&&!t.mature).map(pt), backgroundColor:'rgba(107,114,128,.45)', borderColor:E1C, borderWidth:2, pointRadius:8, pointHoverRadius:10 },
+        { label:'Cycle lows', data:T.filter(t=>t.kind==='bottom').map(pt), backgroundColor:LOWC, borderColor:'#0b0e14', borderWidth:2, pointRadius:8, pointHoverRadius:10 },
+        { label:'We are here', data:[{x:unit==='blocks'?S.tip-H0:dayNow(), y:0, now:true}], pointStyle:'triangle', backgroundColor:'#e8edf6', borderColor:'#0b0e14', borderWidth:2, pointRadius:11, pointHoverRadius:12 } ]; }
+
+    const deco={ id:'bcdeco',
+      beforeDatasetsDraw(c){ const a=c.chartArea, x=c.scales.x, y=c.scales.y, g=c.ctx; if(!a) return;
+        const lo=b=>unit==='blocks'?b.lo:b.days_lo, hi=b=>unit==='blocks'?b.hi:b.days_hi;
+        g.save();
+        [[bt,'rgba(247,147,26,.20)'],[bb,'rgba(78,201,122,.17)']].forEach(([b,col])=>{ const x0=x.getPixelForValue(lo(b)), x1=x.getPixelForValue(hi(b));
+          g.fillStyle=col; g.fillRect(x0,a.top,Math.max(2,x1-x0),a.bottom-a.top); });
+        B.epochs.forEach(e=>{ const py=y.getPixelForValue(ROW[e.n]);
+          const len=unit==='blocks'?(e.current?S.tip-H0:EP):(e.current?dayNow():e.days_len);
+          g.strokeStyle=e.current?'rgba(232,237,246,.30)':'rgba(232,237,246,.13)'; g.lineWidth=6; g.lineCap='round';
+          g.beginPath(); g.moveTo(x.getPixelForValue(0),py); g.lineTo(x.getPixelForValue(len),py); g.stroke(); });
+        g.restore(); },
+      afterDatasetsDraw(c){ const a=c.chartArea, x=c.scales.x, g=c.ctx; if(!a) return;
+        const mid=b=>(x.getPixelForValue(unit==='blocks'?b.lo:b.days_lo)+x.getPixelForValue(unit==='blocks'?b.hi:b.days_hi))/2;
+        g.save(); g.font='800 12px -apple-system,sans-serif'; g.textAlign='center'; g.textBaseline='bottom';
+        g.fillStyle=TOPC; g.fillText('TOPS',mid(bt),a.top-6); g.fillStyle=LOWC; g.fillText('LOWS',mid(bb),a.top-6); g.restore(); } };
+
+    function chart(){ const cv=$('chart'); if(!cv) return null;
+      return new Chart(cv, { type:'scatter', data:{ datasets:sets() },
+        options:{ responsive:true, maintainAspectRatio:false, animation:false, layout:{ padding:{ top:24, right:16 } },
+          plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#0b0e14', borderColor:'rgba(255,255,255,.12)', borderWidth:1, padding:10, displayColors:false,
+            callbacks:{ label:it=>{ const r=it.raw; if(r.now) return unit==='blocks'?'We are here, '+n(r.x)+' blocks after the 2024 halving':'We are here, day '+Math.round(r.x)+' after the 2024 halving';
+              const t=r.t; return t.year+' cycle '+(t.kind==='top'?'top':'low')+', '+n(t.blocks)+' blocks ('+t.days+' days) after its halving'+(t.mature?'':', while the young chain ran fast'); } } } },
+          scales:{
+            x:{ type:'linear', min:0, max:EP, grid:{color:C.line},
+              ticks:{ color:C.muted, font:{size:12}, stepSize:35000, callback:v=>v===0?'halving':(unit==='blocks'?(v/1000)+'k':Math.round(v/365.25)+' yr') },
+              title:{ display:true, text:'blocks after each halving', color:C.muted, font:{size:11} } },
+            y:{ type:'linear', min:-0.6, max:3.6, grid:{display:false},
+              ticks:{ color:C.text, font:{size:12,weight:'600'}, stepSize:1, includeBounds:false, callback:v=>ROWLAB[v]||'' } } } },
+        plugins:[watermark, deco] }); }
+
+    function spread(){ const el=$('bc_spread'); if(!el) return; const tb=bt.hi-bt.lo, lb=bb.hi-bb.lo;
+      el.innerHTML = unit==='blocks'
+        ? 'Measured in <b>blocks</b>, the last three tops land within <b>'+n(tb)+'</b> blocks of each other, about '+Math.round(tb/144)+' days of mining. The three lows land within <b>'+n(lb)+'</b>, about '+Math.round(lb/144)+' days of mining.'
+        : 'Measured in <b>days</b>, the same three tops scatter across <b>'+(bt.days_hi-bt.days_lo)+'</b> days and the three lows across <b>'+(bb.days_hi-bb.days_lo)+'</b>. Same turns, blurrier ruler.'; }
+
+    function update(){ const off=S.tip-H0, lo=bb.lo, hi=bb.hi;
+      const num=$('bc-num'); if(num) num.textContent=n(off);
+      const sub=$('bc-sub'); if(sub) sub.innerHTML='blocks since the halving<br><b>'+(off/EP*100).toFixed(1)+'%</b> of this epoch';
+      let state, pill, boxes, read;
+      if(off<lo){ const a=lo-off, z=hi-off, dd=Math.max(1,Math.round(a/bpd)); state='before';
+        pill='Bottom band opens in about '+dd+(dd===1?' day':' days');
+        boxes=[[n(a),'blocks to the band'],[(a/bpd).toFixed(1),'days at today\'s pace'],[md(a),'band opens, est.'],[md(z),'band closes, est.']];
+        read='The chain is <b>'+n(off)+' blocks</b> into this halving epoch. The last three cycle lows all landed between <b>'+n(lo)+' and '+n(hi)+' blocks</b> in, and in this epoch that band is block heights <b>'+n(H0+lo)+' to '+n(H0+hi)+'</b>. The clock reaches it in about <b>'+n(a)+' blocks</b>, roughly '+dd+(dd===1?' day':' days')+' at the current pace.';
+      } else if(off<=hi){ const z=hi-off; state='inside';
+        pill='Inside the bottom band';
+        boxes=[[n(z),'blocks left in the band'],[(z/bpd).toFixed(1),'days at today\'s pace'],[n(off-lo),'blocks since it opened'],[md(z),'band closes, est.']];
+        read='The block clock is <b>inside the bottom band</b>, the stretch of the epoch where the last three cycle lows printed. The band ends at block height <b>'+n(H0+hi)+'</b>, about <b>'+n(z)+' blocks</b> from here. A clock inside the band is not a bottom on its own. Price has to agree.';
+      } else { const hz=HN-S.tip, tz=HN+bt.lo-S.tip; state='after';
+        pill='Past the bottom band';
+        boxes=[[n(hz),'blocks to the halving'],[md(hz,true),'next halving, est.'],[n(HN+bt.lo),'next top band opens'],[md(tz,true),'top band, est.']];
+        read='The block clock has <b>passed this epoch\'s bottom band</b> (block heights '+n(H0+lo)+' to '+n(H0+hi)+'). Next on the clock is the halving at block <b>'+n(HN)+'</b>, then the top band at block heights <b>'+n(HN+bt.lo)+' to '+n(HN+bt.hi)+'</b>.'; }
+      const st=$('bc-state'); if(st){ st.className='bc-state '+state; st.textContent=pill; }
+      const cn=$('bc-count'); if(cn) cn.innerHTML=boxes.map(x=>'<div><div class="cn">'+x[0]+'</div><div class="cl">'+x[1]+'</div></div>').join('');
+      const lv=$('bc-live'); if(lv) lv.innerHTML = S.live ? '<i></i>Live chain height <b>'+n(S.tip)+'</b> from mempool.space, refreshing every minute.'
+        : S.failed ? '<i class="est"></i>Estimated height <b>'+n(S.tip)+'</b>. The live feed did not answer, so this is projected at '+bpd.toFixed(1)+' blocks a day.'
+        : '<i class="est"></i>Checking the live chain...';
+      const cards=[
+        ['Block height', n(S.tip), S.live?'live from mempool.space':'estimated from today\'s data'],
+        ['Blocks since the halving', n(off), (off/EP*100).toFixed(1)+'% of the 210,000-block epoch'],
+        ['Chain speed, last 30 days', bpd.toFixed(1)+'<span class="to"> a day</span>', 'the target is 144 blocks a day'],
+        ['Bottom band, this epoch', n(H0+lo)+'<span class="to"> to </span>'+n(H0+hi), 'where the last three cycle lows landed', 1],
+        ['Next halving', n(HN), 'block height, about '+md(HN-S.tip,true)+' at today\'s pace'],
+        ['Top band, next epoch', n(HN+bt.lo)+'<span class="to"> to </span>'+n(HN+bt.hi), 'where the last three cycle tops landed', 1] ];
+      const cd=$('bc_cards'); if(cd) cd.innerHTML=cards.map(c=>'<div class="ch-stat"><div class="l">'+c[0]+'</div><div class="n'+(c[3]?' sm':'')+'">'+c[1]+'</div><div class="s">'+c[2]+'</div></div>').join('');
+      setRead(read, state==='inside');
+      drawDial();
+      if(ch){ ch.data.datasets[3].data=[{x:unit==='blocks'?off:dayNow(), y:0, now:true}]; ch.update('none'); } }
+
+    function poll(){ fetch('https://mempool.space/api/blocks/tip/height',{cache:'no-store'})
+      .then(r=>r.ok?r.text():Promise.reject(r.status))
+      .then(t=>{ const h=parseInt(t,10); if(!(h>=B.tip-3 && h<B.tip+30000)) throw new Error('tip out of range'); S.tip=h; S.live=true; S.failed=false; update(); })
+      .catch(()=>{ S.live=false; S.failed=true; S.tip=Math.max(S.tip, Math.round(B.tip+(Date.now()-t0)/864e5*bpd)); update(); }); }
+
+    const tg=$('bc_unit');
+    if(tg) tg.querySelectorAll('[data-u]').forEach(btn=>{ btn.onclick=()=>{ unit=btn.dataset.u;
+      tg.querySelectorAll('[data-u]').forEach(b=>b.classList.toggle('active',b===btn));
+      if(ch){ const xs=ch.options.scales.x; xs.max=unit==='blocks'?EP:1461; xs.ticks.stepSize=unit==='blocks'?35000:365.25;
+        xs.title.text=unit==='blocks'?'blocks after each halving':'days after each halving'; ch.data.datasets=sets(); ch.update('none'); }
+      spread(); }; });
+    ch=chart(); spread(); update(); poll(); setInterval(poll,60000);
+    return null; };
+
   function render(key, D){ BDCharts.chart2=null; const ch = R[key] ? R[key](D) : null; BDCharts.chart = ch;
     // drag-across-to-zoom on x; on split charts (a second panel) zooming one syncs the other (chartjs-plugin-zoom auto-registers on load)
     const charts=[ch, BDCharts.chart2].filter(c=>c && c.options && c.options.plugins);
@@ -844,6 +972,7 @@
       case 'pmi_vs_btc': return 'corr '+c.corr_mom+', near zero';
       case 'sp500_vs_btc': return 'avg corr '+c.full_avg+', not 0.87';
       case 'halving_eta': return c.days_remaining+' days to go';
+      case 'block_clock': { const w=c.windows.bottom; return w.state==='before' ? w.blocks_to_open.toLocaleString()+' blocks to the bottom band' : (w.state==='inside' ? 'inside the bottom band' : 'past the bottom band'); }
       default: return ''; } }
 
   global.BDCharts = { C, fmtUSD, fmtDate, render, summary, saveImg, chart:null, chart2:null };
