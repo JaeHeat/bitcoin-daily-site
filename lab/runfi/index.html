@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow, noarchive" />
+<title>Runfi Sustainability Model</title>
+<meta name="description" content="Internal working model: can a move-to-earn economy pay people to walk without the payout mechanism eating itself?" />
+<link rel="stylesheet" href="/styles.css?v=2" />
+<style>
+  /* Chart tokens. Dark-only, matching the site surface. The three hues were
+     validated against #121722 with the palette checker: every pair that
+     co-occurs in a chart clears the CVD and normal-vision floors. */
+  .viz-root {
+    color-scheme: dark;
+    --surface-1: #121722;
+    --series-revenue: #3987e5;  /* blue   - outside revenue */
+    --series-payout:  #199e70;  /* aqua   - payouts, revenue-share engine */
+    --series-mint:    #e66767;  /* red    - payouts, token engine */
+  }
+
+  .lab { max-width: 1080px; margin: 0 auto; padding: 0 22px 90px; }
+  .lab h2 { margin: 54px 0 10px; font-size: 1.5rem; letter-spacing: -.01em; }
+  .lab h3 { margin: 26px 0 8px; font-size: 1.05rem; color: var(--text); }
+  .lab p { color: var(--muted); margin: 0 0 14px; max-width: 68ch; }
+  .lab p strong, .lab li strong { color: var(--text); }
+  .lab ul { color: var(--muted); margin: 0 0 14px 20px; max-width: 68ch; }
+  .lab li { margin-bottom: 7px; }
+
+  .banner {
+    border: 1px solid var(--line); border-left: 3px solid var(--accent);
+    background: var(--bg-soft); border-radius: var(--radius);
+    padding: 20px 24px; margin: 26px 0 8px;
+  }
+  .banner .inv {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 1.05rem; color: var(--text); margin-bottom: 8px;
+  }
+  .banner p { margin: 0; }
+
+  .tiles { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); margin: 22px 0; }
+  .tile { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; }
+  .tile .v { font-size: 1.6rem; font-weight: 650; letter-spacing: -.02em; line-height: 1.2; }
+  .tile .k { color: var(--muted); font-size: .82rem; margin-top: 4px; }
+  .tile.good .v { color: var(--accent-2); }
+  .tile.bad .v { color: var(--series-mint); }
+
+  figure { margin: 18px 0 0; background: var(--bg-soft); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 16px 10px; }
+  figcaption { color: var(--muted); font-size: .85rem; margin-top: 10px; line-height: 1.5; }
+  figcaption b { color: var(--text); font-weight: 600; }
+  .chart { width: 100%; height: auto; display: block; overflow: visible; }
+  .grid { stroke: #232c3d; stroke-width: 1; }
+  .grid-zero { stroke: #3a4560; stroke-width: 1; }
+  .axis-label { fill: #9aa7bd; font-size: 11px; font-family: inherit; }
+  .series { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  .series-label { fill: #e8edf6; font-size: 11px; font-weight: 600; font-family: inherit; }
+  .crosshair { stroke: #4a5570; stroke-width: 1; stroke-dasharray: 3 3; pointer-events: none; }
+  .hover-dot { stroke: var(--surface-1); stroke-width: 2; pointer-events: none; }
+  .legend { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 10px; font-size: .82rem; color: var(--muted); }
+  .legend i, .tooltip i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; margin-right: 6px; vertical-align: -1px; }
+  .tooltip {
+    position: absolute; top: 8px; transform: translateX(-50%);
+    background: #0b0e14; border: 1px solid var(--line); border-radius: 8px;
+    padding: 8px 10px; font-size: .78rem; color: var(--text);
+    pointer-events: none; white-space: nowrap; box-shadow: var(--shadow); z-index: 5;
+  }
+  .tooltip strong { display: block; margin-bottom: 4px; color: var(--muted); font-weight: 600; }
+  .tooltip span { display: block; }
+  .tooltip b { margin-left: 10px; float: right; font-variant-numeric: tabular-nums; }
+
+  details.table-view { margin-top: 8px; }
+  details.table-view summary { color: var(--accent-2); cursor: pointer; font-size: .82rem; }
+  details.table-view table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: .78rem; font-variant-numeric: tabular-nums; }
+  details.table-view th, details.table-view td { padding: 5px 8px; border-bottom: 1px solid var(--line); text-align: right; }
+  details.table-view th[scope="row"] { text-align: left; color: var(--muted); font-weight: 500; }
+  details.table-view thead th { color: var(--muted); font-weight: 600; }
+
+  table.plain { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: .88rem; font-variant-numeric: tabular-nums; }
+  table.plain th, table.plain td { padding: 9px 10px; border-bottom: 1px solid var(--line); text-align: right; }
+  table.plain th:first-child, table.plain td:first-child { text-align: left; }
+  table.plain thead th { color: var(--muted); font-weight: 600; font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; }
+
+  .controls { display: grid; gap: 18px 26px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 22px; margin: 20px 0; }
+  .ctrl label { display: flex; justify-content: space-between; align-items: baseline; font-size: .84rem; color: var(--muted); margin-bottom: 6px; gap: 10px; }
+  .ctrl label b { color: var(--text); font-variant-numeric: tabular-nums; font-weight: 650; }
+  .ctrl input[type=range] { width: 100%; accent-color: var(--accent); }
+  .ctrl .hint { font-size: .74rem; color: #6f7c93; margin-top: 4px; line-height: 1.45; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; margin: 18px 0 4px; }
+  .row button { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 9px; padding: 8px 14px; font: inherit; font-size: .84rem; cursor: pointer; }
+  .row button:hover { border-color: var(--accent); }
+  .row button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+  .verdict { border-radius: var(--radius); padding: 14px 18px; margin: 18px 0; border: 1px solid var(--line); background: var(--bg-soft); }
+  .verdict.ok { border-left: 3px solid var(--accent-2); }
+  .verdict.warn { border-left: 3px solid var(--series-mint); }
+  .verdict p { margin: 0; color: var(--text); }
+  .grid2 { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); }
+  @media (max-width: 640px) { .lab { padding: 0 16px 60px; } .lab h2 { font-size: 1.28rem; } }
+</style>
+</head>
+<body class="viz-root">
+
+<main class="lab">
+
+  <p style="margin-top:38px;color:#6f7c93;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase">Internal working model &middot; not published</p>
+  <h1 style="font-size:2.1rem;letter-spacing:-.02em;margin:6px 0 14px">Runfi sustainability model</h1>
+  <p style="font-size:1.05rem">Can you pay people to walk without the payout mechanism eating itself? This is a
+  24-month simulation of two ways to try. The numbers on this page are computed live in your browser by the
+  same model that generates the committed CSVs.</p>
+
+  <div class="banner">
+    <div class="inv">payouts(t) &le; outside_revenue(t)&nbsp;&nbsp;for every period t</div>
+    <p>Outside revenue means money that did not come from another user buying in. Subscriptions, brand deals,
+    opt-in partner offers. Not NFT sales to the next cohort. Hold this line and the economy cannot inflate
+    itself to death, no matter how many people join.</p>
+  </div>
+
+  <div class="tiles" id="headline"></div>
+
+  <h2>What the token version does</h2>
+  <p>The token engine mints rewards at a fixed nominal rate per unit of activity and funds them from new-user
+  buy-in. It is calibrated to the STEPN shape and lands on it: the price falls <strong>99.9%</strong>, users
+  peak in month 10, and the protocol mints <strong>$7.0M of rewards against $0.37M of real revenue</strong>.</p>
+
+  <figure>
+    <div id="c-token"></div>
+    <figcaption>Token price, log scale. The decline is not gentle because the entry NFT is priced in the token
+    the protocol emits, so every step down shrinks what the next cohort contributes.</figcaption>
+    <details class="table-view"><summary>View as table</summary><div id="t-token"></div></details>
+  </figure>
+
+  <figure>
+    <div id="c-mint"></div>
+    <figcaption>Rewards minted versus real revenue, token engine, log scale. <b>The gap is the whole problem.</b>
+    Every month is a breach: the protocol promises a quantity of tokens, not a value, so it keeps printing at
+    the same rate no matter what they are worth.</figcaption>
+    <details class="table-view"><summary>View as table</summary><div id="t-mint"></div></details>
+  </figure>
+
+  <h2>The single line that turns a decline into a collapse</h2>
+  <p>The crash is not caused by the emission rate. It is caused by denominating the entry cost in the token
+  being emitted. Sever that one link and change nothing else:</p>
+
+  <table class="plain">
+    <thead><tr><th>Month 24</th><th>Fixed-price entry</th><th>Token-priced entry</th></tr></thead>
+    <tbody>
+      <tr><td>Token price</td><td>$0.42 (-86%)</td><td>$0.0021 (-99.93%)</td></tr>
+      <tr><td>Active users</td><td>74,144</td><td>9,912</td></tr>
+      <tr><td>Shape</td><td>soft decline</td><td>collapse</td></tr>
+    </tbody>
+  </table>
+  <p>Both still breach the invariant every single month. The difference is only whether users get a gentle
+  disappointment or a wipeout. <strong>If you ever do launch a token, never denominate the entry cost in it.</strong></p>
+
+  <div class="verdict warn">
+    <p>Worth naming: in the fixed-price run the protocol mints <strong>$40.1M</strong> of rewards against
+    <strong>$2.73M</strong> of revenue, and the operating company still finishes with <strong>$2.15M in the
+    bank</strong>. Fees are collected in real money up front while the losses land on token holders. A
+    move-to-earn company can do very well out of a design that is terrible for its users. That is why so many
+    of these launched.</p>
+  </div>
+
+  <h2>What the revenue-share version does</h2>
+  <p>No token. A fixed share of real outside revenue goes into a pool, split pro-rata by verified activity.
+  Reward per mile floats. The pool cannot be overdrawn, so the invariant holds by construction rather than by
+  discipline.</p>
+
+  <figure>
+    <div id="c-rs"></div>
+    <figcaption>Payouts versus outside revenue, revenue-share engine. Payouts track revenue at a fixed
+    fraction and <b>never cross it</b>, in any scenario, in any month. Across 11 revenue-share scenarios and
+    264 scenario-months there are zero breaches.</figcaption>
+    <details class="table-view"><summary>View as table</summary><div id="t-rs"></div></details>
+  </figure>
+
+  <h2>The constraint is not the payout rule</h2>
+  <p>Sweeping payout share from 5% to 95% breaks nothing. More payout always retains more users and always
+  costs more money. The real wall is scale.</p>
+
+  <table class="plain">
+    <thead><tr><th>Payout share</th><th>Break-even users</th><th>Pool per user / month</th></tr></thead>
+    <tbody id="be-rows"></tbody>
+  </table>
+  <p>Roughly <strong>100,000 monthly actives to wash its face</strong> at a 50% share. This is a customer
+  acquisition and retention problem wearing a tokenomics costume, which is why the answer was never going to
+  be a cleverer emission curve.</p>
+
+  <h2>What actually moves the number</h2>
+  <p>Two levers beat payout share, and neither costs an extra dollar of payout. Below, both runs spend
+  identical marketing money and pay out identical dollars. The only differences are that the app is worth
+  opening with the money switched off, and the same pool is paid as an activity-weighted weekly draw instead
+  of flat micro-payments.</p>
+
+  <figure>
+    <div id="c-design"></div>
+    <figcaption>Active users, same spend and same payout dollars. <b>+122% at month 24</b>, churn 17.6% to
+    10.2%, and the difference between never profitable and profitable from month 15.</figcaption>
+    <details class="table-view"><summary>View as table</summary><div id="t-design"></div></details>
+  </figure>
+  <p>The prize multiplier of 2.2 is the least defensible number in this model. It is set to 1.0 everywhere
+  else, so nothing other than this comparison depends on it.</p>
+
+  <h2>Run it yourself</h2>
+  <p>Every slider recomputes the full 24 months live. The thing to try first: set revenue per user to zero and
+  watch the payout fall to nothing <em>without the model ever breaching the invariant</em>. That is the
+  difference. A design that cannot pay simply pays less, instead of printing the difference.</p>
+
+  <div class="row" id="presets">
+    <button data-preset="base" aria-pressed="true">Base case</button>
+    <button data-preset="designed">Recommended design</button>
+    <button data-preset="revenue_stall">Revenue stall</button>
+    <button data-preset="cheat_epidemic">Fraud epidemic</button>
+    <button data-preset="hypergrowth">Hypergrowth</button>
+  </div>
+
+  <div class="controls" id="controls"></div>
+  <div class="tiles" id="live"></div>
+  <div class="verdict" id="verdict"></div>
+
+  <div class="grid2">
+    <figure><div id="c-live-users"></div>
+      <figcaption>Active users.</figcaption></figure>
+    <figure><div id="c-live-pay"></div>
+      <figcaption>Payout per user per month, pool money only.</figcaption></figure>
+    <figure><div id="c-live-inv"></div>
+      <figcaption>The invariant. Payouts against outside revenue.</figcaption></figure>
+    <figure><div id="c-live-tre"></div>
+      <figcaption>Treasury. Below zero means out of money.</figcaption></figure>
+  </div>
+
+  <h2>What this model does not know</h2>
+  <ul>
+    <li><strong>Monthly time steps.</strong> A weekly pool has within-month dynamics this cannot see.</li>
+    <li><strong>Users are homogeneous.</strong> No power users, no geography, no seasonality, and real fitness
+    apps have brutal January cohorts.</li>
+    <li><strong>Retention is a smooth function of last month's payout.</strong> Real churn is lumpy and driven
+    by things nothing here represents.</li>
+    <li><strong>Revenue per user is assumed, not observed.</strong> Attack this number first, because
+    everything downstream scales with it.</li>
+    <li><strong>No regulation, app store policy on paid rewards, or payout tax treatment.</strong> All three
+    are real and none are modelled.</li>
+  </ul>
+
+</main>
+
+<script type="module">
+import { run, breakEvenMau, outsideRevenue, stakeEconomics, DEFAULTS } from './model.js';
+import { lineChart, dataTable, fmtUsd, fmtNum } from './chart.js';
+
+const pick = (rows, k) => rows.map((r) => r[k]);
+
+/* ---------- static narrative charts ---------- */
+const tok = run({ engine: 'token_mint' });
+const nofb = run({ engine: 'token_mint', entryPriceElasticity: 0 });
+const rs = run({});
+const designed = run({ churnCeiling: 0.18, prizeMultiplier: 2.2, paidSignupsM1: 14000, paidSignupDecay: 0.985, referralK: 0.10 });
+const control = run({ paidSignupsM1: 14000, paidSignupDecay: 0.985, referralK: 0.10 });
+
+const tokenSeries = [{ name: 'Token price', colorVar: '--series-mint', values: pick(tok, 'token_price_usd') }];
+lineChart(document.getElementById('c-token'), tokenSeries, { log: true, yTitle: 'Token price' });
+dataTable(document.getElementById('t-token'), tokenSeries);
+
+const mintSeries = [
+  { name: 'Minted', colorVar: '--series-mint', values: pick(tok, 'paid_out_usd') },
+  { name: 'Revenue', colorVar: '--series-revenue', values: pick(tok, 'revenue_usd') },
+];
+lineChart(document.getElementById('c-mint'), mintSeries, { log: true, yTitle: 'Minted vs revenue' });
+dataTable(document.getElementById('t-mint'), mintSeries);
+
+const rsSeries = [
+  { name: 'Revenue', colorVar: '--series-revenue', values: pick(rs, 'revenue_usd') },
+  { name: 'Payouts', colorVar: '--series-payout', values: pick(rs, 'paid_out_usd') },
+];
+lineChart(document.getElementById('c-rs'), rsSeries, { yTitle: 'Payouts vs revenue' });
+dataTable(document.getElementById('t-rs'), rsSeries);
+
+const desSeries = [
+  { name: 'Designed', colorVar: '--series-payout', values: pick(designed, 'mau') },
+  { name: 'Control', colorVar: '--series-revenue', values: pick(control, 'mau') },
+];
+lineChart(document.getElementById('c-design'), desSeries, { format: fmtNum, yTitle: 'Active users' });
+dataTable(document.getElementById('t-design'), desSeries, fmtNum);
+
+/* ---------- headline tiles ---------- */
+const last = (a) => a[a.length - 1];
+document.getElementById('headline').innerHTML = [
+  ['bad', '99.9%', 'Token price fall, STEPN-shaped engine'],
+  ['bad', '48 / 48', 'Months the token engine breaches the invariant'],
+  ['good', '0 / 264', 'Months the revenue-share engine breaches it'],
+  ['', fmtUsd(last(rs).total_user_upside_usd), 'What a user actually earns per month'],
+].map(([c, v, k]) => `<div class="tile ${c}"><div class="v">${v}</div><div class="k">${k}</div></div>`).join('');
+
+/* ---------- break-even table ---------- */
+document.getElementById('be-rows').innerHTML = [0.25, 0.50, 0.80].map((share) => {
+  const mau = breakEvenMau({ payoutShare: share });
+  // Pool per user at that MAU, on the same month-12 policy the solver used.
+  const p = { ...DEFAULTS, payoutShare: share };
+  const { sub, ad, offer } = outsideRevenue(mau, 12, p);
+  const perUser = (share * (sub + ad + offer)) / mau;
+  return `<tr><td>${(share * 100).toFixed(0)}%</td><td>${mau ? mau.toLocaleString(undefined, { maximumFractionDigits: 0 }) : 'never'}</td><td>${fmtUsd(perUser)}</td></tr>`;
+}).join('');
+
+/* ---------- interactive model ---------- */
+const CONTROLS = [
+  { key: 'payoutShare', label: 'Payout share of revenue', min: 0, max: 0.95, step: 0.05, fmt: (v) => `${(v * 100).toFixed(0)}%`,
+    hint: 'Share of outside revenue placed in the pool each period.' },
+  { key: 'adArpuUsd', label: 'Sponsor revenue per user', min: 0, max: 2.5, step: 0.05, fmt: fmtUsd,
+    hint: 'Per active user per month. The ceiling on everything downstream.' },
+  { key: 'offerArpuUsd', label: 'Partner offer revenue per user', min: 0, max: 2.5, step: 0.05, fmt: fmtUsd,
+    hint: 'Opt-in offers, per active user per month.' },
+  { key: 'subConversion', label: 'Subscription conversion', min: 0, max: 0.20, step: 0.005, fmt: (v) => `${(v * 100).toFixed(1)}%`,
+    hint: 'Share of actives on a paid tier at launch, decaying as the funnel widens.' },
+  { key: 'churnCeiling', label: 'Churn with rewards worthless', min: 0.05, max: 0.45, step: 0.01, fmt: (v) => `${(v * 100).toFixed(0)}%`,
+    hint: 'How good the app is with the money switched off. The strongest lever here.' },
+  { key: 'targetPayoutUsd', label: 'Payout that fully motivates', min: 0.5, max: 20, step: 0.5, fmt: fmtUsd,
+    hint: 'Monthly earnings above which more money buys no more retention.' },
+  { key: 'prizeMultiplier', label: 'Prize-draw motivation multiplier', min: 1, max: 3, step: 0.1, fmt: (v) => `${v.toFixed(1)}x`,
+    hint: 'Perceived value per dollar when paid as a weighted draw. Speculative.' },
+  { key: 'cheatDetection', label: 'Fraud detection rate', min: 0, max: 1, step: 0.05, fmt: (v) => `${(v * 100).toFixed(0)}%`,
+    hint: 'Undetected fake activity dilutes honest users, not the treasury.' },
+  { key: 'stakeParticipation', label: 'In a commitment challenge', min: 0, max: 0.5, step: 0.01, fmt: (v) => `${(v * 100).toFixed(0)}%`,
+    hint: 'Losers fund winners. Zero-sum by construction, so it cannot inflate.' },
+  { key: 'paidSignupsM1', label: 'Paid signups, month 1', min: 0, max: 30000, step: 500, fmt: fmtNum,
+    hint: 'Top of funnel, decaying monthly as cheap channels saturate.' },
+  { key: 'fixedCostMonthlyUsd', label: 'Fixed monthly cost', min: 10000, max: 200000, step: 5000, fmt: fmtUsd,
+    hint: 'Team and overhead. Sets how much scale you need to break even.' },
+];
+
+const PRESETS = {
+  base: {},
+  designed: { churnCeiling: 0.18, prizeMultiplier: 2.2, paidSignupsM1: 14000, paidSignupDecay: 0.985, referralK: 0.10 },
+  revenue_stall: { adArpuUsd: 0.18, offerArpuUsd: 0.10, subConversion: 0.020 },
+  cheat_epidemic: { cheatDetection: 0.45, cheatRewardSensitivity: 1.10 },
+  hypergrowth: { paidSignupsM1: 25000, paidSignupDecay: 0.99, referralK: 0.14 },
+};
+
+let state = { ...DEFAULTS };
+
+const controlsEl = document.getElementById('controls');
+controlsEl.innerHTML = CONTROLS.map((c) => `
+  <div class="ctrl">
+    <label for="s-${c.key}">${c.label} <b id="v-${c.key}"></b></label>
+    <input type="range" id="s-${c.key}" min="${c.min}" max="${c.max}" step="${c.step}" />
+    <div class="hint">${c.hint}</div>
+  </div>`).join('');
+
+function syncInputs() {
+  for (const c of CONTROLS) {
+    document.getElementById(`s-${c.key}`).value = state[c.key];
+    document.getElementById(`v-${c.key}`).textContent = c.fmt(state[c.key]);
+  }
+}
+
+function render() {
+  const rows = run(state);
+  const l = last(rows);
+  const breaches = rows.filter((r) => !r.invariant_ok).length;
+  const profitable = rows.filter((r) => r.net_usd > 0).length;
+  const insolvent = rows.find((r) => r.treasury_usd < 0);
+  const be = breakEvenMau(state);
+
+  document.getElementById('live').innerHTML = [
+    ['', fmtNum(l.mau), 'Active users, month 24'],
+    ['', fmtUsd(l.total_user_upside_usd), 'User earnings per month'],
+    ['', be ? fmtNum(be) : 'never', 'Users needed to break even'],
+    [l.treasury_usd >= 0 ? 'good' : 'bad', fmtUsd(l.treasury_usd), 'Treasury, month 24'],
+    [breaches ? 'bad' : 'good', `${breaches} / 24`, 'Months breaching the invariant'],
+    ['', `${profitable} / 24`, 'Months in profit'],
+  ].map(([c, v, k]) => `<div class="tile ${c}"><div class="v">${v}</div><div class="k">${k}</div></div>`).join('');
+
+  const v = document.getElementById('verdict');
+  v.className = `verdict ${breaches ? 'warn' : 'ok'}`;
+  v.innerHTML = breaches
+    ? `<p>The invariant is breached in ${breaches} of 24 months. Under a revenue-share design this should be
+       impossible, so if you are seeing it, the engine is minting.</p>`
+    : `<p><strong>The invariant holds in all 24 months.</strong> ${
+        l.treasury_usd >= 0
+          ? `The business is also solvent, finishing with ${fmtUsd(l.treasury_usd)}.`
+          : `The payout mechanism is sound, but the business runs out of money in month ${insolvent.month}. ${
+              be ? `It needs ${fmtNum(be)} actives to cover its costs and reaches ${fmtNum(l.mau)}.` : 'At this revenue per user it cannot break even at any scale.'
+            } That is a growth problem, not a tokenomics one.`
+      }</p>`;
+
+  lineChart(document.getElementById('c-live-users'),
+    [{ name: 'Users', colorVar: '--series-revenue', values: pick(rows, 'mau') }],
+    { format: fmtNum, yTitle: 'Active users' });
+  lineChart(document.getElementById('c-live-pay'),
+    [{ name: 'Per user', colorVar: '--series-payout', values: pick(rows, 'payout_per_user_usd') }],
+    { yTitle: 'Payout per user' });
+  lineChart(document.getElementById('c-live-inv'), [
+    { name: 'Revenue', colorVar: '--series-revenue', values: pick(rows, 'revenue_usd') },
+    { name: 'Payouts', colorVar: '--series-payout', values: pick(rows, 'paid_out_usd') },
+  ], { yTitle: 'Payouts vs revenue' });
+  lineChart(document.getElementById('c-live-tre'),
+    [{ name: 'Treasury', colorVar: '--series-revenue', values: pick(rows, 'treasury_usd') }],
+    { yTitle: 'Treasury' });
+}
+
+controlsEl.addEventListener('input', (e) => {
+  const key = e.target.id.replace(/^s-/, '');
+  if (!(key in state)) return;
+  state[key] = parseFloat(e.target.value);
+  document.getElementById(`v-${key}`).textContent = CONTROLS.find((c) => c.key === key).fmt(state[key]);
+  document.querySelectorAll('#presets button').forEach((b) => b.setAttribute('aria-pressed', 'false'));
+  render();
+});
+
+document.getElementById('presets').addEventListener('click', (e) => {
+  const name = e.target.dataset.preset;
+  if (!name) return;
+  state = { ...DEFAULTS, ...PRESETS[name] };
+  document.querySelectorAll('#presets button').forEach((b) =>
+    b.setAttribute('aria-pressed', String(b.dataset.preset === name)));
+  syncInputs();
+  render();
+});
+
+syncInputs();
+render();
+</script>
+</body>
+</html>

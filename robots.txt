@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+# Internal working models, not for indexing.
+Disallow: /lab/
 
 Sitemap: https://bitcoin-daily.com/sitemap.xml
