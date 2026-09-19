@@ -6,13 +6,19 @@ Runfi sustainability model
 A 24-month cohort simulation of a move-to-earn economy, built to answer one
 question: can you pay people to walk without the payout mechanism eating itself?
 
-Two engines are implemented so they can be compared on identical user dynamics.
+Three engines are implemented so they can be compared on identical user dynamics.
 
   ENGINE A  token_mint      The STEPN shape. A protocol token is minted at a
                             FIXED nominal rate per unit of activity. The only
                             real money entering the system is new users buying
                             in. Token price floats on buy pressure vs sell
                             pressure.
+
+  ENGINE C  token_buyback   A token used as a distribution RAIL. Revenue buys the
+                            token on the open market and those bought tokens are
+                            what gets paid. Emission is zero, so the payout is
+                            bought, never printed, and the invariant holds. The
+                            open question is whether the PRICE survives.
 
   ENGINE B  revenue_share   The proposed shape. No token. A fixed SHARE of real
                             outside revenue is placed in a weekly pool and split
@@ -171,6 +177,35 @@ class Params:
     # spiral disappear - that single line is the difference between STEPN's
     # chart and a soft landing.
     entry_price_elasticity: float = 0.85
+
+    # -- buyback token economy (Engine C) ------------------------------------
+    # The token as a distribution RAIL rather than a source of funds. Revenue
+    # arrives in fiat, the protocol buys the token on the open market, and those
+    # bought tokens are what gets paid out. Emission is zero by default, so the
+    # payout is bought, never printed, and the invariant is untouched.
+    #
+    # Payouts are quoted in dollars and bought at the price of the day, so what
+    # an earner receives is price-INDEPENDENT. A falling token means more tokens
+    # per dollar, not a smaller payout. That single property is what separates
+    # this from every design that failed.
+    # Minting on top of the buyback, expressed against the buyback itself: for
+    # every dollar of token bought with real revenue, how many dollars of token
+    # do you also print? Stated this way it is price-independent, which "tokens
+    # per user" is not - the same per-user rate means nothing at one valuation
+    # and everything at another.
+    emission_multiple_of_buyback: float = 0.0   # 0 = pure buyback
+    token_total_supply: float = 1_000_000_000.0
+    # Team and investor allocations vesting into the float. This is what actually
+    # kills most tokens, and it is the pressure the buyback has to absorb.
+    unlock_allocation_share: float = 0.0      # share of supply that vests
+    unlock_months: float = 36.0
+    unlock_sell_fraction: float = 0.80        # share of unlocked tokens sold
+    # Rewards an earner keeps do not vanish, they become overhang. Holders take
+    # profit at a rate that rises with how far price sits above where they got
+    # in. Without this the model shows a token compounding upward forever, which
+    # is not a finding, it is a missing seller.
+    profit_taking_rate: float = 0.10          # share of held stock sold monthly
+    profit_taking_elasticity: float = 0.60    # how hard a rising price pulls sellers
 
     # -- motivation levers (Engine B) ---------------------------------------
     # Perceived motivational value per dollar when the pool is paid out as an
@@ -496,11 +531,173 @@ def break_even_mau(p: Params, month: int = 12) -> dict:
     }
 
 
+def run(p: Params) -> list[dict]:
+    return ENGINES[p.engine](p)
+
+
+# ---------------------------------------------------------------------------
+# Engine C: buyback-funded token (a token that can actually hold)
+# ---------------------------------------------------------------------------
+
+def simulate_token_buyback(p: Params) -> list[dict]:
+    """Revenue -> open-market buyback -> distribute. Emission optional and off.
+
+    The economics of the payout are identical to `simulate_revenue_share`: the
+    pool is a share of outside revenue and is split among qualifying earners.
+    The token changes only who is on the other side of the trade.
+
+    The question this engine exists to answer is not whether the payout is
+    solvent - it always is - but whether the TOKEN PRICE survives, which comes
+    down to one ratio:
+
+        coverage = buyback_usd / sell_pressure_usd
+
+    Above 1 the token is bid by real revenue. Below 1 it bleeds, no matter how
+    sound the payout mechanism is, because vesting supply is arriving faster
+    than revenue can absorb it.
+    """
+    rows: list[dict] = []
+    mau = p.starting_users
+    treasury = p.starting_treasury_usd
+    price = p.token_price_usd
+    prev_payout_per_user = p.target_payout_usd
+    held_tokens = 0.0
+
+    for month in range(p.months):
+        sat = satisfaction(prev_payout_per_user, p.target_payout_usd)
+
+        joiners = new_users(mau, month, sat, p)
+        leavers = mau * churn_rate(sat, p)
+        mau = max(0.0, mau + joiners - leavers)
+
+        rev = outside_revenue(mau, month, p)
+        rake, stake_bonus = stake_economics(mau, p)
+        revenue = rev["total"]
+
+        # Identical to Engine B. The pool is money that already arrived.
+        pool = p.payout_share * rev["consumer"] + p.payer_payout_share * rev["payer"]
+        honest = honest_share_of_pool(sat, p)
+        pool_to_honest = pool * honest
+        pool_lost_to_fraud = pool - pool_to_honest
+
+        earners = max(1e-9, mau * p.earner_share)
+        per_earner = min(pool_to_honest / earners, p.payout_share_cap_usd)
+        paid_out = per_earner * earners + pool_lost_to_fraud
+
+        # --- the token layer ------------------------------------------------
+        # Buy first, pay second. You cannot distribute what you did not buy.
+        buyback_usd = paid_out
+        tokens_bought = buyback_usd / max(price, p.token_price_floor_usd)
+
+        # Minting on top is dilution with no offsetting bid: these tokens arrive
+        # on the market without a dollar having been spent to buy them.
+        tokens_emitted = tokens_bought * p.emission_multiple_of_buyback
+        tokens_distributed = tokens_bought + tokens_emitted
+
+        # Earners sell most of what they get; that is normal and fine.
+        earner_sell = tokens_distributed * p.token_sell_fraction
+        # Vesting supply arriving on the market whether or not anyone wants it.
+        unlocking = (p.token_total_supply * p.unlock_allocation_share
+                     / p.unlock_months) if month < p.unlock_months else 0.0
+        unlock_sell = unlocking * p.unlock_sell_fraction
+
+        # What earners keep becomes overhang, and overhang eventually sells.
+        held_tokens += tokens_distributed - earner_sell
+        appreciation = max(1.0, price / p.token_price_usd)
+        profit_take = min(held_tokens,
+                          held_tokens * p.profit_taking_rate
+                          * (appreciation ** p.profit_taking_elasticity))
+        held_tokens -= profit_take
+
+        sell_usd = (earner_sell + unlock_sell + profit_take) * price
+        coverage = buyback_usd / sell_usd if sell_usd > 1e-9 else float("inf")
+
+        if sell_usd > 1e-9:
+            ratio = max(buyback_usd, 1e-9) / sell_usd
+            price = max(p.token_price_floor_usd,
+                        price * (ratio ** p.token_price_damping))
+        price = min(price, p.token_price_usd * 10)
+
+        face = effective_face_multiple(p)
+        per_earner_face = per_earner * face
+        per_user = per_earner * p.earner_share
+
+        variable_costs = mau * p.variable_cost_per_user_usd
+        acquisition_costs = (p.paid_signups_m1 * (p.paid_signup_decay ** month)) * p.cac_usd
+        costs = variable_costs + acquisition_costs + p.fixed_cost_monthly_usd
+        net = revenue + rake - paid_out - costs
+        treasury += net
+
+        rows.append({
+            "month": month + 1,
+            "mau": mau, "joiners": joiners, "leavers": leavers,
+            "churn_rate": churn_rate(sat, p), "satisfaction": sat,
+            "revenue_usd": revenue,
+            "revenue_per_user_usd": revenue / mau if mau > 0 else 0.0,
+            "consumer_revenue_usd": rev["consumer"],
+            "payer_revenue_usd": rev["payer"],
+            "pool_usd": pool, "paid_out_usd": paid_out,
+            "payout_per_user_usd": per_user,
+            "earners": earners,
+            "payout_per_earner_usd": per_earner,
+            "payout_per_earner_face_usd": per_earner_face,
+            "earner_upside_face_usd": per_earner_face + stake_bonus,
+            "stake_bonus_per_winner_usd": stake_bonus,
+            "total_user_upside_usd": per_user + stake_bonus * p.stake_participation,
+            "cheat_inflation": cheat_inflation(sat, p),
+            "fraud_leak_usd": pool_lost_to_fraud,
+            "costs_usd": costs, "net_usd": net, "treasury_usd": treasury,
+            "token_price_usd": price, "entry_cost_usd": 0.0,
+            "buyback_usd": buyback_usd,
+            "sell_pressure_usd": sell_usd,
+            "buyback_coverage": coverage,
+            "unlock_tokens": unlocking,
+            "held_tokens": held_tokens,
+            "unlock_sell_usd": unlock_sell * price,
+            # Still holds: payouts are bought out of revenue, never minted.
+            "invariant_ok": paid_out <= revenue + 1e-6,
+        })
+
+        prev_payout_per_user = (
+            per_earner_face * p.earner_share * p.prize_multiplier
+            + stake_bonus * p.stake_participation * p.stake_success_rate
+        )
+
+    return rows
+
+
+
 ENGINES: dict[str, Callable[[Params], list[dict]]] = {
     "revenue_share": simulate_revenue_share,
     "token_mint": simulate_token_mint,
+    "token_buyback": simulate_token_buyback,
 }
 
 
-def run(p: Params) -> list[dict]:
-    return ENGINES[p.engine](p)
+def max_supportable_fdv(p: Params, monthly_buyback_usd: float) -> dict:
+    """Largest launch valuation a given monthly buyback can actually defend.
+
+    A buyback bids `B` dollars and hands the tokens to earners, who sell most of
+    them straight back. Only the part they keep is a net bid, so the real support
+    is `B * (1 - earner_sell_fraction)`. That has to cover everything arriving on
+    the market that nobody bought: vesting team and investor supply, plus holders
+    taking profit.
+
+        support        = B * (1 - sell_fraction)
+        unlock_per_mo  = FDV * allocation / vesting_months * unlock_sell_fraction
+
+    Setting them equal gives the ceiling. Launch above it and the token bleeds
+    from day one no matter how sound the payout mechanism is, because the
+    valuation was never connected to the revenue in the first place.
+    """
+    support = monthly_buyback_usd * (1.0 - p.token_sell_fraction)
+    if p.unlock_allocation_share <= 0:
+        return {"max_fdv_usd": float("inf"), "support_usd": support,
+                "note": "no vesting supply: only profit-taking to absorb"}
+    drag_per_fdv = (p.unlock_allocation_share / p.unlock_months
+                    * p.unlock_sell_fraction)
+    return {
+        "max_fdv_usd": support / drag_per_fdv,
+        "support_usd": support,
+        "unlock_drag_per_fdv": drag_per_fdv,
+    }

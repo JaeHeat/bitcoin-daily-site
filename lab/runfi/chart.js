@@ -25,11 +25,14 @@ export const fmtUsd = (v) => {
 /** Precise money for headline figures and tables. Axis ticks keep fmtUsd. */
 export const fmtUsdExact = (v) => {
   const a = Math.abs(v);
+  const sign = v < 0 ? '-' : '';
   if (a < 1e-9) return '$0';
-  if (a >= 1e6) return `${v < 0 ? '-' : ''}$${(a / 1e6).toFixed(2)}M`;
-  if (a >= 1e4) return `${v < 0 ? '-' : ''}$${(a / 1e3).toFixed(0)}k`;
-  if (a >= 0.01) return `${v < 0 ? '-' : ''}$${a.toFixed(2)}`;
-  return `${v < 0 ? '-' : ''}$${a.toFixed(4)}`;
+  if (a >= 1e9) return `${sign}$${(a / 1e9).toFixed(2)}B`;
+  if (a >= 1e6) return `${sign}$${(a / 1e6).toFixed(2)}M`;
+  if (a >= 1e4) return `${sign}$${(a / 1e3).toFixed(0)}k`;
+  if (a >= 1e3) return `${sign}$${(a / 1e3).toFixed(2)}k`;
+  if (a >= 0.01) return `${sign}$${a.toFixed(2)}`;
+  return `${sign}$${a.toFixed(4)}`;
 };
 export const fmtNum = (v) =>
   Math.abs(v) >= 1e6 ? `${(v / 1e6).toFixed(2)}M`
@@ -41,9 +44,9 @@ export const fmtNum = (v) =>
  * opts:   { log, format, yTitle }
  */
 export function lineChart(host, series, opts = {}) {
-  const { log = false, format = fmtUsd, yTitle = '' } = opts;
+  const { log = false, format = fmtUsd, yTitle = '', refLine = null, refLabel = '' } = opts;
   const W = 720, H = 300;
-  const M = { t: 16, r: 74, b: 34, l: 62 };
+  const M = { t: 16, r: 100, b: 34, l: 62 };
   const iw = W - M.l - M.r, ih = H - M.t - M.b;
   const n = series[0].values.length;
 
@@ -100,19 +103,48 @@ export function lineChart(host, series, opts = {}) {
     svg.appendChild(t);
   }
 
+  // --- reference line (a threshold the series is read against) ---
+  if (refLine != null) {
+    const ry = sy(refLine);
+    if (ry != null) {
+      svg.appendChild(el('line', {
+        x1: M.l, x2: M.l + iw, y1: ry, y2: ry, class: 'refline',
+      }));
+      if (refLabel) {
+        const t = el('text', { x: M.l + 6, y: ry - 6, class: 'axis-label' });
+        t.textContent = refLabel;
+        svg.appendChild(t);
+      }
+    }
+  }
+
   // --- series ---
+  const endLabels = [];
   series.forEach((s) => {
     const pts = s.values.map((v, i) => [sx(i), sy(v)]).filter(([, y]) => y != null);
     if (!pts.length) return;
     const d = pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
     svg.appendChild(el('path', { d, class: 'series', stroke: `var(${s.colorVar})` }));
-    // Direct end-label: secondary encoding so identity never rests on colour.
     const [lx, ly] = pts[pts.length - 1];
-    const lab = el('text', {
-      x: Math.min(lx + 8, W - 4), y: Math.max(12, Math.min(ly + 4, H - 4)),
-      class: 'series-label',
-    });
-    lab.textContent = s.name;
+    endLabels.push({ name: s.name, x: Math.min(lx + 8, W - 4), y: ly + 4 });
+  });
+
+  // Series converging at the right edge would stack their labels on top of each
+  // other, so push any pair closer than a line-height apart.
+  const MIN_GAP = 13;
+  endLabels.sort((a, b) => a.y - b.y);
+  for (let i = 1; i < endLabels.length; i++) {
+    const gap = endLabels[i].y - endLabels[i - 1].y;
+    if (gap < MIN_GAP) {
+      const shift = (MIN_GAP - gap) / 2;
+      endLabels[i - 1].y -= shift;
+      endLabels[i].y += shift;
+    }
+  }
+  endLabels.forEach((d) => {
+    // Direct end-label: secondary encoding so identity never rests on colour.
+    const lab = el('text', { x: d.x, y: Math.max(12, Math.min(d.y, H - 4)), class: 'series-label' });
+    lab.textContent = d.name;
     svg.appendChild(lab);
   });
 

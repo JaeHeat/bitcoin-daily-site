@@ -52,6 +52,7 @@
   .grid { stroke: #232c3d; stroke-width: 1; }
   .bar-track { fill: #1b2231; }
   .grid-zero { stroke: #3a4560; stroke-width: 1; }
+  .refline { stroke: #6f7c93; stroke-width: 1; stroke-dasharray: 5 4; }
   .axis-label { fill: #9aa7bd; font-size: 11px; font-family: inherit; }
   .series { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
   .series-label { fill: #e8edf6; font-size: 11px; font-weight: 600; font-family: inherit; }
@@ -272,6 +273,76 @@
   <p>The prize multiplier of 2.2 is the least defensible number in this model. It is set to 1.0 everywhere
   else, so nothing other than this comparison depends on it.</p>
 
+
+  <h2>So can you use a token at all?</h2>
+  <p>Yes, on three conditions, and the answer turns on one distinction: is the token the
+  <em>source</em> of the payout, or just the <em>rail</em> it travels on?</p>
+
+  <div class="banner">
+    <div class="inv">revenue &rarr; open-market buyback &rarr; distribute</div>
+    <p>Revenue arrives in cash. The protocol buys the token on the open market. Those bought tokens
+    are what gets paid out. Emission is zero, so the payout is <strong>bought, never printed</strong>,
+    and the invariant is untouched. Payouts stay quoted in dollars and are bought at the price of the
+    day, so a falling token means more tokens per dollar, not a smaller payout.</p>
+  </div>
+
+  <p>That last property is the whole thing. Run the four designs below and the player earns
+  <strong>exactly the same amount in every one of them</strong>, including the ones whose token goes
+  to zero. The token never touches what anybody earns. It just adds a price you now have to defend.</p>
+
+  <figure>
+    <div id="c-coverage"></div>
+    <figcaption>Buyback coverage: dollars bid by the buyback for every dollar hitting the market from
+    vesting supply and profit taking. <b>Above 1 the token is bid by real revenue; below 1 it
+    bleeds</b>, no matter how sound the payout is. Both runs here use identical revenue, identical
+    payouts and a 20% team-and-investor allocation. The only difference is the valuation they launched
+    at.</figcaption>
+    <details class="table-view"><summary>View as table</summary><div id="t-coverage"></div></details>
+  </figure>
+
+  <div class="scroll-x"><table class="plain">
+    <thead><tr><th>Design</th><th>Launch FDV</th><th>Token at m24</th><th>Min coverage</th><th>Payout / earner</th><th>Breaches</th></tr></thead>
+    <tbody id="token-rows"></tbody>
+  </table></div>
+
+  <h3>Condition 1: zero emission, and zero is not a rounding target</h3>
+  <p>Minting on top of the buyback is dilution with no offsetting bid. It is a bright line, not a
+  dial. Printing nothing appreciates the token 88%. Printing <strong>25 cents</strong> of token for
+  every dollar bought sends it to -75%, and so does every level above that. There is no safe small
+  amount, because a minted token arrives on the market without a dollar ever having been spent to
+  buy it.</p>
+
+  <h3>Condition 2: launch at a valuation your day-one revenue can defend</h3>
+  <p>This is what actually killed these projects. Earners sell most of what they receive, so only the
+  part they keep is a net bid. That slice has to absorb everything arriving on the market that nobody
+  bought, and vesting supply is denominated in your own valuation:</p>
+
+  <div class="banner">
+    <div class="inv">max_FDV = buyback &times; (1 &minus; sell_share) &times; vest_months &divide; (alloc &times; unlock_sell)</div>
+    <p>Size it on the buyback you have in <strong>month one</strong>, not the one on the pitch deck.
+    Same revenue, same 20% allocation: launched at $2M it appreciates 88% and never dips below
+    coverage 1.02. Launched at $250M it falls 92% with coverage bottoming at 0.07.</p>
+  </div>
+
+  <div class="scroll-x"><table class="plain">
+    <thead><tr><th>Revenue design</th><th>Buyback / month</th><th>Max FDV at 20% vesting</th><th>at 10%</th></tr></thead>
+    <tbody id="fdv-rows"></tbody>
+  </table></div>
+
+  <h3>Condition 3: never denominate anything users buy in it</h3>
+  <p>The same rule from the very top of this page. It is what turned a decline into a collapse in the
+  minting model and it does not stop being true here.</p>
+
+  <div class="verdict warn">
+    <p><strong>And then ask what it bought you.</strong> A buyback token adds no revenue. Every dollar
+    a player earns came from the same subscriptions, sponsors and payer contracts as before, and the
+    payout would be identical with no token at all. What it adds is a price to defend, a cap table
+    that can sink it, securities exposure, and an ongoing obligation to convert revenue into buy
+    orders. The one thing it genuinely buys is a liquid, borderless payout rail and community
+    ownership. If those are not worth the rest, <strong>pay in sats or stablecoin and skip the
+    entire problem</strong>, because on the earnings line the model cannot tell the difference.</p>
+  </div>
+
   <h2>Run it yourself</h2>
   <p>Every slider recomputes the full 24 months live. The thing to try first: set revenue per user to zero and
   watch the payout fall to nothing <em>without the model ever breaching the invariant</em>. That is the
@@ -318,7 +389,7 @@
 </main>
 
 <script type="module">
-import { run, breakEvenMau, outsideRevenue, stakeEconomics, DEFAULTS } from './model.js';
+import { run, breakEvenMau, maxSupportableFdv, outsideRevenue, stakeEconomics, DEFAULTS } from './model.js';
 import { lineChart, barChart, dataTable, fmtUsd, fmtUsdExact, fmtNum } from './chart.js';
 
 const pick = (rows, k) => rows.map((r) => r[k]);
@@ -409,6 +480,55 @@ document.getElementById('design-rows').innerHTML = [
   return `<tr><td>${name}</td><td>${fmtUsdExact(r.revenue_per_user_usd)}</td>
     <td>${fmtUsdExact(r.payout_per_earner_face_usd)}</td><td>${fmtNum(r.mau)}</td>
     <td>${fmtUsdExact(r.treasury_usd)}</td></tr>`;
+}).join('');
+
+/* ---------- can a token work? ---------- */
+const V2_REV = {
+  commerceAttachRate: 0.04, commerceAovUsd: 110, commerceTakeRate: 0.10,
+  subConversion: 0.12, subPriceUsd: 7.99, adArpuUsd: 1.20, offerArpuUsd: 0.50,
+  earnerShare: 0.30, coveredShare: 0.60, payerPepmUsd: 8.00,
+  churnCeiling: 0.18, prizeMultiplier: 2.2,
+  paidSignupsM1: 14000, paidSignupDecay: 0.985, referralK: 0.10,
+};
+const TOKEN_DESIGNS = [
+  ['Fair launch, no vesting', { engine: 'token_buyback' }],
+  ['Overvalued launch', { engine: 'token_buyback', unlockAllocationShare: 0.20, tokenPriceUsd: 0.25, ...V2_REV }],
+  ['Sized to day-one revenue', { engine: 'token_buyback', unlockAllocationShare: 0.20, tokenPriceUsd: 0.002, ...V2_REV }],
+  ['Sized, but still minting', { engine: 'token_buyback', unlockAllocationShare: 0.20, tokenPriceUsd: 0.002, emissionMultipleOfBuyback: 0.50, ...V2_REV }],
+];
+const tokenRuns = TOKEN_DESIGNS.map(([name, o]) => ({ name, o, rows: run(o) }));
+
+// Coverage is the diagnostic: same revenue, same payouts, different valuation.
+const covSeries = [
+  { name: 'Sized to revenue', colorVar: '--series-revenue',
+    values: tokenRuns[2].rows.map((r) => r.buyback_coverage) },
+  { name: 'Overvalued', colorVar: '--series-mint',
+    values: tokenRuns[1].rows.map((r) => r.buyback_coverage) },
+];
+lineChart(document.getElementById('c-coverage'), covSeries, {
+  format: (v) => `${v.toFixed(2)}x`, yTitle: 'Buyback coverage',
+  refLine: 1, refLabel: 'break-even coverage',
+});
+dataTable(document.getElementById('t-coverage'), covSeries, (v) => `${v.toFixed(2)}x`);
+
+document.getElementById('token-rows').innerHTML = tokenRuns.map(({ name, o, rows }) => {
+  const p0 = { ...DEFAULTS, ...o };
+  const l = last(rows);
+  const minCov = Math.min(...rows.map((r) => r.buyback_coverage));
+  const chg = l.token_price_usd / p0.tokenPriceUsd - 1;
+  return `<tr><td>${name}</td><td>${fmtUsdExact(p0.tokenPriceUsd * p0.tokenTotalSupply)}</td>
+    <td>${(chg * 100).toFixed(0)}%</td><td>${minCov.toFixed(2)}x</td>
+    <td>${fmtUsdExact(l.payout_per_earner_usd)}</td>
+    <td>${rows.filter((r) => !r.invariant_ok).length} / 24</td></tr>`;
+}).join('');
+
+document.getElementById('fdv-rows').innerHTML = [
+  ['Base case', {}], ['Runfi v2', PRESETS_V2], ['Insurer-native', PRESETS_INSURER],
+].map(([name, o]) => {
+  const rows = run({ ...o, engine: 'token_buyback' });
+  const bb = rows[0].buyback_usd;   // month one, not maturity
+  const at = (a) => fmtUsdExact(maxSupportableFdv({ ...o, unlockAllocationShare: a }, bb));
+  return `<tr><td>${name}</td><td>${fmtUsdExact(bb)}</td><td>${at(0.20)}</td><td>${at(0.10)}</td></tr>`;
 }).join('');
 
 /* ---------- headline tiles ---------- */

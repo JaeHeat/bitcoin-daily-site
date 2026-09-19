@@ -81,6 +81,18 @@ export const DEFAULTS = {
   tokenPriceFloorUsd: 0.0005,
   entryPriceElasticity: 0.85,
 
+  // Engine C: the token as a distribution RAIL, not a source of funds. Revenue
+  // arrives in fiat, the protocol buys the token on the open market, and those
+  // bought tokens are what gets paid. Payouts are quoted and bought in dollars,
+  // so what an earner receives is price-INDEPENDENT.
+  emissionMultipleOfBuyback: 0.0,   // dollars minted per dollar bought. 0 = pure buyback
+  tokenTotalSupply: 1e9,
+  unlockAllocationShare: 0.0,       // team + investor share that vests
+  unlockMonths: 36.0,
+  unlockSellFraction: 0.80,
+  profitTakingRate: 0.10,           // share of held stock sold monthly
+  profitTakingElasticity: 0.60,
+
   prizeMultiplier: 1.0,
 
   engine: 'revenue_share',
@@ -258,9 +270,110 @@ export function simulateTokenMint(p) {
   return rows;
 }
 
+export function simulateTokenBuyback(p) {
+  const rows = [];
+  let mau = p.startingUsers;
+  let treasury = p.startingTreasuryUsd;
+  let price = p.tokenPriceUsd;
+  let prevPayout = p.targetPayoutUsd;
+  let heldTokens = 0;
+
+  for (let month = 0; month < p.months; month++) {
+    const sat = satisfaction(prevPayout, p.targetPayoutUsd);
+    const joiners = newUsers(mau, month, sat, p);
+    const leavers = mau * churnRate(sat, p);
+    mau = Math.max(0, mau + joiners - leavers);
+
+    const rev = outsideRevenue(mau, month, p);
+    const { rake, bonusPerWinner } = stakeEconomics(mau, p);
+    const revenue = rev.total;
+
+    // Identical to Engine B: the pool is money that already arrived.
+    const pool = p.payoutShare * rev.consumer + p.payerPayoutShare * rev.payer;
+    const honest = honestShareOfPool(sat, p);
+    const poolToHonest = pool * honest;
+    const poolLost = pool - poolToHonest;
+
+    const earners = Math.max(1e-9, mau * p.earnerShare);
+    const perEarner = Math.min(poolToHonest / earners, p.payoutShareCapUsd);
+    const paidOut = perEarner * earners + poolLost;
+
+    // Buy first, pay second. You cannot distribute what you did not buy.
+    const buybackUsd = paidOut;
+    const tokensBought = buybackUsd / Math.max(price, p.tokenPriceFloorUsd);
+    const tokensEmitted = tokensBought * p.emissionMultipleOfBuyback;
+    const tokensDistributed = tokensBought + tokensEmitted;
+
+    const earnerSell = tokensDistributed * p.tokenSellFraction;
+    const unlocking = month < p.unlockMonths
+      ? (p.tokenTotalSupply * p.unlockAllocationShare) / p.unlockMonths : 0;
+    const unlockSell = unlocking * p.unlockSellFraction;
+
+    // What earners keep becomes overhang, and overhang eventually sells.
+    heldTokens += tokensDistributed - earnerSell;
+    const appreciation = Math.max(1, price / p.tokenPriceUsd);
+    const profitTake = Math.min(heldTokens,
+      heldTokens * p.profitTakingRate * Math.pow(appreciation, p.profitTakingElasticity));
+    heldTokens -= profitTake;
+
+    const sellUsd = (earnerSell + unlockSell + profitTake) * price;
+    const coverage = sellUsd > 1e-9 ? buybackUsd / sellUsd : Infinity;
+
+    if (sellUsd > 1e-9) {
+      const ratio = Math.max(buybackUsd, 1e-9) / sellUsd;
+      price = Math.max(p.tokenPriceFloorUsd, price * Math.pow(ratio, p.tokenPriceDamping));
+    }
+    price = Math.min(price, p.tokenPriceUsd * 10);
+
+    const face = effectiveFaceMultiple(p);
+    const perEarnerFace = perEarner * face;
+    const perUser = perEarner * p.earnerShare;
+
+    const acquisition = p.paidSignupsM1 * Math.pow(p.paidSignupDecay, month) * p.cacUsd;
+    const costs = mau * p.variableCostPerUserUsd + acquisition + p.fixedCostMonthlyUsd;
+    const net = revenue + rake - paidOut - costs;
+    treasury += net;
+
+    rows.push({
+      month: month + 1, mau, joiners, leavers,
+      churn_rate: churnRate(sat, p), satisfaction: sat,
+      revenue_usd: revenue,
+      revenue_per_user_usd: mau > 0 ? revenue / mau : 0,
+      consumer_revenue_usd: rev.consumer, payer_revenue_usd: rev.payer,
+      pool_usd: pool, paid_out_usd: paidOut, payout_per_user_usd: perUser,
+      earners, payout_per_earner_usd: perEarner,
+      payout_per_earner_face_usd: perEarnerFace,
+      earner_upside_face_usd: perEarnerFace + bonusPerWinner,
+      stake_bonus_per_winner_usd: bonusPerWinner,
+      total_user_upside_usd: perUser + bonusPerWinner * p.stakeParticipation,
+      cheat_inflation: cheatInflation(sat, p),
+      fraud_leak_usd: poolLost, costs_usd: costs, net_usd: net,
+      treasury_usd: treasury, token_price_usd: price, entry_cost_usd: 0,
+      buyback_usd: buybackUsd, sell_pressure_usd: sellUsd,
+      buyback_coverage: coverage, unlock_tokens: unlocking,
+      held_tokens: heldTokens, unlock_sell_usd: unlockSell * price,
+      invariant_ok: paidOut <= revenue + 1e-6,
+    });
+
+    prevPayout = perEarnerFace * p.earnerShare * p.prizeMultiplier
+      + bonusPerWinner * p.stakeParticipation * p.stakeSuccessRate;
+  }
+  return rows;
+}
+
+/** Largest launch valuation a given monthly buyback can actually defend. */
+export function maxSupportableFdv(params, monthlyBuybackUsd) {
+  const p = { ...DEFAULTS, ...params };
+  const support = monthlyBuybackUsd * (1 - p.tokenSellFraction);
+  if (p.unlockAllocationShare <= 0) return Infinity;
+  return support / ((p.unlockAllocationShare / p.unlockMonths) * p.unlockSellFraction);
+}
+
 export function run(params = {}) {
   const p = { ...DEFAULTS, ...params };
-  return p.engine === 'token_mint' ? simulateTokenMint(p) : simulateRevenueShare(p);
+  if (p.engine === 'token_mint') return simulateTokenMint(p);
+  if (p.engine === 'token_buyback') return simulateTokenBuyback(p);
+  return simulateRevenueShare(p);
 }
 
 /** Smallest MAU at which the running business covers payouts and costs. */

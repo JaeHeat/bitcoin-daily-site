@@ -207,11 +207,85 @@ changes the user count by 8x and the invariant breach count by **zero**. Being
 wrong about motivation changes how big the business gets. It does not change
 whether the payout mechanism is solvent.
 
+## So can you use a token at all?
+
+Yes, on three conditions. The whole answer turns on one distinction: is the
+token the **source** of the payout, or just the **rail** it travels on?
+
+Engine C implements the rail version. Revenue arrives in cash, the protocol buys
+the token on the open market, and those bought tokens are what gets paid out.
+Emission is zero, so the payout is **bought, never printed**, and the invariant
+is untouched. Payouts stay quoted in dollars and are bought at the price of the
+day, so a falling token means more tokens per dollar, not a smaller payout.
+
+That last property is the whole thing:
+
+| Design | Launch FDV | Token at m24 | Min coverage | Payout / earner | Breaches |
+|---|---|---|---|---|---|
+| Fair launch, no vesting | $3.00B | +62% | 0.99x | $0.46 | 0 |
+| Overvalued launch | $250M | -92% | 0.07x | $12.99 | 0 |
+| Sized to day-one revenue | $2M | +88% | 1.02x | $12.99 | 0 |
+| Sized, but still minting | $2M | -75% | 0.71x | $12.99 | 0 |
+
+**The player earns the same amount in every one of them**, including the ones
+whose token goes to zero. The token never touches what anybody earns. It just
+adds a price you now have to defend.
+
+The diagnostic is buyback coverage: dollars bid by the buyback per dollar
+arriving on the market from vesting supply and profit taking. Above 1 the token
+is bid by real revenue; below 1 it bleeds regardless of how sound the payout is.
+
+### Condition 1: zero emission, and zero is not a rounding target
+
+Minting on top of the buyback is dilution with no offsetting bid. It is a bright
+line, not a dial. Printing nothing appreciates the token 88%. Printing **25
+cents** of token per dollar bought sends it to -75%, and so does every level
+above that. There is no safe small amount.
+
+### Condition 2: launch at a valuation your day-one revenue can defend
+
+This is what actually killed these projects. Earners sell most of what they
+receive, so only the part they keep is a net bid. That slice has to absorb
+everything arriving that nobody bought, and vesting supply is denominated in
+your own valuation:
+
+    max_FDV = buyback x (1 - sell_share) x vest_months / (alloc x unlock_sell)
+
+Size it on the buyback you have in **month one**, not the one on the pitch deck.
+
+| Revenue design | Buyback / month (m1) | Max FDV at 20% vesting | at 10% |
+|---|---|---|---|
+| Base case | $4.59k | $155k | $310k |
+| Runfi v2 | $83k | $2.79M | $5.59M |
+| Insurer-native | $137k | $4.63M | $9.25M |
+
+Same revenue and the same 20% allocation: launched at $2M it appreciates 88% and
+never dips below 1.02x coverage. Launched at $250M it falls 92% with coverage
+bottoming at 0.07x. Every move-to-earn token launched on the wrong side of this.
+
+### Condition 3: never denominate anything users buy in it
+
+The same rule as the minting engine. It is what turned a decline into a collapse
+there and it does not stop being true here.
+
+### And then ask what it bought you
+
+A buyback token adds **no revenue**. Every dollar a player earns came from the
+same subscriptions, sponsors and payer contracts, and the payout would be
+identical with no token at all. What it adds is a price to defend, a cap table
+that can sink it, securities exposure, and a standing obligation to convert
+revenue into buy orders.
+
+What it genuinely buys is a liquid borderless payout rail and community
+ownership. If those are not worth the rest, **pay in sats or stablecoin and skip
+the entire problem**, because on the earnings line the model cannot tell the
+difference.
+
 ## Files
 
 | File | |
 |---|---|
-| `model.py` | both engines, the behavioural loop, the break-even solver |
+| `model.py` | all three engines, the behavioural loop, the solvers |
 | `scenarios.py` | scenario definitions, sweeps, CSV and JSON output |
 | `model.js` | JS port of the same math, used by the interactive page |
 | `parity.mjs` | asserts the JS and Python models agree |

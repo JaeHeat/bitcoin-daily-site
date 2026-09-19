@@ -31,6 +31,15 @@ DATA = os.path.join(OUT, "data")
 
 BASE = Params(label="base", engine="revenue_share")
 
+# The full v2 revenue stack, reused by several scenarios below.
+V2_REVENUE = dict(
+    commerce_attach_rate=0.04, commerce_aov_usd=110.0, commerce_take_rate=0.10,
+    sub_conversion=0.12, sub_price_usd=7.99, ad_arpu_usd=1.20, offer_arpu_usd=0.50,
+    earner_share=0.30, covered_share=0.60, payer_pepm_usd=8.00,
+    churn_ceiling=0.18, prize_multiplier=2.2,
+    paid_signups_m1=14_000.0, paid_signup_decay=0.985, referral_k=0.10,
+)
+
 SCENARIOS = [
     BASE,
 
@@ -79,6 +88,27 @@ SCENARIOS = [
     # The same funnel WITHOUT the motivation design, to isolate its contribution.
     replace(BASE, label="designed_control", paid_signups_m1=14_000.0,
             paid_signup_decay=0.985, referral_k=0.10),
+
+    # ---- Engine C: can a token work at all? ----
+    # Fair launch: no team or investor allocation, zero emission, payouts bought
+    # on the open market out of revenue. The only design here that holds.
+    replace(BASE, label="token_buyback_fair", engine="token_buyback"),
+
+    # The same buyback mechanism, launched at the valuation these projects
+    # actually launched at. 20% vesting to team and investors against a $250M
+    # fully diluted valuation, on a business whose launch-month buyback is $83k.
+    replace(BASE, label="token_buyback_overvalued", engine="token_buyback",
+            unlock_allocation_share=0.20, token_price_usd=0.25, **V2_REVENUE),
+
+    # Identical, except the launch valuation is sized to the buyback that exists
+    # on day one rather than the one on the pitch deck.
+    replace(BASE, label="token_buyback_sized", engine="token_buyback",
+            unlock_allocation_share=0.20, token_price_usd=0.002, **V2_REVENUE),
+
+    # Sized correctly, but printing 50 cents of token for every dollar bought.
+    replace(BASE, label="token_buyback_emission", engine="token_buyback",
+            unlock_allocation_share=0.20, token_price_usd=0.002,
+            emission_multiple_of_buyback=0.50, **V2_REVENUE),
 
     # ---- the payout-per-player ladder (see LADDER below) ----
     replace(BASE, label="runfi_v2",
@@ -132,12 +162,15 @@ FIELDS = [
     "payout_per_earner_usd", "payout_per_earner_face_usd", "earner_upside_face_usd",
     "stake_bonus_per_winner_usd", "total_user_upside_usd",
     "cheat_inflation", "fraud_leak_usd", "costs_usd", "net_usd", "treasury_usd",
-    "token_price_usd", "entry_cost_usd", "invariant_ok",
+    "token_price_usd", "entry_cost_usd", "buyback_usd", "sell_pressure_usd",
+    "buyback_coverage", "unlock_tokens", "held_tokens", "unlock_sell_usd",
+    "invariant_ok",
 ]
 
 
 def summarise(label: str, rows: list[dict]) -> dict:
     last = rows[-1]
+    covs = [r["buyback_coverage"] for r in rows if "buyback_coverage" in r]
     breaches = sum(1 for r in rows if not r["invariant_ok"])
     trough = min(r["treasury_usd"] for r in rows)
     insolvent_month = next(
@@ -158,6 +191,8 @@ def summarise(label: str, rows: list[dict]) -> dict:
         "insolvent_month": insolvent_month,
         "invariant_breaches": breaches,
         "token_price_m24_usd": last["token_price_usd"],
+        "min_buyback_coverage": min(covs) if covs else None,
+        "buyback_m24_usd": last.get("buyback_usd"),
         "months_profitable": sum(1 for r in rows if r["net_usd"] > 0),
         "net_m24_usd": last["net_usd"],
         "fraud_leak_total_usd": sum(r["fraud_leak_usd"] for r in rows),
@@ -200,7 +235,7 @@ def main() -> None:
             w = csv.DictWriter(fh, fieldnames=FIELDS)
             w.writeheader()
             for r in rows:
-                w.writerow(r)
+                w.writerow({k: r.get(k, "") for k in FIELDS})
 
     share_sweep = sweep_payout_share()
     target_sweep = sweep_target_payout()
@@ -227,6 +262,8 @@ def main() -> None:
         if x is None:
             return "-"
         a = abs(x)
+        if a >= 1e9:
+            return f"${x/1e9:,.2f}B"
         if a >= 1e6:
             return f"${x/1e6:,.2f}M"
         if a >= 1e3:
@@ -304,6 +341,27 @@ def main() -> None:
     print(f"  token_mint    ({len(tk)} scenarios): "
           f"{sum(s['invariant_breaches'] for s in tk)} breaches in "
           f"{len(tk)*BASE.months} scenario-months")
+    print("\nCAN A TOKEN WORK? (Engine C: revenue -> open-market buyback -> distribute)")
+    print(f"{'design':<26}{'launch FDV':>12}{'m24 price':>12}{'vs launch':>11}"
+          f"{'min cov':>9}{'per earner':>12}{'breaches':>10}")
+    print("-" * 92)
+    for name in ("token_buyback_fair", "token_buyback_overvalued",
+                 "token_buyback_sized", "token_buyback_emission"):
+        rows = bundle[name]
+        p0 = next(sc for sc in SCENARIOS if sc.label == name)
+        fdv = p0.token_price_usd * p0.token_total_supply
+        l = rows[-1]
+        print(f"{name.replace('token_buyback_',''):<26}{money(fdv):>12}"
+              f"{money(l['token_price_usd']):>12}"
+              f"{l['token_price_usd'] / p0.token_price_usd - 1:>10.0%}"
+              f"{min(r['buyback_coverage'] for r in rows):>9.2f}"
+              f"{money(l['payout_per_earner_usd']):>12}"
+              f"{sum(1 for r in rows if not r['invariant_ok']):>10}")
+    print("  Note the last column. The payout is bought, never minted, so the")
+    print("  invariant holds in every one of these - including the ones whose")
+    print("  token goes to zero. Player earnings are quoted and bought in")
+    print("  dollars, so they do not move with the price at all.")
+
     print("\nPAYOUT PER PLAYER LADDER (month 24, each rung adds to the one above)")
     print(f"{'rung':<30}{'rev/user':>10}{'earners':>10}{'/earner':>10}"
           f"{'face':>9}{'+stake':>9}{'breakeven':>11}{'treasury':>11}")
