@@ -22,6 +22,15 @@ export const fmtUsd = (v) => {
   if (a >= 0.01) return `${v < 0 ? '-' : ''}$${a.toFixed(2)}`;
   return `${v < 0 ? '-' : ''}$${a.toFixed(4)}`;
 };
+/** Precise money for headline figures and tables. Axis ticks keep fmtUsd. */
+export const fmtUsdExact = (v) => {
+  const a = Math.abs(v);
+  if (a < 1e-9) return '$0';
+  if (a >= 1e6) return `${v < 0 ? '-' : ''}$${(a / 1e6).toFixed(2)}M`;
+  if (a >= 1e4) return `${v < 0 ? '-' : ''}$${(a / 1e3).toFixed(0)}k`;
+  if (a >= 0.01) return `${v < 0 ? '-' : ''}$${a.toFixed(2)}`;
+  return `${v < 0 ? '-' : ''}$${a.toFixed(4)}`;
+};
 export const fmtNum = (v) =>
   Math.abs(v) >= 1e6 ? `${(v / 1e6).toFixed(2)}M`
     : Math.abs(v) >= 1e3 ? `${(v / 1e3).toFixed(1)}k`
@@ -173,4 +182,52 @@ export function dataTable(host, series, format = fmtUsd) {
   host.innerHTML = `<table><thead><tr><th scope="col">Month</th>${
     series.map((s) => `<th scope="col">${s.name}</th>`).join('')
   }</tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+/**
+ * Horizontal bars for ranked magnitudes across named categories.
+ * One series, so no legend: every bar carries its own value label.
+ * items: [{ label, value }]
+ */
+export function barChart(host, items, opts = {}) {
+  const { format = fmtUsd, colorVar = '--series-payout', highlightLast = true } = opts;
+  const rowH = 34, gap = 8, padT = 8, padB = 8;
+  const W = 720, labelW = 232, valueW = 66;
+  const H = padT + padB + items.length * rowH;
+  const iw = W - labelW - valueW - 12;
+  const hi = Math.max(...items.map((d) => d.value)) * 1.02 || 1;
+
+  host.innerHTML = '';
+  const svg = el('svg', {
+    viewBox: `0 0 ${W} ${H}`, class: 'chart', role: 'img',
+    'aria-label': items.map((d) => `${d.label}: ${format(d.value)}`).join('; '),
+  });
+
+  items.forEach((d, i) => {
+    const y = padT + i * rowH;
+    const w = Math.max(2, (d.value / hi) * iw);
+    const lead = highlightLast && i === items.length - 1;
+
+    const lab = el('text', { x: labelW - 12, y: y + rowH / 2 + 4, class: 'axis-label', 'text-anchor': 'end' });
+    lab.textContent = d.label;
+    svg.appendChild(lab);
+
+    // Track, then the bar: 4px rounded data-end anchored to the baseline.
+    svg.appendChild(el('rect', {
+      x: labelW, y: y + (rowH - 18) / 2, width: iw, height: 18, rx: 4, class: 'bar-track',
+    }));
+    svg.appendChild(el('rect', {
+      x: labelW, y: y + (rowH - 18) / 2, width: w, height: 18, rx: 4,
+      fill: `var(${colorVar})`, opacity: lead ? 1 : 0.55,
+    }));
+
+    const val = el('text', {
+      x: labelW + iw + 10, y: y + rowH / 2 + 4,
+      class: lead ? 'series-label' : 'axis-label',
+    });
+    val.textContent = format(d.value);
+    svg.appendChild(val);
+  });
+
+  host.appendChild(svg);
 }

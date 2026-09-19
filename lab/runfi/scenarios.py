@@ -19,7 +19,7 @@ import json
 import os
 from dataclasses import replace
 
-from model import Params, run, break_even_mau
+from model import Params, run, break_even_mau, effective_face_multiple
 
 OUT = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(OUT, "data")
@@ -79,12 +79,58 @@ SCENARIOS = [
     # The same funnel WITHOUT the motivation design, to isolate its contribution.
     replace(BASE, label="designed_control", paid_signups_m1=14_000.0,
             paid_signup_decay=0.985, referral_k=0.10),
+
+    # ---- the payout-per-player ladder (see LADDER below) ----
+    replace(BASE, label="runfi_v2",
+            commerce_attach_rate=0.04, commerce_aov_usd=110.0, commerce_take_rate=0.10,
+            sub_conversion=0.12, sub_price_usd=7.99, ad_arpu_usd=1.20, offer_arpu_usd=0.50,
+            earner_share=0.30, payout_in_kind_share=0.50, in_kind_face_multiple=1.45,
+            covered_share=0.60, payer_pepm_usd=8.00,
+            churn_ceiling=0.18, prize_multiplier=2.2,
+            paid_signups_m1=14_000.0, paid_signup_decay=0.985, referral_k=0.10),
+
+    # The Vitality / UnitedHealthcare Motion shape: sold to the payer, the member
+    # is enrolled rather than acquired. Consumer monetisation barely matters.
+    replace(BASE, label="insurer_native",
+            covered_share=0.95, payer_pepm_usd=14.00, payer_payout_share=0.70,
+            earner_share=0.35, payout_in_kind_share=0.60, in_kind_face_multiple=1.45,
+            churn_ceiling=0.18, prize_multiplier=2.2,
+            paid_signups_m1=9_000.0, paid_signup_decay=0.99, referral_k=0.05,
+            cac_usd=6.00),
 ]
+
+# Each rung ADDS to the one above it. The question is not which lever is best,
+# it is how much they are worth stacked, because they are independent.
+LADDER = [
+    ("base", {}),
+    ("+ commerce",
+     dict(commerce_attach_rate=0.04, commerce_aov_usd=110.0, commerce_take_rate=0.10)),
+    ("+ consumer monetisation",
+     dict(sub_conversion=0.12, sub_price_usd=7.99, ad_arpu_usd=1.20, offer_arpu_usd=0.50)),
+    ("+ concentration (30% earn)", dict(earner_share=0.30)),
+    ("+ paid in kind",
+     dict(payout_in_kind_share=0.50, in_kind_face_multiple=1.45)),
+    ("+ payer pilot (25% @ $6)",
+     dict(covered_share=0.25, payer_pepm_usd=6.00)),
+    ("+ payer at scale (60% @ $8)",
+     dict(covered_share=0.60, payer_pepm_usd=8.00)),
+]
+
+
+def ladder_params() -> list[tuple[str, Params]]:
+    """Cumulative parameter sets, one per rung."""
+    acc, out = {}, []
+    for name, step in LADDER:
+        acc = {**acc, **step}
+        out.append((name, replace(BASE, label=name, **acc)))
+    return out
 
 FIELDS = [
     "month", "mau", "joiners", "leavers", "churn_rate", "satisfaction",
-    "revenue_usd", "revenue_per_user_usd", "pool_usd", "paid_out_usd",
-    "payout_per_user_usd", "stake_bonus_per_winner_usd", "total_user_upside_usd",
+    "revenue_usd", "revenue_per_user_usd", "consumer_revenue_usd", "payer_revenue_usd",
+    "pool_usd", "paid_out_usd", "payout_per_user_usd", "earners",
+    "payout_per_earner_usd", "payout_per_earner_face_usd", "earner_upside_face_usd",
+    "stake_bonus_per_winner_usd", "total_user_upside_usd",
     "cheat_inflation", "fraud_leak_usd", "costs_usd", "net_usd", "treasury_usd",
     "token_price_usd", "entry_cost_usd", "invariant_ok",
 ]
@@ -105,6 +151,8 @@ def summarise(label: str, rows: list[dict]) -> dict:
         "revenue_m24_usd": last["revenue_usd"],
         "payout_per_user_m24_usd": last["payout_per_user_usd"],
         "user_upside_m24_usd": last["total_user_upside_usd"],
+        "payout_per_earner_face_m24_usd": last["payout_per_earner_face_usd"],
+        "earner_upside_face_m24_usd": last["earner_upside_face_usd"],
         "treasury_m24_usd": last["treasury_usd"],
         "treasury_trough_usd": trough,
         "insolvent_month": insolvent_month,
@@ -162,6 +210,14 @@ def main() -> None:
             "break_even": {f"share_{x:.2f}": break_even_mau(replace(BASE, payout_share=x))
                            for x in (0.25, 0.50, 0.80)},
             "scenarios": summaries,
+            "ladder": [{"rung": n, **{k: v for k, v in run(lp)[-1].items()
+                                       if k in ("mau", "revenue_per_user_usd",
+                                                "payout_per_earner_usd",
+                                                "payout_per_earner_face_usd",
+                                                "earner_upside_face_usd",
+                                                "treasury_usd")},
+                        "break_even_mau": break_even_mau(lp).get("break_even_mau")}
+                       for n, lp in ladder_params()],
             "payout_share_sweep": share_sweep,
             "target_payout_sweep": target_sweep,
         }, fh, indent=2)
@@ -248,6 +304,43 @@ def main() -> None:
     print(f"  token_mint    ({len(tk)} scenarios): "
           f"{sum(s['invariant_breaches'] for s in tk)} breaches in "
           f"{len(tk)*BASE.months} scenario-months")
+    print("\nPAYOUT PER PLAYER LADDER (month 24, each rung adds to the one above)")
+    print(f"{'rung':<30}{'rev/user':>10}{'earners':>10}{'/earner':>10}"
+          f"{'face':>9}{'+stake':>9}{'breakeven':>11}{'treasury':>11}")
+    print("-" * 100)
+    ladder_rows = []
+    for name, lp in ladder_params():
+        rows = run(lp)
+        l = rows[-1]
+        be = break_even_mau(lp)
+        ladder_rows.append({
+            "rung": name, "mau_m24": l["mau"],
+            "revenue_per_user_usd": l["revenue_per_user_usd"],
+            "payout_per_earner_usd": l["payout_per_earner_usd"],
+            "payout_per_earner_face_usd": l["payout_per_earner_face_usd"],
+            "earner_upside_face_usd": l["earner_upside_face_usd"],
+            "break_even_mau": be.get("break_even_mau"),
+            "treasury_m24_usd": l["treasury_usd"],
+            "invariant_breaches": sum(1 for r in rows if not r["invariant_ok"]),
+        })
+        print(f"{name:<30}{money(l['revenue_per_user_usd']):>10}"
+              f"{l['earners']/l['mau']:>9.0%}"
+              f"{money(l['payout_per_earner_usd']):>10}"
+              f"{money(l['payout_per_earner_face_usd']):>9}"
+              f"{money(l['earner_upside_face_usd']):>9}"
+              f"{(f'{be[chr(34)]}' if False else (f'{be.get(chr(98)+chr(114)+chr(101)+chr(97)+chr(107)+chr(95)+chr(101)+chr(118)+chr(101)+chr(110)+chr(95)+chr(109)+chr(97)+chr(117)):,.0f}' if be.get('break_even_mau') else 'never')):>11}"
+              f"{money(l['treasury_usd']):>11}")
+    bad = [r for r in ladder_rows if r["invariant_breaches"]]
+    print(f"  invariant breaches across every rung: {sum(r['invariant_breaches'] for r in ladder_rows)}")
+
+    print("\nFULL DESIGNS (month 24)")
+    for name in ("base", "runfi_v2", "insurer_native"):
+        r = bundle[name][-1]
+        print(f"  {name:<16} MAU {r['mau']:>9,.0f}   rev/user {money(r['revenue_per_user_usd']):>7}"
+              f"   per earner {money(r['payout_per_earner_face_usd']):>8} face"
+              f"   +stake {money(r['earner_upside_face_usd']):>8}"
+              f"   treasury {money(r['treasury_usd']):>9}")
+
     print("\nPROFITABILITY")
     for s in summaries:
         print(f"  {s['scenario']:<20}{s['months_profitable']:>3}/24 months in profit"

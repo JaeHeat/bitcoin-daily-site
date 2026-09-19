@@ -5,21 +5,24 @@
       "revenue_at_break_even_usd": 69802.34894897386,
       "revenue_per_user_usd": 1.070995670178081,
       "pool_at_break_even_usd": 17450.587237243464,
-      "payout_per_user_usd": 0.26774891754452024
+      "payout_per_user_usd": 0.26774891754452024,
+      "payout_per_earner_face_usd": 0.26774891754452024
     },
     "share_0.50": {
       "break_even_mau": 103839.34934756657,
       "revenue_at_break_even_usd": 113426.15721281104,
       "revenue_per_user_usd": 1.092323458548993,
       "pool_at_break_even_usd": 56713.07860640552,
-      "payout_per_user_usd": 0.5461617292744965
+      "payout_per_user_usd": 0.5461617292744965,
+      "payout_per_earner_face_usd": 0.5461617292744965
     },
     "share_0.80": {
       "break_even_mau": 380006.22245458415,
       "revenue_at_break_even_usd": 439323.50946438557,
       "revenue_per_user_usd": 1.156095567663739,
       "pool_at_break_even_usd": 351458.80757150846,
-      "payout_per_user_usd": 0.9248764541309913
+      "payout_per_user_usd": 0.9248764541309913,
+      "payout_per_earner_face_usd": 0.9248764541309913
     }
   },
   "scenarios": [
@@ -31,6 +34,8 @@
       "revenue_m24_usd": 15646.478814044855,
       "payout_per_user_m24_usd": 0.46361056359190056,
       "user_upside_m24_usd": 1.2569438969252338,
+      "payout_per_earner_face_m24_usd": 0.46361056359190056,
+      "earner_upside_face_m24_usd": 7.074721674703012,
       "treasury_m24_usd": -290903.64057964255,
       "treasury_trough_usd": -290903.64057964255,
       "insolvent_month": 18,
@@ -48,6 +53,8 @@
       "revenue_m24_usd": 87.15774635370092,
       "payout_per_user_m24_usd": 0.12590541072457656,
       "user_upside_m24_usd": 0.12590541072457656,
+      "payout_per_earner_face_m24_usd": 0.12590541072457656,
+      "earner_upside_face_m24_usd": 6.737016521835688,
       "treasury_m24_usd": -142662.052452517,
       "treasury_trough_usd": -142662.052452517,
       "insolvent_month": 22,
@@ -65,6 +72,8 @@
       "revenue_m24_usd": 213184.82482997427,
       "payout_per_user_m24_usd": 0.5152660291350768,
       "user_upside_m24_usd": 1.3085993624684102,
+      "payout_per_earner_face_m24_usd": 0.5152660291350768,
+      "earner_upside_face_m24_usd": 7.1263771402461895,
       "treasury_m24_usd": 304640.97211442946,
       "treasury_trough_usd": 285442.0958892476,
       "insolvent_month": null,
@@ -82,6 +91,8 @@
       "revenue_m24_usd": 4285.259328651302,
       "payout_per_user_m24_usd": 0.15255918808808966,
       "user_upside_m24_usd": 0.9458925214214231,
+      "payout_per_earner_face_m24_usd": 0.15255918808808966,
+      "earner_upside_face_m24_usd": 6.763670299199202,
       "treasury_m24_usd": -434298.0021991542,
       "treasury_trough_usd": -434298.0021991542,
       "insolvent_month": 16,
@@ -99,6 +110,8 @@
       "revenue_m24_usd": 14855.927545796887,
       "payout_per_user_m24_usd": 0.3739948936863045,
       "user_upside_m24_usd": 1.167328227019638,
+      "payout_per_earner_face_m24_usd": 0.3739948936863045,
+      "earner_upside_face_m24_usd": 6.985106004797416,
       "treasury_m24_usd": -296656.4665521707,
       "treasury_trough_usd": -296656.4665521707,
       "insolvent_month": 18,
@@ -116,6 +129,8 @@
       "revenue_m24_usd": 18313.30324350825,
       "payout_per_user_m24_usd": 0.741435385251065,
       "user_upside_m24_usd": 1.5347687185843983,
+      "payout_per_earner_face_m24_usd": 0.741435385251065,
+      "earner_upside_face_m24_usd": 7.3525464963621765,
       "treasury_m24_usd": -412786.5155192967,
       "treasury_trough_usd": -412786.5155192967,
       "insolvent_month": 16,
@@ -133,6 +148,8 @@
       "revenue_m24_usd": 13672.683373052605,
       "payout_per_user_m24_usd": 0.23204455209300792,
       "user_upside_m24_usd": 1.0253778854263413,
+      "payout_per_earner_face_m24_usd": 0.23204455209300792,
+      "earner_upside_face_m24_usd": 6.84315566320412,
       "treasury_m24_usd": -209380.46878742866,
       "treasury_trough_usd": -209380.46878742866,
       "insolvent_month": 19,
@@ -150,6 +167,8 @@
       "revenue_m24_usd": 11151.36390653902,
       "payout_per_user_m24_usd": 0.4656005799292917,
       "user_upside_m24_usd": 0.4656005799292917,
+      "payout_per_earner_face_m24_usd": 0.4656005799292917,
+      "earner_upside_face_m24_usd": 0.4656005799292917,
       "treasury_m24_usd": -347065.2546216063,
       "treasury_trough_usd": -347065.2546216063,
       "insolvent_month": 17,
@@ -167,6 +186,8 @@
       "revenue_m24_usd": 132610.26119527337,
       "payout_per_user_m24_usd": 25.021670374985963,
       "user_upside_m24_usd": 25.021670374985963,
+      "payout_per_earner_face_m24_usd": 25.021670374985963,
+      "earner_upside_face_m24_usd": 31.632781486097073,
       "treasury_m24_usd": 2154395.7023774474,
       "treasury_trough_usd": 787084.8,
       "insolvent_month": null,
@@ -184,6 +205,8 @@
       "revenue_m24_usd": 26516.789147260926,
       "payout_per_user_m24_usd": 0.4732515804811301,
       "user_upside_m24_usd": 1.2665849138144634,
+      "payout_per_earner_face_m24_usd": 0.4732515804811301,
+      "earner_upside_face_m24_usd": 7.084362691592242,
       "treasury_m24_usd": -224956.74409374598,
       "treasury_trough_usd": -224956.74409374598,
       "insolvent_month": 19,
@@ -201,6 +224,8 @@
       "revenue_m24_usd": 21385.79479478659,
       "payout_per_user_m24_usd": 0.46348418699436705,
       "user_upside_m24_usd": 1.2568175203277003,
+      "payout_per_earner_face_m24_usd": 0.46348418699436705,
+      "earner_upside_face_m24_usd": 7.0745952981054785,
       "treasury_m24_usd": -253663.1601817935,
       "treasury_trough_usd": -253663.1601817935,
       "insolvent_month": 18,
@@ -218,6 +243,8 @@
       "revenue_m24_usd": 205781.76794718154,
       "payout_per_user_m24_usd": 0.507751036499999,
       "user_upside_m24_usd": 1.3010843698333323,
+      "payout_per_earner_face_m24_usd": 0.507751036499999,
+      "earner_upside_face_m24_usd": 7.118862147611112,
       "treasury_m24_usd": 442924.3099880648,
       "treasury_trough_usd": 338361.5503303616,
       "insolvent_month": null,
@@ -235,6 +262,8 @@
       "revenue_m24_usd": 89310.33391338077,
       "payout_per_user_m24_usd": 0.49693338544951565,
       "user_upside_m24_usd": 1.290266718782849,
+      "payout_per_earner_face_m24_usd": 0.49693338544951565,
+      "earner_upside_face_m24_usd": 7.108044496560627,
       "treasury_m24_usd": -100853.74587314967,
       "treasury_trough_usd": -100853.74587314967,
       "insolvent_month": 21,
@@ -243,6 +272,116 @@
       "months_profitable": 0,
       "net_m24_usd": -27664.260940520966,
       "fraud_leak_total_usd": 57662.85703129747
+    },
+    {
+      "scenario": "runfi_v2",
+      "mau_m24": 488187.290642083,
+      "peak_mau": 488187.290642083,
+      "retention_of_peak": 1.0,
+      "revenue_m24_usd": 3786204.5219663074,
+      "payout_per_user_m24_usd": 3.89787087167864,
+      "user_upside_m24_usd": 4.6912042050119735,
+      "payout_per_earner_face_m24_usd": 15.916306059354449,
+      "earner_upside_face_m24_usd": 22.52741717046556,
+      "treasury_m24_usd": 17130566.55573197,
+      "treasury_trough_usd": 742016.8970653402,
+      "insolvent_month": null,
+      "invariant_breaches": 0,
+      "token_price_m24_usd": NaN,
+      "months_profitable": 23,
+      "net_m24_usd": 1540904.2678384183,
+      "fraud_leak_total_usd": 2515550.750709424
+    },
+    {
+      "scenario": "insurer_native",
+      "mau_m24": 175349.07597106564,
+      "peak_mau": 175349.07597106564,
+      "retention_of_peak": 1.0,
+      "revenue_m24_usd": 2523781.4894282683,
+      "payout_per_user_m24_usd": 8.816144324902778,
+      "user_upside_m24_usd": 9.609477658236111,
+      "payout_per_earner_face_m24_usd": 31.99000940750437,
+      "earner_upside_face_m24_usd": 38.60112051861548,
+      "treasury_m24_usd": 9235731.878287913,
+      "treasury_trough_usd": 712323.3101920516,
+      "insolvent_month": null,
+      "invariant_breaches": 0,
+      "token_price_m24_usd": NaN,
+      "months_profitable": 23,
+      "net_m24_usd": 687827.6555448062,
+      "fraud_leak_total_usd": 2521948.9923785776
+    }
+  ],
+  "ladder": [
+    {
+      "rung": "base",
+      "mau": 15859.761498443768,
+      "revenue_per_user_usd": 0.9865519614264161,
+      "payout_per_earner_usd": 0.46361056359190056,
+      "payout_per_earner_face_usd": 0.46361056359190056,
+      "earner_upside_face_usd": 7.074721674703012,
+      "treasury_usd": -290903.64057964255,
+      "break_even_mau": 103839.34934756657
+    },
+    {
+      "rung": "+ commerce",
+      "mau": 17706.46097504263,
+      "revenue_per_user_usd": 1.4309925048848224,
+      "payout_per_earner_usd": 0.6691334247001876,
+      "payout_per_earner_face_usd": 0.6691334247001876,
+      "earner_upside_face_usd": 7.2802445358113,
+      "treasury_usd": -180199.63144268515,
+      "break_even_mau": 69847.78674328282
+    },
+    {
+      "rung": "+ consumer monetisation",
+      "mau": 24011.34971100326,
+      "revenue_per_user_usd": 2.6472893292193995,
+      "payout_per_earner_usd": 1.2235810721317024,
+      "payout_per_earner_face_usd": 1.2235810721317024,
+      "earner_upside_face_usd": 7.834692183242813,
+      "treasury_usd": 230301.3391563811,
+      "break_even_mau": 35144.8635303908
+    },
+    {
+      "rung": "+ concentration (30% earn)",
+      "mau": 24011.349711003255,
+      "revenue_per_user_usd": 2.647289329219399,
+      "payout_per_earner_usd": 4.078603573772341,
+      "payout_per_earner_face_usd": 4.078603573772341,
+      "earner_upside_face_usd": 10.689714684883452,
+      "treasury_usd": 230301.33915638103,
+      "break_even_mau": 35144.8635303908
+    },
+    {
+      "rung": "+ paid in kind",
+      "mau": 27822.94399190514,
+      "revenue_per_user_usd": 2.6607062555261045,
+      "payout_per_earner_usd": 4.078691590573475,
+      "payout_per_earner_face_usd": 4.996397198452507,
+      "earner_upside_face_usd": 11.607508309563617,
+      "treasury_usd": 298653.3253966384,
+      "break_even_mau": 35144.8635303908
+    },
+    {
+      "rung": "+ payer pilot (25% @ $6)",
+      "mau": 46742.93988941429,
+      "revenue_per_user_usd": 4.209229674691582,
+      "payout_per_earner_usd": 6.804539086390855,
+      "payout_per_earner_face_usd": 8.335560380828797,
+      "earner_upside_face_usd": 14.94667149193991,
+      "treasury_usd": 1080100.354285077,
+      "break_even_mau": 24152.374767271576
+    },
+    {
+      "rung": "+ payer at scale (60% @ $8)",
+      "mau": 74144.37041177016,
+      "revenue_per_user_usd": 7.554104362459399,
+      "payout_per_earner_usd": 12.69246327140638,
+      "payout_per_earner_face_usd": 15.548267507472817,
+      "earner_upside_face_usd": 22.15937861858393,
+      "treasury_usd": 3022438.7406417755,
+      "break_even_mau": 14241.63873624043
     }
   ],
   "payout_share_sweep": [
@@ -254,6 +393,8 @@
       "revenue_m24_usd": 12217.175144055058,
       "payout_per_user_m24_usd": 0.04647400605730975,
       "user_upside_m24_usd": 0.8398073393906432,
+      "payout_per_earner_face_m24_usd": 0.04647400605730975,
+      "earner_upside_face_m24_usd": 6.657585117168423,
       "treasury_m24_usd": -157039.6729683734,
       "treasury_trough_usd": -157039.6729683734,
       "insolvent_month": 20,
@@ -267,7 +408,8 @@
       "revenue_at_break_even_usd": 53346.84586003044,
       "revenue_per_user_usd": 1.0595158788075807,
       "pool_at_break_even_usd": 2667.342293001522,
-      "payout_per_user_usd": 0.052975793940379046
+      "payout_per_user_usd": 0.052975793940379046,
+      "payout_per_earner_face_usd": 0.052975793940379046
     },
     {
       "scenario": "0.10",
@@ -277,6 +419,8 @@
       "revenue_m24_usd": 12572.807729382646,
       "payout_per_user_m24_usd": 0.09291002255464109,
       "user_upside_m24_usd": 0.8862433558879745,
+      "payout_per_earner_face_m24_usd": 0.09291002255464109,
+      "earner_upside_face_m24_usd": 6.704021133665753,
       "treasury_m24_usd": -169034.6250095325,
       "treasury_trough_usd": -169034.6250095325,
       "insolvent_month": 20,
@@ -290,7 +434,8 @@
       "revenue_at_break_even_usd": 56689.74318533369,
       "revenue_per_user_usd": 1.0620907682682723,
       "pool_at_break_even_usd": 5668.974318533369,
-      "payout_per_user_usd": 0.10620907682682725
+      "payout_per_user_usd": 0.10620907682682725,
+      "payout_per_earner_face_usd": 0.10620907682682725
     },
     {
       "scenario": "0.15",
@@ -300,6 +445,8 @@
       "revenue_m24_usd": 12933.54906894225,
       "payout_per_user_m24_usd": 0.13931380135406216,
       "user_upside_m24_usd": 0.9326471346873956,
+      "payout_per_earner_face_m24_usd": 0.13931380135406216,
+      "earner_upside_face_m24_usd": 6.750424912465174,
       "treasury_m24_usd": -181762.6784266173,
       "treasury_trough_usd": -181762.6784266173,
       "insolvent_month": 20,
@@ -313,7 +460,8 @@
       "revenue_at_break_even_usd": 60478.25978944638,
       "revenue_per_user_usd": 1.0648443819703963,
       "pool_at_break_even_usd": 9071.73896841696,
-      "payout_per_user_usd": 0.1597266572955595
+      "payout_per_user_usd": 0.1597266572955595,
+      "payout_per_earner_face_usd": 0.1597266572955595
     },
     {
       "scenario": "0.20",
@@ -323,6 +471,8 @@
       "revenue_m24_usd": 13299.993469414705,
       "payout_per_user_m24_usd": 0.18569044996585685,
       "user_upside_m24_usd": 0.9790237832991902,
+      "payout_per_earner_face_m24_usd": 0.18569044996585685,
+      "earner_upside_face_m24_usd": 6.796801561076968,
       "treasury_m24_usd": -195213.52613488687,
       "treasury_trough_usd": -195213.52613488687,
       "insolvent_month": 20,
@@ -336,7 +486,8 @@
       "revenue_at_break_even_usd": 64807.65083443697,
       "revenue_per_user_usd": 1.0678022443827397,
       "pool_at_break_even_usd": 12961.530166887394,
-      "payout_per_user_usd": 0.21356044887654796
+      "payout_per_user_usd": 0.21356044887654796,
+      "payout_per_earner_face_usd": 0.21356044887654796
     },
     {
       "scenario": "0.25",
@@ -346,6 +497,8 @@
       "revenue_m24_usd": 13672.683373052605,
       "payout_per_user_m24_usd": 0.23204455209300792,
       "user_upside_m24_usd": 1.0253778854263413,
+      "payout_per_earner_face_m24_usd": 0.23204455209300792,
+      "earner_upside_face_m24_usd": 6.84315566320412,
       "treasury_m24_usd": -209380.46878742866,
       "treasury_trough_usd": -209380.46878742866,
       "insolvent_month": 19,
@@ -359,7 +512,8 @@
       "revenue_at_break_even_usd": 69802.34894897386,
       "revenue_per_user_usd": 1.070995670178081,
       "pool_at_break_even_usd": 17450.587237243464,
-      "payout_per_user_usd": 0.26774891754452024
+      "payout_per_user_usd": 0.26774891754452024,
+      "payout_per_earner_face_usd": 0.26774891754452024
     },
     {
       "scenario": "0.30",
@@ -369,6 +523,8 @@
       "revenue_m24_usd": 14052.12153633551,
       "payout_per_user_m24_usd": 0.2783802589085762,
       "user_upside_m24_usd": 1.0717135922419097,
+      "payout_per_earner_face_m24_usd": 0.2783802589085762,
+      "earner_upside_face_m24_usd": 6.889491370019689,
       "treasury_m24_usd": -224259.75329293852,
       "treasury_trough_usd": -224259.75329293852,
       "insolvent_month": 19,
@@ -382,7 +538,8 @@
       "revenue_at_break_even_usd": 75628.0420410014,
       "revenue_per_user_usd": 1.074463640757187,
       "pool_at_break_even_usd": 22688.412612300424,
-      "payout_per_user_usd": 0.3223390922271562
+      "payout_per_user_usd": 0.3223390922271562,
+      "payout_per_earner_face_usd": 0.3223390922271562
     },
     {
       "scenario": "0.35",
@@ -392,6 +549,8 @@
       "revenue_m24_usd": 14438.78016738159,
       "payout_per_user_m24_usd": 0.32470135944702794,
       "user_upside_m24_usd": 1.1180346927803613,
+      "payout_per_earner_face_m24_usd": 0.32470135944702794,
+      "earner_upside_face_m24_usd": 6.935812470558139,
       "treasury_m24_usd": -239850.07683746843,
       "treasury_trough_usd": -239850.07683746843,
       "insolvent_month": 19,
@@ -405,7 +564,8 @@
       "revenue_at_break_even_usd": 82510.28165074441,
       "revenue_per_user_usd": 1.0782555026069327,
       "pool_at_break_even_usd": 28878.598577760546,
-      "payout_per_user_usd": 0.3773894259124265
+      "payout_per_user_usd": 0.3773894259124265,
+      "payout_per_earner_face_usd": 0.3773894259124265
     },
     {
       "scenario": "0.40",
@@ -415,6 +575,8 @@
       "revenue_m24_usd": 14833.107906868048,
       "payout_per_user_m24_usd": 0.37101133576561196,
       "user_upside_m24_usd": 1.1643446690989454,
+      "payout_per_earner_face_m24_usd": 0.37101133576561196,
+      "earner_upside_face_m24_usd": 6.9821224468767245,
       "treasury_m24_usd": -256152.20862702967,
       "treasury_trough_usd": -256152.20862702967,
       "insolvent_month": 18,
@@ -428,7 +590,8 @@
       "revenue_at_break_even_usd": 90764.14233964967,
       "revenue_per_user_usd": 1.0824349585410649,
       "pool_at_break_even_usd": 36305.65693585987,
-      "payout_per_user_usd": 0.432973983416426
+      "payout_per_user_usd": 0.432973983416426,
+      "payout_per_earner_face_usd": 0.432973983416426
     },
     {
       "scenario": "0.45",
@@ -438,6 +601,8 @@
       "revenue_m24_usd": 15235.535249017004,
       "payout_per_user_m24_usd": 0.4173134067875826,
       "user_upside_m24_usd": 1.210646740120916,
+      "payout_per_earner_face_m24_usd": 0.4173134067875826,
+      "earner_upside_face_m24_usd": 7.028424517898694,
       "treasury_m24_usd": -273168.69713032985,
       "treasury_trough_usd": -273168.69713032985,
       "insolvent_month": 18,
@@ -451,7 +616,8 @@
       "revenue_at_break_even_usd": 100843.41476198718,
       "revenue_per_user_usd": 1.0870861697439376,
       "pool_at_break_even_usd": 45379.53664289423,
-      "payout_per_user_usd": 0.4891887763847719
+      "payout_per_user_usd": 0.4891887763847719,
+      "payout_per_earner_face_usd": 0.4891887763847719
     },
     {
       "scenario": "0.50",
@@ -461,6 +627,8 @@
       "revenue_m24_usd": 15646.478814044855,
       "payout_per_user_m24_usd": 0.46361056359190056,
       "user_upside_m24_usd": 1.2569438969252338,
+      "payout_per_earner_face_m24_usd": 0.46361056359190056,
+      "earner_upside_face_m24_usd": 7.074721674703012,
       "treasury_m24_usd": -290903.64057964255,
       "treasury_trough_usd": -290903.64057964255,
       "insolvent_month": 18,
@@ -474,7 +642,8 @@
       "revenue_at_break_even_usd": 113426.15721281104,
       "revenue_per_user_usd": 1.092323458548993,
       "pool_at_break_even_usd": 56713.07860640552,
-      "payout_per_user_usd": 0.5461617292744965
+      "payout_per_user_usd": 0.5461617292744965,
+      "payout_per_earner_face_usd": 0.5461617292744965
     },
     {
       "scenario": "0.55",
@@ -484,6 +653,8 @@
       "revenue_m24_usd": 16066.344761526565,
       "payout_per_user_m24_usd": 0.5099055981413289,
       "user_upside_m24_usd": 1.3032389314746622,
+      "payout_per_earner_face_m24_usd": 0.5099055981413289,
+      "earner_upside_face_m24_usd": 7.121016709252442,
       "treasury_m24_usd": -309362.5050536899,
       "treasury_trough_usd": -309362.5050536899,
       "insolvent_month": 17,
@@ -497,7 +668,8 @@
       "revenue_at_break_even_usd": 129572.274113566,
       "revenue_per_user_usd": 1.0983074862534008,
       "pool_at_break_even_usd": 71264.7507624613,
-      "payout_per_user_usd": 0.6040691174393704
+      "payout_per_user_usd": 0.6040691174393704,
+      "payout_per_earner_face_usd": 0.6040691174393704
     },
     {
       "scenario": "0.60",
@@ -507,6 +679,8 @@
       "revenue_m24_usd": 16495.53155201682,
       "payout_per_user_m24_usd": 0.5562011269090836,
       "user_upside_m24_usd": 1.3495344602424169,
+      "payout_per_earner_face_m24_usd": 0.5562011269090836,
+      "earner_upside_face_m24_usd": 7.167312238020195,
       "treasury_m24_usd": -328551.97888707777,
       "treasury_trough_usd": -328551.97888707777,
       "insolvent_month": 17,
@@ -520,7 +694,8 @@
       "revenue_at_break_even_usd": 151035.17256487196,
       "revenue_per_user_usd": 1.1052738531686266,
       "pool_at_break_even_usd": 90621.10353892318,
-      "payout_per_user_usd": 0.663164311901176
+      "payout_per_user_usd": 0.663164311901176,
+      "payout_per_earner_face_usd": 0.663164311901176
     },
     {
       "scenario": "0.65",
@@ -530,6 +705,8 @@
       "revenue_m24_usd": 16934.43220787541,
       "payout_per_user_m24_usd": 0.6024996104911908,
       "user_upside_m24_usd": 1.395832943824524,
+      "payout_per_earner_face_m24_usd": 0.6024996104911908,
+      "earner_upside_face_m24_usd": 7.2136107216023015,
       "treasury_m24_usd": -348479.8551889429,
       "treasury_trough_usd": -348479.8551889429,
       "insolvent_month": 17,
@@ -543,7 +720,8 @@
       "revenue_at_break_even_usd": 180936.69883627357,
       "revenue_per_user_usd": 1.1135875539268592,
       "pool_at_break_even_usd": 117608.85424357782,
-      "payout_per_user_usd": 0.7238319100524584
+      "payout_per_user_usd": 0.7238319100524584,
+      "payout_per_earner_face_usd": 0.7238319100524584
     },
     {
       "scenario": "0.70",
@@ -553,6 +731,8 @@
       "revenue_m24_usd": 17383.43618481158,
       "payout_per_user_m24_usd": 0.6488033700254431,
       "user_upside_m24_usd": 1.4421367033587766,
+      "payout_per_earner_face_m24_usd": 0.6488033700254431,
+      "earner_upside_face_m24_usd": 7.259914481136556,
       "treasury_m24_usd": -369154.9363804361,
       "treasury_trough_usd": -369154.9363804361,
       "insolvent_month": 16,
@@ -566,7 +746,8 @@
       "revenue_at_break_even_usd": 225415.45928241318,
       "revenue_per_user_usd": 1.1238572766996648,
       "pool_at_break_even_usd": 157790.82149768923,
-      "payout_per_user_usd": 0.7867000936897653
+      "payout_per_user_usd": 0.7867000936897653,
+      "payout_per_earner_face_usd": 0.7867000936897653
     },
     {
       "scenario": "0.75",
@@ -576,6 +757,8 @@
       "revenue_m24_usd": 17842.930937637568,
       "payout_per_user_m24_usd": 0.695114601044801,
       "user_upside_m24_usd": 1.4884479343781343,
+      "payout_per_earner_face_m24_usd": 0.695114601044801,
+      "earner_upside_face_m24_usd": 7.306225712155912,
       "treasury_m24_usd": -390586.95617491583,
       "treasury_trough_usd": -390586.95617491583,
       "insolvent_month": 16,
@@ -589,7 +772,8 @@
       "revenue_at_break_even_usd": 298388.96810099523,
       "revenue_per_user_usd": 1.137209864793451,
       "pool_at_break_even_usd": 223791.7260757464,
-      "payout_per_user_usd": 0.8529073985950882
+      "payout_per_user_usd": 0.8529073985950882,
+      "payout_per_earner_face_usd": 0.8529073985950882
     },
     {
       "scenario": "0.80",
@@ -599,6 +783,8 @@
       "revenue_m24_usd": 18313.30324350825,
       "payout_per_user_m24_usd": 0.741435385251065,
       "user_upside_m24_usd": 1.5347687185843983,
+      "payout_per_earner_face_m24_usd": 0.741435385251065,
+      "earner_upside_face_m24_usd": 7.3525464963621765,
       "treasury_m24_usd": -412786.5155192967,
       "treasury_trough_usd": -412786.5155192967,
       "insolvent_month": 16,
@@ -612,7 +798,8 @@
       "revenue_at_break_even_usd": 439323.50946438557,
       "revenue_per_user_usd": 1.156095567663739,
       "pool_at_break_even_usd": 351458.80757150846,
-      "payout_per_user_usd": 0.9248764541309913
+      "payout_per_user_usd": 0.9248764541309913,
+      "payout_per_earner_face_usd": 0.9248764541309913
     },
     {
       "scenario": "0.85",
@@ -622,6 +809,8 @@
       "revenue_m24_usd": 18794.940331144157,
       "payout_per_user_m24_usd": 0.7877677005887967,
       "user_upside_m24_usd": 1.5811010339221303,
+      "payout_per_earner_face_m24_usd": 0.7877677005887967,
+      "earner_upside_face_m24_usd": 7.398878811699909,
       "treasury_m24_usd": -435765.02981732885,
       "treasury_trough_usd": -435765.02981732885,
       "insolvent_month": 15,
@@ -635,7 +824,8 @@
       "revenue_at_break_even_usd": 817893.9841684073,
       "revenue_per_user_usd": 1.1876103891846712,
       "pool_at_break_even_usd": 695209.8865431462,
-      "payout_per_user_usd": 1.0094688308069706
+      "payout_per_user_usd": 1.0094688308069706,
+      "payout_per_earner_face_usd": 1.0094688308069706
     },
     {
       "scenario": "0.90",
@@ -645,6 +835,8 @@
       "revenue_m24_usd": 19288.23085359439,
       "payout_per_user_m24_usd": 0.8341134299196149,
       "user_upside_m24_usd": 1.6274467632529483,
+      "payout_per_earner_face_m24_usd": 0.8341134299196149,
+      "earner_upside_face_m24_usd": 7.4452245410307265,
       "treasury_m24_usd": -459534.6853512463,
       "treasury_trough_usd": -459534.6853512463,
       "insolvent_month": 15,
@@ -658,7 +850,8 @@
       "revenue_at_break_even_usd": 3926389.847509697,
       "revenue_per_user_usd": 1.2740135434360502,
       "pool_at_break_even_usd": 3533750.8627587273,
-      "payout_per_user_usd": 1.146612189092445
+      "payout_per_user_usd": 1.146612189092445,
+      "payout_per_earner_face_usd": 1.146612189092445
     },
     {
       "scenario": "0.95",
@@ -668,6 +861,8 @@
       "revenue_m24_usd": 19793.56573390215,
       "payout_per_user_m24_usd": 0.8804743685360673,
       "user_upside_m24_usd": 1.6738077018694006,
+      "payout_per_earner_face_m24_usd": 0.8804743685360673,
+      "earner_upside_face_m24_usd": 7.491585479647179,
       "treasury_m24_usd": -484108.4032656967,
       "treasury_trough_usd": -484108.4032656967,
       "insolvent_month": 15,
@@ -690,6 +885,8 @@
       "revenue_m24_usd": 78032.13862224683,
       "payout_per_user_m24_usd": 0.4706775983420577,
       "user_upside_m24_usd": 1.264010931675391,
+      "payout_per_earner_face_m24_usd": 0.4706775983420577,
+      "earner_upside_face_m24_usd": 7.0817887094531695,
       "treasury_m24_usd": -5081.291284010425,
       "treasury_trough_usd": -5081.291284010425,
       "insolvent_month": 24,
@@ -708,6 +905,8 @@
       "revenue_m24_usd": 27725.064813667363,
       "payout_per_user_m24_usd": 0.46408743257136387,
       "user_upside_m24_usd": 1.2574207659046972,
+      "payout_per_earner_face_m24_usd": 0.46408743257136387,
+      "earner_upside_face_m24_usd": 7.075198543682475,
       "treasury_m24_usd": -218154.59487772404,
       "treasury_trough_usd": -218154.59487772404,
       "insolvent_month": 19,
@@ -726,6 +925,8 @@
       "revenue_m24_usd": 18975.56931726275,
       "payout_per_user_m24_usd": 0.4633647910842953,
       "user_upside_m24_usd": 1.2566981244176287,
+      "payout_per_earner_face_m24_usd": 0.4633647910842953,
+      "earner_upside_face_m24_usd": 7.074475902195407,
       "treasury_m24_usd": -268743.13574139663,
       "treasury_trough_usd": -268743.13574139663,
       "insolvent_month": 18,
@@ -744,6 +945,8 @@
       "revenue_m24_usd": 15646.478814044855,
       "payout_per_user_m24_usd": 0.46361056359190056,
       "user_upside_m24_usd": 1.2569438969252338,
+      "payout_per_earner_face_m24_usd": 0.46361056359190056,
+      "earner_upside_face_m24_usd": 7.074721674703012,
       "treasury_m24_usd": -290903.64057964255,
       "treasury_trough_usd": -290903.64057964255,
       "insolvent_month": 18,
@@ -762,6 +965,8 @@
       "revenue_m24_usd": 12802.652618703692,
       "payout_per_user_m24_usd": 0.4644783645304051,
       "user_upside_m24_usd": 1.2578116978637386,
+      "payout_per_earner_face_m24_usd": 0.4644783645304051,
+      "earner_upside_face_m24_usd": 7.075589475641518,
       "treasury_m24_usd": -311830.150194939,
       "treasury_trough_usd": -311830.150194939,
       "insolvent_month": 17,
@@ -780,6 +985,8 @@
       "revenue_m24_usd": 11506.321114469407,
       "payout_per_user_m24_usd": 0.4652602654299061,
       "user_upside_m24_usd": 1.2585935987632393,
+      "payout_per_earner_face_m24_usd": 0.4652602654299061,
+      "earner_upside_face_m24_usd": 7.076371376541017,
       "treasury_m24_usd": -322172.58192852786,
       "treasury_trough_usd": -322172.58192852786,
       "insolvent_month": 17,
@@ -798,6 +1005,8 @@
       "revenue_m24_usd": 10247.902261316667,
       "payout_per_user_m24_usd": 0.46641503557210146,
       "user_upside_m24_usd": 1.259748368905435,
+      "payout_per_earner_face_m24_usd": 0.46641503557210146,
+      "earner_upside_face_m24_usd": 7.077526146683214,
       "treasury_m24_usd": -332809.58894079074,
       "treasury_trough_usd": -332809.58894079074,
       "insolvent_month": 17,
@@ -816,6 +1025,8 @@
       "revenue_m24_usd": 9218.85461950784,
       "payout_per_user_m24_usd": 0.4677958130186782,
       "user_upside_m24_usd": 1.2611291463520116,
+      "payout_per_earner_face_m24_usd": 0.4677958130186782,
+      "earner_upside_face_m24_usd": 7.07890692412979,
       "treasury_m24_usd": -342015.51533388643,
       "treasury_trough_usd": -342015.51533388643,
       "insolvent_month": 17,

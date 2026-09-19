@@ -32,8 +32,27 @@ export const DEFAULTS = {
   adArpuScaleRef: 50000,
   subConversionDecay: 0.985,
 
+  // LEVER 1: commerce. Gear is what this audience already buys.
+  commerceAttachRate: 0.0,
+  commerceAovUsd: 0.0,
+  commerceTakeRate: 0.0,
+
+  // LEVER 2: the payer channel. An employer or insurer pays per covered member
+  // because verified activity lowers their claims. 5-10x consumer ARPU, and the
+  // only source here not capped by consumer attention.
+  coveredShare: 0.0,
+  payerPepmUsd: 0.0,
+  payerPayoutShare: 0.60,
+
+  // LEVER 3: concentration. Pay the 30% who clear the activity bar, not everyone.
+  earnerShare: 1.0,
+
+  // LEVER 4: payout in kind. Costs a dollar, lands as more than a dollar.
+  payoutInKindShare: 0.0,
+  inKindFaceMultiple: 1.0,
+
   payoutShare: 0.50,
-  payoutShareCapUsd: 25.0,
+  payoutShareCapUsd: 75.0,
   activityCurveExponent: 0.70,
 
   variableCostPerUserUsd: 0.18,
@@ -90,12 +109,21 @@ export function stakeEconomics(mau, p) {
 }
 
 export function outsideRevenue(mau, month, p) {
-  if (mau <= 0) return { sub: 0, ad: 0, offer: 0 };
+  if (mau <= 0) return { sub: 0, ad: 0, offer: 0, commerce: 0, payer: 0, consumer: 0, total: 0 };
   const conv = p.subConversion * Math.pow(p.subConversionDecay, month);
   const sub = mau * conv * p.subPriceUsd * (1 - p.appStoreCut);
   const scale = Math.pow(Math.max(mau, 1) / p.adArpuScaleRef, p.adArpuScaleExponent);
-  return { sub, ad: mau * p.adArpuUsd * scale, offer: mau * p.offerArpuUsd };
+  const ad = mau * p.adArpuUsd * scale;
+  const offer = mau * p.offerArpuUsd;
+  const commerce = mau * p.commerceAttachRate * p.commerceAovUsd * p.commerceTakeRate;
+  const payer = mau * p.coveredShare * p.payerPepmUsd;
+  const consumer = sub + ad + offer + commerce;
+  return { sub, ad, offer, commerce, payer, consumer, total: consumer + payer };
 }
+
+/** Face value delivered per dollar of real payout cost. */
+export const effectiveFaceMultiple = (p) =>
+  1 + p.payoutInKindShare * (p.inKindFaceMultiple - 1);
 
 export function newUsers(mau, month, sat, p) {
   const paid = p.paidSignupsM1 * Math.pow(p.paidSignupDecay, month);
@@ -115,19 +143,27 @@ export function simulateRevenueShare(p) {
     const leavers = mau * churnRate(sat, p);
     mau = Math.max(0, mau + joiners - leavers);
 
-    const { sub, ad, offer } = outsideRevenue(mau, month, p);
+    const rev = outsideRevenue(mau, month, p);
     const { rake, bonusPerWinner } = stakeEconomics(mau, p);
-    const revenue = sub + ad + offer;
+    const revenue = rev.total;
 
     // The invariant: a share of money that already arrived. Cannot be overdrawn.
-    const pool = p.payoutShare * revenue;
+    // Consumer and payer money carry different shares; both are outside revenue.
+    const pool = p.payoutShare * rev.consumer + p.payerPayoutShare * rev.payer;
     const honest = honestShareOfPool(sat, p);
     const poolToHonest = pool * honest;
     const poolLost = pool - poolToHonest;
 
-    let perUser = mau > 0 ? poolToHonest / mau : 0;
-    perUser = Math.min(perUser, p.payoutShareCapUsd);
-    const paidOut = perUser * mau + poolLost;
+    // LEVER 3: split among qualifying earners, not all actives.
+    const earners = Math.max(1e-9, mau * p.earnerShare);
+    let perEarner = mau > 0 ? poolToHonest / earners : 0;
+    perEarner = Math.min(perEarner, p.payoutShareCapUsd);
+    const paidOut = perEarner * earners + poolLost;
+
+    // LEVER 4: cost is perEarner; what the user sees is face.
+    const face = effectiveFaceMultiple(p);
+    const perEarnerFace = perEarner * face;
+    const perUser = perEarner * p.earnerShare;
 
     const acquisition = p.paidSignupsM1 * Math.pow(p.paidSignupDecay, month) * p.cacUsd;
     const costs = mau * p.variableCostPerUserUsd + acquisition + p.fixedCostMonthlyUsd;
@@ -139,7 +175,11 @@ export function simulateRevenueShare(p) {
       churn_rate: churnRate(sat, p), satisfaction: sat,
       revenue_usd: revenue,
       revenue_per_user_usd: mau > 0 ? revenue / mau : 0,
+      consumer_revenue_usd: rev.consumer, payer_revenue_usd: rev.payer,
       pool_usd: pool, paid_out_usd: paidOut, payout_per_user_usd: perUser,
+      earners, payout_per_earner_usd: perEarner,
+      payout_per_earner_face_usd: perEarnerFace,
+      earner_upside_face_usd: perEarnerFace + bonusPerWinner,
       stake_bonus_per_winner_usd: bonusPerWinner,
       total_user_upside_usd: perUser + bonusPerWinner * p.stakeParticipation,
       cheat_inflation: cheatInflation(sat, p),
@@ -148,7 +188,7 @@ export function simulateRevenueShare(p) {
       invariant_ok: paidOut <= revenue + 1e-6,
     });
 
-    prevPayout = perUser * p.prizeMultiplier
+    prevPayout = perEarnerFace * p.earnerShare * p.prizeMultiplier
       + bonusPerWinner * p.stakeParticipation * p.stakeSuccessRate;
   }
   return rows;
@@ -199,7 +239,11 @@ export function simulateTokenMint(p) {
       churn_rate: churnRate(sat, p), satisfaction: sat,
       revenue_usd: revenue,
       revenue_per_user_usd: mau > 0 ? revenue / mau : 0,
+      consumer_revenue_usd: revenue, payer_revenue_usd: 0,
       pool_usd: paidOut, paid_out_usd: paidOut, payout_per_user_usd: perUser,
+      earners: mau, payout_per_earner_usd: perUser,
+      payout_per_earner_face_usd: perUser,
+      earner_upside_face_usd: perUser + bonusPerWinner,
       stake_bonus_per_winner_usd: bonusPerWinner,
       total_user_upside_usd: perUser,
       cheat_inflation: cheatInflation(sat, p),
@@ -223,10 +267,10 @@ export function run(params = {}) {
 export function breakEvenMau(params = {}, month = 12) {
   const p = { ...DEFAULTS, ...params };
   const netAt = (mau) => {
-    const { sub, ad, offer } = outsideRevenue(mau, month, p);
-    const revenue = sub + ad + offer;
+    const rev = outsideRevenue(mau, month, p);
     const { rake } = stakeEconomics(mau, p);
-    return revenue + rake - p.payoutShare * revenue
+    const payouts = p.payoutShare * rev.consumer + p.payerPayoutShare * rev.payer;
+    return rev.total + rake - payouts
       - (mau * p.variableCostPerUserUsd + p.fixedCostMonthlyUsd);
   };
   let lo = 1, hi = 1e9;

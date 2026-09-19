@@ -96,9 +96,42 @@ class Params:
     ad_arpu_scale_ref: float = 50_000.0
     sub_conversion_decay: float = 0.985      # per month, funnel widening
 
+    # -- LEVER 1: commerce ---------------------------------------------------
+    # Gear is what this audience already buys. Affiliate or own-margin retail.
+    commerce_attach_rate: float = 0.0        # share of MAU buying in a month
+    commerce_aov_usd: float = 0.0
+    commerce_take_rate: float = 0.0          # your margin on that order
+
+    # -- LEVER 2: the payer channel (B2B2C) ----------------------------------
+    # An employer or insurer pays per covered member per month because verified
+    # activity lowers their claims. This is the only source in the model that is
+    # not capped by consumer attention, and it is 5-10x consumer ARPU. It is also
+    # a completely different company to build: long sales cycles, clinical
+    # validation, health-data compliance.
+    covered_share: float = 0.0               # share of MAU whose payer pays
+    payer_pepm_usd: float = 0.0              # per eligible member per month
+    # Payer money carries a higher payout share by contract: paying the member to
+    # move IS the product they bought. It is still outside revenue, so the
+    # invariant is unaffected.
+    payer_payout_share: float = 0.60
+
+    # -- LEVER 3: concentration ----------------------------------------------
+    # Share of actives who clear the activity bar and qualify to earn. Paying
+    # 30% of users 3x beats paying 100% of users 1x, for the same money and the
+    # same invariant. The bar is the product: "we pay for real exercise."
+    earner_share: float = 1.0
+
+    # -- LEVER 4: payout in kind ---------------------------------------------
+    # Partner credit or gift cards bought below face, or your own margin-bearing
+    # goods. Costs you a dollar, lands as more than a dollar. Sweatcoin's actual
+    # business. Cash cost is what the invariant tests; face value is what the
+    # user perceives.
+    payout_in_kind_share: float = 0.0        # share of payout delivered in kind
+    in_kind_face_multiple: float = 1.0       # face value per dollar of cost
+
     # -- payout policy (Engine B) -------------------------------------------
     payout_share: float = 0.50               # share of outside revenue into the pool
-    payout_share_cap_usd: float = 25.0       # hard per-user monthly cap
+    payout_share_cap_usd: float = 75.0       # hard per-earner monthly cap
     activity_curve_exponent: float = 0.70    # see activity_per_user: not yet consumed
 
     # -- costs ---------------------------------------------------------------
@@ -205,16 +238,30 @@ def stake_economics(mau: float, p: Params) -> tuple[float, float]:
     return rake, bonus_per_winner
 
 
-def outside_revenue(mau: float, month: int, p: Params) -> tuple[float, float, float]:
-    """Revenue that originates outside the user base. Returns (sub, ad, offer)."""
+def outside_revenue(mau: float, month: int, p: Params) -> dict:
+    """Revenue originating outside the user base, split consumer vs payer.
+
+    Both are outside revenue, so both are safe to pay from. They are tracked
+    apart because payer money carries a different contractual payout share.
+    """
     if mau <= 0:
-        return 0.0, 0.0, 0.0
+        return {"sub": 0.0, "ad": 0.0, "offer": 0.0, "commerce": 0.0,
+                "payer": 0.0, "consumer": 0.0, "total": 0.0}
     conv = p.sub_conversion * (p.sub_conversion_decay ** month)
     sub = mau * conv * p.sub_price_usd * (1.0 - p.app_store_cut)
     scale = (max(mau, 1.0) / p.ad_arpu_scale_ref) ** p.ad_arpu_scale_exponent
     ad = mau * p.ad_arpu_usd * scale
     offer = mau * p.offer_arpu_usd
-    return sub, ad, offer
+    commerce = mau * p.commerce_attach_rate * p.commerce_aov_usd * p.commerce_take_rate
+    payer = mau * p.covered_share * p.payer_pepm_usd
+    consumer = sub + ad + offer + commerce
+    return {"sub": sub, "ad": ad, "offer": offer, "commerce": commerce,
+            "payer": payer, "consumer": consumer, "total": consumer + payer}
+
+
+def effective_face_multiple(p: Params) -> float:
+    """Face value delivered per dollar of real payout cost."""
+    return 1.0 + p.payout_in_kind_share * (p.in_kind_face_multiple - 1.0)
 
 
 def new_users(mau: float, month: int, sat: float, p: Params) -> float:
@@ -242,23 +289,29 @@ def simulate_revenue_share(p: Params) -> list[dict]:
         leavers = mau * churn_rate(sat, p)
         mau = max(0.0, mau + joiners - leavers)
 
-        sub, ad, offer = outside_revenue(mau, month, p)
+        rev = outside_revenue(mau, month, p)
         rake, stake_bonus = stake_economics(mau, p)
-        revenue = sub + ad + offer
+        revenue = rev["total"]
 
         # THE INVARIANT. The pool is a share of money that already arrived from
         # outside. It is not a promise, not an emission, and cannot be overdrawn.
-        pool = p.payout_share * revenue
+        # Consumer and payer money carry different shares; both are real.
+        pool = p.payout_share * rev["consumer"] + p.payer_payout_share * rev["payer"]
 
         honest = honest_share_of_pool(sat, p)
         pool_to_honest = pool * honest
         pool_lost_to_fraud = pool - pool_to_honest
 
-        per_user = (pool_to_honest / mau) if mau > 0 else 0.0
-        # The cap binds only in tiny-cohort edge cases, but it is the thing that
-        # keeps this "coffee money" rather than a wage, so it is enforced.
-        per_user = min(per_user, p.payout_share_cap_usd)
-        paid_out = per_user * mau + pool_lost_to_fraud
+        # LEVER 3. The pool is split among qualifying earners, not all actives.
+        earners = max(1e-9, mau * p.earner_share)
+        per_earner = (pool_to_honest / earners) if mau > 0 else 0.0
+        per_earner = min(per_earner, p.payout_share_cap_usd)
+        paid_out = per_earner * earners + pool_lost_to_fraud
+
+        # LEVER 4. What it costs you is per_earner; what the user sees is face.
+        face = effective_face_multiple(p)
+        per_earner_face = per_earner * face
+        per_user = per_earner * p.earner_share      # cost spread over all actives
 
         variable_costs = mau * p.variable_cost_per_user_usd
         acquisition_costs = (p.paid_signups_m1 * (p.paid_signup_decay ** month)) * p.cac_usd
@@ -276,9 +329,16 @@ def simulate_revenue_share(p: Params) -> list[dict]:
             "satisfaction": sat,
             "revenue_usd": revenue,
             "revenue_per_user_usd": revenue / mau if mau > 0 else 0.0,
+            "consumer_revenue_usd": rev["consumer"],
+            "payer_revenue_usd": rev["payer"],
             "pool_usd": pool,
             "paid_out_usd": paid_out,
             "payout_per_user_usd": per_user,
+            "earners": earners,
+            "payout_per_earner_usd": per_earner,
+            "payout_per_earner_face_usd": per_earner_face,
+            # What a qualifying, challenge-winning user actually sees per month.
+            "earner_upside_face_usd": per_earner_face + stake_bonus,
             "stake_bonus_per_winner_usd": stake_bonus,
             "total_user_upside_usd": per_user + stake_bonus * p.stake_participation,
             "cheat_inflation": cheat_inflation(sat, p),
@@ -294,8 +354,10 @@ def simulate_revenue_share(p: Params) -> list[dict]:
         # Real dollars paid are unchanged; only the motivational weight differs.
         # The stake bonus lands on winners only, so it is weighted by how many
         # users are actually in a challenge.
+        # Expected value to a user who has not yet qualified, in face terms,
+        # lifted by the motivation multiplier for concentrating the money.
         prev_payout_per_user = (
-            per_user * p.prize_multiplier
+            per_earner_face * p.earner_share * p.prize_multiplier
             + stake_bonus * p.stake_participation * p.stake_success_rate
         )
 
@@ -366,9 +428,15 @@ def simulate_token_mint(p: Params) -> list[dict]:
             "satisfaction": sat,
             "revenue_usd": revenue,
             "revenue_per_user_usd": revenue / mau if mau > 0 else 0.0,
+            "consumer_revenue_usd": revenue,
+            "payer_revenue_usd": 0.0,
             "pool_usd": paid_out,
             "paid_out_usd": paid_out,
             "payout_per_user_usd": per_user,
+            "earners": mau,
+            "payout_per_earner_usd": per_user,
+            "payout_per_earner_face_usd": per_user,
+            "earner_upside_face_usd": per_user + stake_bonus,
             "stake_bonus_per_winner_usd": stake_bonus,
             "total_user_upside_usd": per_user,
             "cheat_inflation": cheat_inflation(sat, p),
@@ -399,12 +467,11 @@ def break_even_mau(p: Params, month: int = 12) -> dict:
     RUNNING business washes its face, not whether growth is free.
     """
     def net_at(mau: float) -> float:
-        sub, ad, offer = outside_revenue(mau, month, p)
-        revenue = sub + ad + offer
+        rev = outside_revenue(mau, month, p)
         rake, _ = stake_economics(mau, p)
-        payouts = p.payout_share * revenue
+        payouts = p.payout_share * rev["consumer"] + p.payer_payout_share * rev["payer"]
         costs = mau * p.variable_cost_per_user_usd + p.fixed_cost_monthly_usd
-        return revenue + rake - payouts - costs
+        return rev["total"] + rake - payouts - costs
 
     lo, hi = 1.0, 1e9
     if net_at(hi) < 0:
@@ -416,14 +483,16 @@ def break_even_mau(p: Params, month: int = 12) -> dict:
         else:
             hi = mid
     mau = hi
-    sub, ad, offer = outside_revenue(mau, month, p)
-    revenue = sub + ad + offer
+    rev = outside_revenue(mau, month, p)
+    pool = p.payout_share * rev["consumer"] + p.payer_payout_share * rev["payer"]
+    earners = max(1e-9, mau * p.earner_share)
     return {
         "break_even_mau": mau,
-        "revenue_at_break_even_usd": revenue,
-        "revenue_per_user_usd": revenue / mau,
-        "pool_at_break_even_usd": p.payout_share * revenue,
-        "payout_per_user_usd": p.payout_share * revenue / mau,
+        "revenue_at_break_even_usd": rev["total"],
+        "revenue_per_user_usd": rev["total"] / mau,
+        "pool_at_break_even_usd": pool,
+        "payout_per_user_usd": pool / mau,
+        "payout_per_earner_face_usd": pool / earners * effective_face_multiple(p),
     }
 
 

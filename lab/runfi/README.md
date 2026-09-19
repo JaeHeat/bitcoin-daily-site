@@ -69,16 +69,89 @@ are pushed onto token holders. A move-to-earn company can do very well out of a
 design that is terrible for its users. That is worth naming, because it explains
 why so many of these launched.
 
-## What the sustainable version actually pays
+## What the base case pays, and why that is the wrong ceiling
 
 Base case at month 24: 15,860 active users, $0.99 revenue per user per month,
-**$0.46 from the pool and $1.26 including commitment-stake winnings.**
+**$0.46 per player from the pool.** That is coffee money and nobody joins for it.
 
-That is coffee money, and the model says there is no configuration in which it
-is not. Paying out 95% of revenue instead of 50% moves it from $0.46 to $0.88.
-The ceiling is revenue per user, and consumer fitness revenue per user is about
-a dollar a month. Any design promising meaningfully more than this is either
-minting it or taking it from the next user through the door.
+Paying out 95% of revenue instead of 50% moves it to $0.88, which is still
+coffee money. That is the important result: **the payout rule is the weakest
+lever available**, because it is bounded by one. What a player earns is:
+
+    payout_per_player = ARPU x payout_share / earner_share
+
+Two of those three terms are unbounded. The next section works them.
+
+(An earlier version of this file claimed no configuration escapes coffee money.
+That was only true while revenue per user was assumed to be consumer
+advertising. It is wrong once the payer channel is on the table, and the ladder
+below is the correction.)
+
+## Pushing payout per player up
+
+Four levers, independent, so they stack. Each rung **adds to the one above it**.
+Every rung holds the invariant in all 24 months.
+
+| Rung | Revenue / user | Payout / earner | Break-even users |
+|---|---|---|---|
+| Base case | $0.99 | $0.46 | 103,839 |
+| + commerce | $1.43 | $0.67 | 69,848 |
+| + consumer monetisation | $2.65 | $1.22 | 35,145 |
+| + concentration (30% earn) | $2.65 | $4.08 | 35,145 |
+| + paid in kind | $2.66 | $5.00 | 35,145 |
+| + payer pilot (25% @ $6) | $4.21 | $8.34 | 24,152 |
+| + payer at scale (60% @ $8) | $7.55 | **$15.55** | 14,242 |
+
+**$0.46 to $15.55 without minting a single token**, and break-even falls from
+104k actives to 14k because revenue per user rose 7.6x.
+
+**1. Sell something other than attention.** Consumer advertising ARPU in fitness
+tops out near a dollar. Commerce does not; this audience already replaces shoes
+every few hundred miles. Gear at a 10% take plus an earn-it-back subscription
+hook takes revenue per user from $0.99 to $2.65.
+
+**2. Stop paying everyone.** The cheapest lever here and it costs nothing. Pay
+only players who clear a real activity bar. At a 30% qualification rate the same
+pool pays 3.3x more per earner. The bar is the product: you are selling a
+credible claim that the person on the leaderboard actually walked.
+
+**3. Pay in something worth more than it costs.** Partner credit or gift cards
+bought below face, or your own margin-bearing gear. At half the payout in kind
+at a 1.45 face multiple, $4.08 of cost arrives as $5.00 of perceived value.
+This is Sweatcoin's actual business model.
+
+**4. Sell to whoever is actually paying for the outcome.** The unlock, worth more
+than the other three combined. The player is not the main beneficiary of their
+own exercise; employers and insurers are, because activity lowers claims. They
+already buy this, priced per member per month in the mid single digits to low
+tens of dollars. That is 5-10x consumer ARPU and it is not capped by attention.
+
+## The two full designs
+
+| | Revenue / user | Payout / earner | Users m24 | Treasury m24 | Profitable |
+|---|---|---|---|---|---|
+| Base case | $0.99 | $0.46 | 15,860 | -$291k | 0/24 |
+| Runfi v2 | $7.76 | $15.92 | 488,187 | $17.13M | 23/24 |
+| Insurer-native | $14.39 | $31.99 | 175,349 | $9.24M | 23/24 |
+
+Zero invariant breaches in either. The money is real in both.
+
+### What this costs you
+
+The payer channel is a different company: 6 to 18 month sales cycles,
+health-data compliance, and outcomes evidence a benefits team will sign off on.
+You would be building a B2B health business with a consumer app attached, not a
+crypto app. That is the real trade, and it is the honest reason most
+move-to-earn projects reached for a token instead. **The token was the shortcut
+around a hard enterprise sale**, and it is why they all ended the same way.
+
+### What the stake game is not
+
+Commitment stakes look like earnings and are not. At a $20 stake and a 72%
+success rate the winner takes about $6.61, but expected value to an entrant is
+**-$0.84**, and you would need a 75.2% success rate just to break even against
+the rake. It is a motivation device funded by users who fail. It is excluded
+from every payout figure above.
 
 ## The constraint is not the payout rule
 

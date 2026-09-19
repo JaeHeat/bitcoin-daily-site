@@ -50,6 +50,7 @@
   figcaption b { color: var(--text); font-weight: 600; }
   .chart { width: 100%; height: auto; display: block; overflow: visible; }
   .grid { stroke: #232c3d; stroke-width: 1; }
+  .bar-track { fill: #1b2231; }
   .grid-zero { stroke: #3a4560; stroke-width: 1; }
   .axis-label { fill: #9aa7bd; font-size: 11px; font-family: inherit; }
   .series { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
@@ -75,6 +76,8 @@
   details.table-view th[scope="row"] { text-align: left; color: var(--muted); font-weight: 500; }
   details.table-view thead th { color: var(--muted); font-weight: 600; }
 
+  .scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 16px 0; }
+  .scroll-x table.plain { margin: 0; min-width: 480px; }
   table.plain { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: .88rem; font-variant-numeric: tabular-nums; }
   table.plain th, table.plain td { padding: 9px 10px; border-bottom: 1px solid var(--line); text-align: right; }
   table.plain th:first-child, table.plain td:first-child { text-align: left; }
@@ -140,7 +143,7 @@
   <p>The crash is not caused by the emission rate. It is caused by denominating the entry cost in the token
   being emitted. Sever that one link and change nothing else:</p>
 
-  <table class="plain">
+  <div class="scroll-x">  <table class="plain">
     <thead><tr><th>Month 24</th><th>Fixed-price entry</th><th>Token-priced entry</th></tr></thead>
     <tbody>
       <tr><td>Token price</td><td>$0.42 (-86%)</td><td>$0.0021 (-99.93%)</td></tr>
@@ -148,6 +151,7 @@
       <tr><td>Shape</td><td>soft decline</td><td>collapse</td></tr>
     </tbody>
   </table>
+  </div>
   <p>Both still breach the invariant every single month. The difference is only whether users get a gentle
   disappointment or a wipeout. <strong>If you ever do launch a token, never denominate the entry cost in it.</strong></p>
 
@@ -176,13 +180,82 @@
   <p>Sweeping payout share from 5% to 95% breaks nothing. More payout always retains more users and always
   costs more money. The real wall is scale.</p>
 
-  <table class="plain">
+  <div class="scroll-x">  <table class="plain">
     <thead><tr><th>Payout share</th><th>Break-even users</th><th>Pool per user / month</th></tr></thead>
     <tbody id="be-rows"></tbody>
   </table>
+  </div>
   <p>Roughly <strong>100,000 monthly actives to wash its face</strong> at a 50% share. This is a customer
   acquisition and retention problem wearing a tokenomics costume, which is why the answer was never going to
   be a cleverer emission curve.</p>
+
+
+  <h2>Pushing payout per player up</h2>
+  <p>$1.26 a month is not a product, and no emission curve fixes it. What a player earns is set by
+  one identity:</p>
+
+  <div class="banner">
+    <div class="inv">payout_per_player = ARPU &times; payout_share &divide; earner_share</div>
+    <p>Payout share is the lever everyone reaches for and it is the weakest of the three. It is bounded
+    by one, so at best it doubles the number. The other two are unbounded, and they multiply.</p>
+  </div>
+
+  <p>Four levers move those terms. They are independent, so they stack. Each rung below <strong>adds
+  to the one above it</strong>, and every rung holds the invariant in all 24 months.</p>
+
+  <figure>
+    <div id="c-ladder"></div>
+    <figcaption>Monthly payout to a qualifying player, month 24, face value. <b>$0.46 to $15.55</b>,
+    without minting a single token.</figcaption>
+    <details class="table-view"><summary>View as table</summary><div id="t-ladder"></div></details>
+  </figure>
+
+  <h3>1. Sell something other than attention</h3>
+  <p>Consumer advertising ARPU in fitness tops out near a dollar. Commerce does not: this audience
+  already replaces shoes every few hundred miles. Adding gear at a 10% take and lifting subscription
+  conversion with an earn-it-back hook moves revenue per user from <strong>$0.99 to $2.65</strong>,
+  and drops break-even from 104k actives to 35k.</p>
+
+  <h3>2. Stop paying everyone</h3>
+  <p>This is the cheapest lever in the list and it costs nothing. Pay only the players who clear a real
+  activity bar. At a 30% qualification rate the same pool pays <strong>3.3x more per earner</strong>,
+  with no extra revenue and no extra risk. The bar is not a trick, it is the product: you are selling a
+  credible claim that the person on the leaderboard actually walked.</p>
+
+  <h3>3. Pay in something worth more than it costs</h3>
+  <p>Partner credit and gift cards bought below face, or your own margin-bearing gear, land as more
+  than a dollar per dollar spent. At half the payout in kind at a 1.45 face multiple, $4.08 of cost
+  arrives as <strong>$5.00 of perceived value</strong>. This is Sweatcoin's actual business model, and
+  it is the one lever here that raises the number the player sees without raising the number you pay.</p>
+
+  <h3>4. Sell to whoever is actually paying for the outcome</h3>
+  <p>This is the unlock, and it is worth more than the other three combined. The player is not the one
+  who benefits most from them exercising. Employers and insurers do, because activity lowers their
+  claims, and they already buy this: corporate wellness and Medicare Advantage fitness benefits are
+  priced per member per month, in the mid single digits to low tens of dollars. That is
+  <strong>5-10x consumer ARPU</strong>, and unlike ad inventory it is not capped by attention.</p>
+
+  <div class="scroll-x">  <table class="plain">
+    <thead><tr><th>Design</th><th>Revenue / user</th><th>Payout / earner</th><th>Users at m24</th><th>Treasury</th></tr></thead>
+    <tbody id="design-rows"></tbody>
+  </table>
+  </div>
+
+  <div class="verdict warn">
+    <p><strong>What this costs you.</strong> The payer channel is a different company: 6 to 18 month
+    sales cycles, health-data compliance, and outcomes evidence a benefits team will actually sign off
+    on. You would be building a B2B health business with a consumer app attached, not a crypto app.
+    That is the real trade, and it is the honest reason most move-to-earn projects reached for a token
+    instead. The token was the shortcut around a hard enterprise sale.</p>
+  </div>
+
+  <div class="verdict warn">
+    <p><strong>What the stake game is not.</strong> Commitment stakes look like earnings and are not.
+    At a 20 dollar stake and a 72% success rate the winner takes about $6.61, but the expected value to
+    an entrant is <strong>minus $0.84</strong>, and you would need a 75.2% success rate just to break
+    even against the rake. It is a motivation device funded by users who fail, so it is deliberately
+    excluded from every payout figure on this page.</p>
+  </div>
 
   <h2>What actually moves the number</h2>
   <p>Two levers beat payout share, and neither costs an extra dollar of payout. Below, both runs spend
@@ -206,7 +279,9 @@
 
   <div class="row" id="presets">
     <button data-preset="base" aria-pressed="true">Base case</button>
-    <button data-preset="designed">Recommended design</button>
+    <button data-preset="runfi_v2">Runfi v2 (all levers)</button>
+    <button data-preset="insurer_native">Insurer-native</button>
+    <button data-preset="designed">Retention design only</button>
     <button data-preset="revenue_stall">Revenue stall</button>
     <button data-preset="cheat_epidemic">Fraud epidemic</button>
     <button data-preset="hypergrowth">Hypergrowth</button>
@@ -244,9 +319,24 @@
 
 <script type="module">
 import { run, breakEvenMau, outsideRevenue, stakeEconomics, DEFAULTS } from './model.js';
-import { lineChart, dataTable, fmtUsd, fmtNum } from './chart.js';
+import { lineChart, barChart, dataTable, fmtUsd, fmtUsdExact, fmtNum } from './chart.js';
 
 const pick = (rows, k) => rows.map((r) => r[k]);
+
+const PRESETS_V2 = {
+  commerceAttachRate: 0.04, commerceAovUsd: 110, commerceTakeRate: 0.10,
+  subConversion: 0.12, subPriceUsd: 7.99, adArpuUsd: 1.20, offerArpuUsd: 0.50,
+  earnerShare: 0.30, payoutInKindShare: 0.50, inKindFaceMultiple: 1.45,
+  coveredShare: 0.60, payerPepmUsd: 8.00, churnCeiling: 0.18, prizeMultiplier: 2.2,
+  paidSignupsM1: 14000, paidSignupDecay: 0.985, referralK: 0.10,
+};
+const PRESETS_INSURER = {
+  coveredShare: 0.95, payerPepmUsd: 14.00, payerPayoutShare: 0.70,
+  earnerShare: 0.35, payoutInKindShare: 0.60, inKindFaceMultiple: 1.45,
+  churnCeiling: 0.18, prizeMultiplier: 2.2,
+  paidSignupsM1: 9000, paidSignupDecay: 0.99, referralK: 0.05, cacUsd: 6.00,
+};
+const last = (a) => a[a.length - 1];
 
 /* ---------- static narrative charts ---------- */
 const tok = run({ engine: 'token_mint' });
@@ -280,13 +370,54 @@ const desSeries = [
 lineChart(document.getElementById('c-design'), desSeries, { format: fmtNum, yTitle: 'Active users' });
 dataTable(document.getElementById('t-design'), desSeries, fmtNum);
 
+/* ---------- the lever ladder ---------- */
+// Each rung ADDS to the one above it, mirroring LADDER in scenarios.py.
+const LADDER = [
+  ['Base case', {}],
+  ['+ commerce', { commerceAttachRate: 0.04, commerceAovUsd: 110, commerceTakeRate: 0.10 }],
+  ['+ consumer monetisation', { subConversion: 0.12, subPriceUsd: 7.99, adArpuUsd: 1.20, offerArpuUsd: 0.50 }],
+  ['+ concentration (30% earn)', { earnerShare: 0.30 }],
+  ['+ paid in kind', { payoutInKindShare: 0.50, inKindFaceMultiple: 1.45 }],
+  ['+ payer pilot (25% @ $6)', { coveredShare: 0.25, payerPepmUsd: 6.00 }],
+  ['+ payer at scale (60% @ $8)', { coveredShare: 0.60, payerPepmUsd: 8.00 }],
+];
+const ladderRows = (() => {
+  let acc = {};
+  return LADDER.map(([name, step]) => {
+    acc = { ...acc, ...step };
+    const r = last(run(acc));
+    return { label: name, value: r.payout_per_earner_face_usd, rev: r.revenue_per_user_usd,
+             be: breakEvenMau(acc), breaches: run(acc).filter((x) => !x.invariant_ok).length };
+  });
+})();
+barChart(document.getElementById('c-ladder'), ladderRows, { format: fmtUsdExact });
+document.getElementById('t-ladder').innerHTML =
+  `<table><thead><tr><th scope="col">Rung</th><th scope="col">Revenue / user</th>
+   <th scope="col">Payout / earner</th><th scope="col">Break-even users</th>
+   <th scope="col">Breaches</th></tr></thead><tbody>${
+    ladderRows.map((r) => `<tr><th scope="row">${r.label}</th><td>${fmtUsdExact(r.rev)}</td>
+      <td>${fmtUsdExact(r.value)}</td><td>${r.be ? fmtNum(r.be) : 'never'}</td>
+      <td>${r.breaches} / 24</td></tr>`).join('')}</tbody></table>`;
+
+/* ---------- full designs table ---------- */
+document.getElementById('design-rows').innerHTML = [
+  ['Base case', {}],
+  ['Runfi v2', PRESETS_V2],
+  ['Insurer-native', PRESETS_INSURER],
+].map(([name, o]) => {
+  const r = last(run(o));
+  return `<tr><td>${name}</td><td>${fmtUsdExact(r.revenue_per_user_usd)}</td>
+    <td>${fmtUsdExact(r.payout_per_earner_face_usd)}</td><td>${fmtNum(r.mau)}</td>
+    <td>${fmtUsdExact(r.treasury_usd)}</td></tr>`;
+}).join('');
+
 /* ---------- headline tiles ---------- */
-const last = (a) => a[a.length - 1];
 document.getElementById('headline').innerHTML = [
   ['bad', '99.9%', 'Token price fall, STEPN-shaped engine'],
   ['bad', '48 / 48', 'Months the token engine breaches the invariant'],
   ['good', '0 / 264', 'Months the revenue-share engine breaches it'],
-  ['', fmtUsd(last(rs).total_user_upside_usd), 'What a user actually earns per month'],
+  ['', `${fmtUsdExact(ladderRows[0].value)} to ${fmtUsdExact(ladderRows[ladderRows.length - 1].value)}`,
+   'Monthly payout per player, base case to all levers stacked'],
 ].map(([c, v, k]) => `<div class="tile ${c}"><div class="v">${v}</div><div class="k">${k}</div></div>`).join('');
 
 /* ---------- break-even table ---------- */
@@ -296,7 +427,7 @@ document.getElementById('be-rows').innerHTML = [0.25, 0.50, 0.80].map((share) =>
   const p = { ...DEFAULTS, payoutShare: share };
   const { sub, ad, offer } = outsideRevenue(mau, 12, p);
   const perUser = (share * (sub + ad + offer)) / mau;
-  return `<tr><td>${(share * 100).toFixed(0)}%</td><td>${mau ? mau.toLocaleString(undefined, { maximumFractionDigits: 0 }) : 'never'}</td><td>${fmtUsd(perUser)}</td></tr>`;
+  return `<tr><td>${(share * 100).toFixed(0)}%</td><td>${mau ? mau.toLocaleString(undefined, { maximumFractionDigits: 0 }) : 'never'}</td><td>${fmtUsdExact(perUser)}</td></tr>`;
 }).join('');
 
 /* ---------- interactive model ---------- */
@@ -319,6 +450,16 @@ const CONTROLS = [
     hint: 'Undetected fake activity dilutes honest users, not the treasury.' },
   { key: 'stakeParticipation', label: 'In a commitment challenge', min: 0, max: 0.5, step: 0.01, fmt: (v) => `${(v * 100).toFixed(0)}%`,
     hint: 'Losers fund winners. Zero-sum by construction, so it cannot inflate.' },
+  { key: 'earnerShare', label: 'Share who qualify to earn', min: 0.05, max: 1, step: 0.05, fmt: (v) => `${(v * 100).toFixed(0)}%`,
+    hint: 'Pay the players who clear the activity bar, not everyone. Free 3x.' },
+  { key: 'coveredShare', label: 'Members an employer/insurer covers', min: 0, max: 1, step: 0.05, fmt: (v) => `${(v * 100).toFixed(0)}%`,
+    hint: 'The B2B2C channel. Worth more than every other lever combined.' },
+  { key: 'payerPepmUsd', label: 'Payer rate per member / month', min: 0, max: 20, step: 0.5, fmt: fmtUsd,
+    hint: 'Corporate wellness and Medicare Advantage price in this range.' },
+  { key: 'payoutInKindShare', label: 'Payout delivered in kind', min: 0, max: 1, step: 0.05, fmt: (v) => `${(v * 100).toFixed(0)}%`,
+    hint: 'Partner credit bought below face. Costs a dollar, lands as more.' },
+  { key: 'commerceAttachRate', label: 'Buy gear in a month', min: 0, max: 0.2, step: 0.01, fmt: (v) => `${(v * 100).toFixed(0)}%`,
+    hint: 'At $110 average order and a 10% take.' },
   { key: 'paidSignupsM1', label: 'Paid signups, month 1', min: 0, max: 30000, step: 500, fmt: fmtNum,
     hint: 'Top of funnel, decaying monthly as cheap channels saturate.' },
   { key: 'fixedCostMonthlyUsd', label: 'Fixed monthly cost', min: 10000, max: 200000, step: 5000, fmt: fmtUsd,
@@ -327,6 +468,8 @@ const CONTROLS = [
 
 const PRESETS = {
   base: {},
+  runfi_v2: PRESETS_V2,
+  insurer_native: PRESETS_INSURER,
   designed: { churnCeiling: 0.18, prizeMultiplier: 2.2, paidSignupsM1: 14000, paidSignupDecay: 0.985, referralK: 0.10 },
   revenue_stall: { adArpuUsd: 0.18, offerArpuUsd: 0.10, subConversion: 0.020 },
   cheat_epidemic: { cheatDetection: 0.45, cheatRewardSensitivity: 1.10 },
@@ -359,10 +502,11 @@ function render() {
   const be = breakEvenMau(state);
 
   document.getElementById('live').innerHTML = [
+    ['', fmtUsdExact(l.payout_per_earner_face_usd), 'Payout per qualifying player / month'],
     ['', fmtNum(l.mau), 'Active users, month 24'],
-    ['', fmtUsd(l.total_user_upside_usd), 'User earnings per month'],
+    ['', fmtUsdExact(l.revenue_per_user_usd), 'Revenue per user / month'],
     ['', be ? fmtNum(be) : 'never', 'Users needed to break even'],
-    [l.treasury_usd >= 0 ? 'good' : 'bad', fmtUsd(l.treasury_usd), 'Treasury, month 24'],
+    [l.treasury_usd >= 0 ? 'good' : 'bad', fmtUsdExact(l.treasury_usd), 'Treasury, month 24'],
     [breaches ? 'bad' : 'good', `${breaches} / 24`, 'Months breaching the invariant'],
     ['', `${profitable} / 24`, 'Months in profit'],
   ].map(([c, v, k]) => `<div class="tile ${c}"><div class="v">${v}</div><div class="k">${k}</div></div>`).join('');

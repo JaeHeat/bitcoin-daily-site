@@ -22,6 +22,20 @@ const SCENARIOS = {
   prize_linked: { prizeMultiplier: 2.2 },
   designed: { churnCeiling: 0.18, prizeMultiplier: 2.2, paidSignupsM1: 14000, paidSignupDecay: 0.985, referralK: 0.10 },
   designed_control: { paidSignupsM1: 14000, paidSignupDecay: 0.985, referralK: 0.10 },
+  runfi_v2: {
+    commerceAttachRate: 0.04, commerceAovUsd: 110, commerceTakeRate: 0.10,
+    subConversion: 0.12, subPriceUsd: 7.99, adArpuUsd: 1.20, offerArpuUsd: 0.50,
+    earnerShare: 0.30, payoutInKindShare: 0.50, inKindFaceMultiple: 1.45,
+    coveredShare: 0.60, payerPepmUsd: 8.00,
+    churnCeiling: 0.18, prizeMultiplier: 2.2,
+    paidSignupsM1: 14000, paidSignupDecay: 0.985, referralK: 0.10,
+  },
+  insurer_native: {
+    coveredShare: 0.95, payerPepmUsd: 14.00, payerPayoutShare: 0.70,
+    earnerShare: 0.35, payoutInKindShare: 0.60, inKindFaceMultiple: 1.45,
+    churnCeiling: 0.18, prizeMultiplier: 2.2,
+    paidSignupsM1: 9000, paidSignupDecay: 0.99, referralK: 0.05, cacUsd: 6.00,
+  },
 };
 
 const parseCsv = (text) => {
