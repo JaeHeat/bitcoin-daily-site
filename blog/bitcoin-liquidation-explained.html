@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bitcoin Liquidation Explained: Why Traders Get Wiped Out | Bitcoin Daily</title>
+  <meta name="description" content="Bitcoin liquidation explained in plain English. How leveraged trades get force-closed, why cascades crash the price, and how to avoid getting wiped out." />
+  <link rel="canonical" href="https://bitcoin-daily.com/blog/bitcoin-liquidation-explained.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Bitcoin Liquidation Explained: Why Traders Get Wiped Out" />
+  <meta property="og:description" content="Billions in crypto positions get force-closed in a single day. Here is exactly how it happens and why it keeps happening." />
+  <meta property="og:url" content="https://bitcoin-daily.com/blog/bitcoin-liquidation-explained.html" />
+  <meta property="og:image" content="https://bitcoin-daily.com/assets/blog/bitcoin-liquidation-explained.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Bitcoin Liquidation Explained: Why Traders Get Wiped Out" />
+  <meta name="twitter:description" content="Billions in crypto positions get force-closed in a single day. Here is exactly how it happens and why it keeps happening." />
+  <meta name="twitter:image" content="https://bitcoin-daily.com/assets/blog/bitcoin-liquidation-explained.png" />
+  <link rel="stylesheet" href="/styles.css?v=2" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Bitcoin Liquidation Explained: Why Traders Get Wiped Out",
+    "image": "https://bitcoin-daily.com/assets/blog/bitcoin-liquidation-explained.png",
+    "description": "Bitcoin liquidation explained in plain English. How leveraged trades get force-closed, why cascades crash the price, and how to avoid getting wiped out.",
+    "datePublished": "2026-10-06",
+    "dateModified": "2026-10-06",
+    "mainEntityOfPage": "https://bitcoin-daily.com/blog/bitcoin-liquidation-explained.html",
+    "author": { "@type": "Person", "@id": "https://joshmolnar.com/#person", "name": "Josh Molnar", "url": "https://joshmolnar.com/" },
+    "publisher": { "@id": "https://bitcoin-daily.com/#organization" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What does liquidation mean in Bitcoin trading?", "acceptedAnswer": {"@type": "Answer", "text": "Liquidation is when the exchange force-closes your leveraged trade because the price moved against you enough to eat through your collateral. You lose the money you put up as margin."}}, {"@type": "Question", "name": "Can you get liquidated if you just hold Bitcoin?", "acceptedAnswer": {"@type": "Answer", "text": "No. Liquidation only applies to leveraged or borrowed positions. If you bought Bitcoin with your own money and hold it on an exchange or in a wallet, it cannot be force-closed."}}, {"@type": "Question", "name": "What causes a Bitcoin liquidation cascade?", "acceptedAnswer": {"@type": "Answer", "text": "When one group of leveraged traders gets liquidated, the forced selling (or buying) pushes the price further, triggering more liquidations. The chain reaction is called a cascade and it can move the price 10% or more in minutes."}}, {"@type": "Question", "name": "How much leverage is too much in crypto?", "acceptedAnswer": {"@type": "Answer", "text": "Most professionals use 2x to 5x at most. At 50x leverage, a normal 2% daily move can wipe your entire position. The higher the leverage, the closer your liquidation price sits to your entry."}}, {"@type": "Question", "name": "How do I avoid getting liquidated?", "acceptedAnswer": {"@type": "Answer", "text": "Keep leverage low, use a stop loss that triggers well before your liquidation price, size your position so a loss does not break your account, and never risk money you cannot afford to lose."}}]}
+  </script>
+  <!-- Cloudflare Web Analytics --><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "a646682a2f904c8b90a2f706d30c760f"}'></script><!-- End Cloudflare Web Analytics -->
+</head>
+<body>
+  <header class="site">
+    <div class="wrap nav">
+      <a class="brand" href="/">Bitcoin <span>Daily</span></a>
+      <button class="menu-toggle" aria-label="Menu" onclick="document.getElementById('nav').classList.toggle('open')">&#9776;</button>
+      <ul id="nav">
+        <li><a href="/cycle/">Cycle</a></li>
+        <li><a href="/charts/">Charts</a></li>
+        <li><a href="/blog/" class="active">Blog</a></li>
+        <li><a href="https://bitcoindaily.vip" rel="noopener">Community</a></li>
+        <li><a href="https://bitcoindaily.app" rel="noopener">Consulting</a></li>
+        <li><a href="https://joshmolnar.com/" rel="noopener">Founder</a></li>
+        <li><a class="cta" href="https://bitcoindaily.vip" rel="noopener">Join the Community</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+    <section class="block" style="border-bottom:none">
+      <div class="wrap">
+        <article class="post">
+          <h1>Bitcoin Liquidation Explained: Why Traders Get Wiped Out</h1>
+          <div class="meta">By <a href="https://joshmolnar.com/" rel="noopener">Josh Molnar</a> &middot; October 2026 &middot; 5 min read</div>
+
+          <figure class="post-hero">
+            <img src="/assets/blog/bitcoin-liquidation-explained.png" alt="Bitcoin price chart showing market volatility and the potential for liquidation cascades in leveraged trading" />
+          </figure>
+<h2>What is a Bitcoin liquidation?</h2>
+<p>A <strong>Bitcoin liquidation</strong> happens when a leveraged trade gets force-closed by the exchange. You borrowed money to bet bigger than your account could afford, the price moved against you, and the exchange pulled the plug before you lost more than your collateral.</p>
+<p>Think of it like a margin call on steroids. You put up $1,000 of your own money and borrowed another $9,000 to open a $10,000 position. That is 10x leverage. If the price drops just 10% from your entry, your $1,000 is gone and the exchange closes everything automatically. You do not get a phone call. You do not get a second chance. The algorithm liquidates your position in milliseconds.</p>
+
+<h2>How liquidation actually works</h2>
+<p>Every leveraged position has a <strong>liquidation price</strong>, the exact level where the exchange will force-close your trade. The higher your leverage, the closer that price sits to your entry.</p>
+<ul>
+<li>At 2x leverage, the price needs to move roughly 50% against you before liquidation.</li>
+<li>At 10x, it only takes about 10%.</li>
+<li>At 50x, a 2% move wipes you out.</li>
+<li>At 100x, less than 1% ends the trade.</li>
+</ul>
+<p>This is not some rare edge case. In January 2026, over 182,000 traders were liquidated in a single day, losing more than $1 billion combined. In June 2026, a 48-hour drop from roughly $67,000 to $59,000 triggered over $3 billion in forced closures. Most of those losses came from traders who were betting the price would go up.</p>
+
+<h2>Why liquidations crash the price further</h2>
+<p>Here is where it gets ugly. When a long position gets liquidated, the exchange dumps Bitcoin to close that trade. That selling pushes the price lower. A lower price triggers more liquidations, which creates more selling, which pushes the price even lower. This is called a <strong>liquidation cascade</strong>, and it is the reason crypto can drop 10% in an hour on what looks like no news at all.</p>
+<p>It works in both directions. A short squeeze happens when shorts get liquidated, the exchange is forced to buy to close their positions, and the buying pushes the price higher into more short liquidation prices. Same mechanics, opposite direction.</p>
+<p>The key takeaway: liquidation cascades are not random chaos. They are mechanical. When too many traders pile onto one side with heavy leverage, the market becomes a loaded spring. One small push in the wrong direction triggers a chain reaction.</p>
+
+<h2>How to tell when the market is loaded</h2>
+<p>You do not need a fancy model to spot danger. Two signals give you a read on how much leverage is in the system.</p>
+<p><strong><a href="/blog/bitcoin-open-interest-explained.html">Open interest</a></strong> measures the total number of active futures contracts. When open interest climbs fast while the price stays flat or grinds up slowly, it means traders are piling into leveraged bets. That buildup is fuel for a cascade in either direction.</p>
+<p><strong><a href="/blog/bitcoin-funding-rate-explained.html">Funding rates</a></strong> show which side is paying the other to hold their position. When funding is very positive, longs are paying shorts, meaning the crowd is aggressively bullish on borrowed money. When funding is very negative, shorts are paying. Either extreme tells you the market is leaning hard one way, and the snapback can be violent.</p>
+
+<h2>Why leverage keeps wiping people out</h2>
+<p>Bitcoin moves about 2% in a typical day. That sounds small until you multiply it by leverage. A normal Tuesday for Bitcoin is a total wipeout for anyone running 50x or higher. And Bitcoin is not always normal. Drops of 10% to 20% in a single week have happened in every single year of its existence.</p>
+<p>The math is simple. If Bitcoin&rsquo;s average daily range is around 2%, then 50x leverage means your position swings 100% of your account in a single day. You are not trading at that point. You are flipping a coin with your rent money.</p>
+<p>The traders who survive are the ones who treat leverage as a scalpel, not a chainsaw. Low leverage (2x to 5x at most), tight position sizing, and a stop loss that fires before the liquidation engine does. If your stop loss is farther from your entry than your liquidation price, you have already lost control of the trade.</p>
+
+<h2>The bottom line on liquidation</h2>
+<p>Liquidation is the exchange closing your leveraged trade because you ran out of collateral. It is not bad luck. It is a math problem with a predictable answer. The higher your leverage, the less room the market has to breathe before you get wiped out.</p>
+<p>If you hold Bitcoin without borrowing, you cannot be liquidated. That is the simplest protection there is. If you choose to trade with leverage, keep it low, know your liquidation price before you enter, and never let a trade get close to it.</p>
+          <h2>Common questions</h2>
+          <h3>What does liquidation mean in Bitcoin trading?</h3>
+          <p>Liquidation is when the exchange force-closes your leveraged trade because the price moved against you enough to eat through your collateral. You lose the money you put up as margin.</p>
+          <h3>Can you get liquidated if you just hold Bitcoin?</h3>
+          <p>No. Liquidation only applies to leveraged or borrowed positions. If you bought Bitcoin with your own money and hold it on an exchange or in a wallet, it cannot be force-closed.</p>
+          <h3>What causes a Bitcoin liquidation cascade?</h3>
+          <p>When one group of leveraged traders gets liquidated, the forced selling (or buying) pushes the price further, triggering more liquidations. The chain reaction is called a cascade and it can move the price 10% or more in minutes.</p>
+          <h3>How much leverage is too much in crypto?</h3>
+          <p>Most professionals use 2x to 5x at most. At 50x leverage, a normal 2% daily move can wipe your entire position. The higher the leverage, the closer your liquidation price sits to your entry.</p>
+          <h3>How do I avoid getting liquidated?</h3>
+          <p>Keep leverage low, use a stop loss that triggers well before your liquidation price, size your position so a loss does not break your account, and never risk money you cannot afford to lose.</p>
+          <h2>Keep reading</h2>
+          <ul>
+            <li><a href="/blog/bitcoin-open-interest-explained.html">Bitcoin Open Interest Explained: What It Tells You About the Market</a></li>
+            <li><a href="/blog/bitcoin-funding-rate-explained.html">Bitcoin Funding Rate Explained: Who Pays Whom and Why It Matters</a></li>
+          </ul>
+          <p>We break down the market like this every day, free on <a href="https://www.instagram.com/bitcoin.daily/" rel="noopener">Instagram</a> and <a href="https://www.youtube.com/@BitcoinDailyTV" rel="noopener">YouTube</a>, and in depth inside the <a href="https://bitcoindaily.vip" rel="noopener">community</a>.</p>
+          <p><em>Education, not financial advice. Trading involves real risk.</em></p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site">
+    <div class="wrap row">
+      <div>&copy; 2026 Bitcoin Daily &middot; Founded by <a href="https://joshmolnar.com/" rel="noopener">Josh Molnar</a></div>
+      <div><a href="/cycle/">Cycle</a> &middot; <a href="/charts/">Charts</a> &middot; <a href="/blog/">Blog</a> &middot; <a href="https://bitcoindaily.vip" rel="noopener">Community</a> &middot; <a href="mailto:info@bitcoin-daily.com">info@bitcoin-daily.com</a></div>
+    </div>
+  </footer>
+</body>
+</html>
