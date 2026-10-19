@@ -202,3 +202,6 @@
 .cc-notes ul { margin: 0; padding-left: 18px; }
 .cc-notes li { margin: 2px 0; }
 .cc-notes b { color: var(--text); }
+.cc-table b.cc-dead { color: #ff8a7f; letter-spacing: .5px; }
+.cc-table tr.cc-deadrow td { color: var(--muted); }
+.cc-table tr.cc-deadrow td:first-child b { color: var(--text); }

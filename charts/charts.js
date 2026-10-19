@@ -282,21 +282,30 @@
         + '<p class="ch-hint" style="grid-column:1/-1;margin:2px 0 0">Holdings and cost basis via CoinGecko public-treasury data, as of '+fmtDate(M.as_of)+'. The price line is green when BTC traded above Strategy’s average cost, red when below.</p>'; }
     setRead('Strategy (formerly MicroStrategy) holds <b>'+Math.round(M.holdings).toLocaleString()+' BTC</b>, about <b>'+M.pct_supply+'%</b> of all the bitcoin that will ever exist, bought for <b>'+mny(M.cost_usd)+'</b> at an average of <b>'+fmtUSD(M.avg_cost)+'</b> each. At '+fmtUSD(M.btc_price)+' the stack is worth <b>'+mny(M.value_usd)+'</b>, '+(M.pnl_usd>=0?'an unrealized <b style="color:#4ec97a">profit</b> of ':'an unrealized <b style="color:#e2574a">loss</b> of ')+'<b>'+mny(Math.abs(M.pnl_usd))+'</b> ('+(M.pnl_pct>=0?'+':'')+M.pnl_pct+'%).', M.pnl_usd>=0); return ch; };
 
-  // Celebrity coin tracker: one bar per coin (% down from its all-time high, or what $1,000 at the top is worth now), cards, sortable table
-  R.celebcoins = D => { const CC=D.charts.celebcoins; if(!CC) return null; const S=CC.stats, rows=CC.coins.slice(); let view='drop', ch=null;
-    const col=c=> -c.from_ath>=99 ? C.red : -c.from_ath>=90 ? C.orange : C.muted;
-    const px=v=>{ if(v>=1) return '$'+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); if(v>=0.01) return '$'+v.toFixed(3); if(v>=0.0001) return '$'+v.toFixed(5);
+  // Celebrity coin tracker: every coin with any tie to a celebrity. One bar per coin (% down from its all-time high, or what $1,000 at the
+  // top is worth now), a tie filter (launched / promoted or paid / weaker ties), cards + read recomputed for the filter, sortable table,
+  // per-coin notes. Dead coins (no longer trade anywhere) show at -100% and $0.
+  R.celebcoins = D => { const CC=D.charts.celebcoins; if(!CC) return null; const ALL=CC.coins.slice(); let view='drop', grp='all', ch=null, rows=ALL;
+    const DEAD='#5c1a14';
+    const PROMO=['promoted','paid promotion','endorsed the company','ambassador'];
+    const inGrp=r=> grp==='all' ? true : grp==='launched' ? r.tie.indexOf('launched')===0 : grp==='promo' ? PROMO.indexOf(r.tie)>=0 : (r.tie.indexOf('launched')!==0 && PROMO.indexOf(r.tie)<0);
+    const NOUN={all:'celebrity coins on this list', launched:'coins a celebrity launched themselves', promo:'coins celebrities promoted, were paid to promote or endorsed',
+                weak:'coins with an unconfirmed, disowned or name-only tie'};
+    const col=r=> r.dead ? DEAD : -r.from_ath>=99 ? C.red : -r.from_ath>=90 ? C.orange : C.muted;
+    const px=v=>{ if(v==null) return 'n/a'; if(v>=1) return '$'+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); if(v>=0.01) return '$'+v.toFixed(3); if(v>=0.0001) return '$'+v.toFixed(5);
       const z=-Math.floor(Math.log10(v))-1; return '$'+v.toFixed(Math.min(z+3,20)); };
-    const pxT=px;
     const k$=k=> k>=100 ? '$'+Math.round(k).toLocaleString() : '$'+k.toFixed(2);
-    const pct=v=> v.toFixed(2)+'%';
+    const pct=r=> r.dead ? '-100%' : (r.from_ath<=-99.995 ? r.from_ath.toFixed(3) : r.from_ath.toFixed(2))+'%';
+    const dte=s=> s ? fmtDate(s) : 'n/a';
     const cap1=t=> t.charAt(0).toUpperCase()+t.slice(1);
     const narrow=()=> window.innerWidth<640;
-    const wrap=$('chart').parentNode; wrap.style.height=(rows.length*(narrow()?40:32)+70)+'px';
     const endLabels={ id:'ccend', afterDatasetsDraw(c){ const g=c.ctx, a=c.chartArea, m=c.getDatasetMeta(0); g.save(); g.font='700 12px -apple-system,sans-serif'; g.textBaseline='middle';
-      m.data.forEach((b,i)=>{ const r=rows[i], t= view==='drop' ? pct(r.from_ath) : k$(r.k1000), w=g.measureText(t).width, out=a.right-b.x>w+14;
+      m.data.forEach((b,i)=>{ const r=rows[i]; if(!r) return;
+        if(r.dead){ g.fillStyle='#ff8a7f'; if(view==='drop'){ g.textAlign='right'; g.fillText('DEAD', b.x-8, b.y); } else { g.textAlign='left'; g.fillText('Dead, $0', a.left+6, b.y); } return; }
+        const t= view==='drop' ? pct(r) : k$(r.k1000), w=g.measureText(t).width, out=a.right-b.x>w+14;
         g.fillStyle= out ? C.text : '#0b0e14'; g.textAlign= out ? 'left' : 'right'; g.fillText(t, out ? b.x+7 : b.x-7, b.y); }); g.restore(); } };
     function build(){ if(ch) ch.destroy();
+      $('chart').parentNode.style.height=(rows.length*(narrow()?40:30)+70)+'px';
       const labels=rows.map(r=> narrow() ? [r.symbol, r.short] : r.symbol+'  \u00b7  '+r.short);
       const drop=view==='drop';
       const x= drop ? { min:0, max:100, grid:{color:C.line}, ticks:{color:C.muted,font:{size:12},stepSize:narrow()?25:20,maxRotation:0,callback:v=>v+'%'},
@@ -305,39 +314,52 @@
                         ticks:{color:C.muted,font:{size:12},callback:v=>({0.1:'$0.10',1:'$1',10:'$10',100:'$100',1000:'$1,000'})[v]||''},
                         afterBuildTicks:sc=>{ sc.ticks=[0.1,1,10,100,1000].map(v=>({value:v})); },
                         title:{display:true,text:'what $1,000 at the peak is worth today (log scale)',color:C.muted,font:{size:12}} };
-      ch=new Chart($('chart'), { type:'bar', data:{ labels, datasets:[{ data:rows.map(r=> drop ? -r.from_ath : Math.max(r.k1000,0.1)),
-          backgroundColor:rows.map(col), borderRadius:4, barPercentage:.78, categoryPercentage:.9 }] },
+      ch=new Chart($('chart'), { type:'bar', data:{ labels, datasets:[{ data:rows.map(r=> drop ? (r.dead ? 100 : -r.from_ath) : Math.max(r.k1000,0.1)),
+          backgroundColor:rows.map(col), borderColor:rows.map(r=> r.dead ? C.red : 'rgba(0,0,0,0)'), borderWidth:rows.map(r=> r.dead ? 1.5 : 0),
+          borderRadius:4, barPercentage:.78, categoryPercentage:.9 }] },
         options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, animation:false, layout:{padding:{right:6}},
           plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#0b0e14', borderColor:'rgba(255,255,255,.12)', borderWidth:1, padding:10,
             callbacks:{ title:it=>{ const r=rows[it[0].dataIndex]; return r.symbol+' ('+r.celebrity+')'; },
-              label:it=>{ const r=rows[it.dataIndex]; return ['Peak '+pxT(r.ath)+' on '+fmtDate(r.ath_date), 'Today '+pxT(r.price)+', '+pct(r.from_ath),
-                '$1,000 at the peak is now '+k$(r.k1000)]; } } } },
+              label:it=>{ const r=rows[it.dataIndex]; if(r.dead) return ['Tie: '+cap1(r.tie), 'Dead. It no longer trades anywhere.'];
+                return ['Tie: '+cap1(r.tie), 'Peak '+px(r.ath)+' on '+dte(r.ath_date), 'Today '+px(r.price)+', '+pct(r), '$1,000 at the peak is now '+k$(r.k1000)]; } } } },
           scales:{ x, y:{ grid:{display:false}, ticks:{color:C.text,font:{size:12,weight:'600'},autoSkip:false} } } },
         plugins:[watermark, endLabels] }); }
-    const vt=$('cc_view');
-    if(vt) vt.querySelectorAll('[data-v]').forEach(btn=>{ btn.onclick=()=>{ view=btn.dataset.v; vt.querySelectorAll('[data-v]').forEach(b=>b.classList.toggle('active',b===btn)); build(); }; });
-    build();
-    const cards=[
-      ['Coins tracked', String(S.n), 'launched or promoted by celebrities', ''],
-      ['Down 90% or more', S.down90+'/'+S.n, Math.round(100*S.down90/S.n)+'% of the coins tracked', 'neg'],
-      ['Down 99% or more', S.down99+'/'+S.n, Math.round(100*S.down99/S.n)+'% of the coins tracked', 'neg'],
-      ['Typical drop', '-'+S.median_drop+'%', 'the median, from the all-time high', 'neg'],
-      ['Best result', k$(S.best_k), 'left of $1,000 at the top ('+S.best+', '+S.best_who+')', ''],
-      ['Worst result', k$(S.worst_k), 'left of $1,000 at the top ('+S.worst+', '+S.worst_who+')', 'neg'] ];
-    const cb=$('cc_cards'); if(cb) cb.innerHTML=cards.map(c=>'<div class="ch-stat"><div class="l">'+c[0]+'</div><div class="n '+c[3]+'">'+c[1]+'</div><div class="s">'+c[2]+'</div></div>').join('')
-      +'<p class="ch-hint" style="grid-column:1/-1;margin:2px 0 0">Prices from CoinMarketCap (CoinGecko for coins it no longer tracks), as of '+fmtDate(CC.as_of)+'. The peak is each coin\u2019s all-time high.</p>';
+    function stats(){ const n=rows.length; if(!n) return null; const drops=rows.map(r=> r.dead ? 100 : -r.from_ath).sort((a,b)=>a-b);
+      const med= n%2 ? drops[(n-1)/2] : (drops[n/2-1]+drops[n/2])/2; const best=rows.reduce((a,b)=> b.k1000>a.k1000 ? b : a, rows[0]);
+      return { n, dead:rows.filter(r=>r.dead).length, d90:drops.filter(d=>d>=90).length, d99:drops.filter(d=>d>=99).length, med, best }; }
+    function cards(){ const S=stats(), cb=$('cc_cards'); if(!S||!cb) return; const pc=k=> Math.round(100*k/S.n)+'% of these';
+      const C6=[ ['Coins', String(S.n), 'with a tie to a celebrity', ''],
+        ['Dead', S.dead+'/'+S.n, S.dead ? 'no longer trade anywhere' : 'none of these', S.dead?'neg':''],
+        ['Down 90% or more', S.d90+'/'+S.n, pc(S.d90), 'neg'],
+        ['Down 99% or more', S.d99+'/'+S.n, pc(S.d99), 'neg'],
+        ['Typical drop', '-'+S.med.toFixed(1)+'%', 'the median, from the all-time high', 'neg'],
+        ['Best result', k$(S.best.k1000), 'left of $1,000 at the top ('+S.best.symbol+', '+S.best.short+')', ''] ];
+      cb.innerHTML=C6.map(c=>'<div class="ch-stat"><div class="l">'+c[0]+'</div><div class="n '+c[3]+'">'+c[1]+'</div><div class="s">'+c[2]+'</div></div>').join('')
+        +'<p class="ch-hint" style="grid-column:1/-1;margin:2px 0 0">Prices from CoinMarketCap, CoinGecko and GeckoTerminal, as of '+fmtDate(CC.as_of)+'. The peak is each coin\u2019s all-time high. Dead counts as -100%.</p>';
+      setRead('Of the <b>'+S.n+'</b> '+NOUN[grp]+', <b>'+S.dead+'</b> '+(S.dead===1?'is':'are')+' dead and <b>'+S.d90+'/'+S.n+'</b> are down 90% or more from their all-time high. The typical one is down <b>'
+        +S.med.toFixed(1)+'%</b>. The best result, <b>'+S.best.symbol+'</b> ('+S.best.short+'), kept <b>'+k$(S.best.k1000)+'</b> of every $1,000 bought at the top.', false); }
     const COLS=[['symbol','Coin'],['celebrity','Celebrity'],['tie','Tie'],['launched','Launched'],['ath_date','Peak day'],['ath','Peak price'],['price','Price today'],['from_ath','From the peak'],['k1000','$1,000 at the peak']];
     let sk='from_ath', sd=1;
+    const val=(r,k)=> k==='from_ath' ? (r.dead ? -100.0001 : r.from_ath) : r[k];
     function table(){ const tb=$('cc_table'); if(!tb) return;
-      const T=CC.coins.slice().sort((a,b)=>{ const x=a[sk], y=b[sk]; return (typeof x==='string' ? x.localeCompare(y) : x-y)*sd; });
+      const T=rows.slice().sort((a,b)=>{ const x=val(a,sk), y=val(b,sk); if(x==null&&y==null) return 0; if(x==null) return 1; if(y==null) return -1;
+        return (typeof x==='string' ? x.localeCompare(y) : x-y)*sd; });
       tb.innerHTML='<thead><tr>'+COLS.map(c=>'<th data-k="'+c[0]+'">'+c[1]+(c[0]===sk?(sd>0?' \u25B2':' \u25BC'):'')+'</th>').join('')+'</tr></thead><tbody>'
-        +T.map(r=>'<tr><td><b>'+r.symbol+'</b>'+(r.note?'<sup>*</sup>':'')+'</td><td>'+r.celebrity+'</td><td>'+cap1(r.tie)+'</td><td>'+fmtDate(r.launched)+'</td><td>'+fmtDate(r.ath_date)+'</td><td>'+px(r.ath)+'</td><td>'+px(r.price)
-          +'</td><td class="cc-neg">'+pct(r.from_ath)+'</td><td>'+k$(r.k1000)+'</td></tr>').join('')+'</tbody>';
+        +T.map(r=>'<tr'+(r.dead?' class="cc-deadrow"':'')+'><td><b>'+r.symbol+'</b>'+(r.note?'<sup>*</sup>':'')+'</td><td>'+r.celebrity+'</td><td>'+cap1(r.tie)+'</td><td>'+dte(r.launched)+'</td><td>'+dte(r.ath_date)+'</td><td>'+px(r.ath)
+          +'</td><td>'+(r.dead?'<b class="cc-dead">Dead</b>':px(r.price))+'</td><td class="cc-neg">'+pct(r)+'</td><td>'+(r.dead?'$0':k$(r.k1000))+'</td></tr>').join('')+'</tbody>';
       tb.querySelectorAll('th').forEach(th=>{ th.onclick=()=>{ const k=th.dataset.k; if(k===sk) sd=-sd; else { sk=k; sd=(k==='launched'||k==='ath_date')?-1:1; } table(); }; }); }
-    table();
-    const nb=$('cc_notes'); if(nb){ const N=CC.coins.filter(r=>r.note); nb.innerHTML=N.length ? '<p class="cc-nh"><sup>*</sup> Notes</p><ul>'+N.map(r=>'<li><b>'+r.symbol+'</b> '+r.note+'</li>').join('')+'</ul>' : ''; }
-    setRead('Of the <b>'+S.n+'</b> celebrity coins on this tracker, <b>'+S.down90+'/'+S.n+'</b> are down 90% or more from their all-time high and <b>'+S.down99+'/'+S.n
-      +'</b> are down 99% or more. The typical one is down <b>'+S.median_drop+'%</b>. The best result, <b>'+S.best+'</b> ('+S.best_who+'), turned $1,000 at the top into <b>'+k$(S.best_k)+'</b>.', false);
+    function notes(){ const nb=$('cc_notes'); if(!nb) return; const N=rows.slice().sort((a,b)=>a.symbol.localeCompare(b.symbol)).filter(r=>r.note);
+      const NT=(grp==='all'||grp==='launched') ? (CC.never_traded||[]) : [];
+      nb.innerHTML=(N.length||NT.length) ? '<p class="cc-nh"><sup>*</sup> Notes</p><ul>'+N.map(r=>'<li><b>'+r.symbol+'</b> '+r.note+'</li>').join('')
+        +NT.map(r=>'<li><b>'+r.symbol+'</b> ('+r.celebrity+') '+r.note+'</li>').join('')+'</ul>' : ''; }
+    function apply(){ rows=ALL.filter(inGrp); build(); cards(); table(); notes(); }
+    const vt=$('cc_view');
+    if(vt) vt.querySelectorAll('[data-v]').forEach(btn=>{ btn.onclick=()=>{ view=btn.dataset.v; vt.querySelectorAll('[data-v]').forEach(b=>b.classList.toggle('active',b===btn)); build(); }; });
+    const gt=$('cc_tie');
+    if(gt){ const cnt=g=>{ const o=grp; grp=g; const k=ALL.filter(inGrp).length; grp=o; return k; };
+      gt.querySelectorAll('[data-g]').forEach(btn=>{ btn.textContent=btn.textContent+' ('+cnt(btn.dataset.g)+')';
+        btn.onclick=()=>{ grp=btn.dataset.g; gt.querySelectorAll('[data-g]').forEach(b=>b.classList.toggle('active',b===btn)); apply(); }; }); }
+    apply();
     return null; };
 
   R.halving_corr = D => { const H=D.charts.halving_corr, cyc=H.cycles; let curPhase='full'; const BB=H.bear_bottoms;
@@ -1030,7 +1052,7 @@
       case 'pmi_vs_btc': return 'corr '+c.corr_mom+', near zero';
       case 'sp500_vs_btc': return 'avg corr '+c.full_avg+', not 0.87';
       case 'halving_eta': return c.days_remaining+' days to go';
-      case 'celebcoins': return c.stats.down90+'/'+c.stats.n+' down 90%+ from the peak';
+      case 'celebcoins': return c.stats.n+' coins, '+c.stats.down90+' down 90%+, '+c.stats.dead+' dead';
       case 'block_clock': { const w=c.windows.bottom; return w.state==='before' ? w.blocks_to_open.toLocaleString()+' blocks to the bottom band' : (w.state==='inside' ? 'inside the bottom band' : 'past the bottom band'); }
       default: return ''; } }
 
