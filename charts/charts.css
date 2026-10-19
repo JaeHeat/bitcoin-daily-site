@@ -184,3 +184,15 @@
   .ch-side a { flex: 0 0 auto; white-space: nowrap; border: 1px solid var(--line); background: var(--panel); }
   .ch-side a.active { border-color: var(--accent); }
 }
+
+/* celebrity coin tracker */
+.cc-chart { height: 420px; }
+.cc-tablewrap { overflow-x: auto; margin-top: 18px; }
+.cc-table { min-width: 860px; font-size: .88rem; }
+.cc-table th { cursor: pointer; user-select: none; white-space: nowrap; }
+.cc-table th:hover { color: var(--text); }
+.cc-table td { white-space: nowrap; }
+.cc-table td:nth-child(2) { white-space: normal; min-width: 150px; text-align: left; }
+.cc-table th:nth-child(2), .cc-table th:nth-child(3), .cc-table td:nth-child(3) { text-align: left; }
+.cc-table td.cc-neg { color: #e2574a; font-weight: 700; }
+

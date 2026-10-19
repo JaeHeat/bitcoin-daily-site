@@ -282,6 +282,63 @@
         + '<p class="ch-hint" style="grid-column:1/-1;margin:2px 0 0">Holdings and cost basis via CoinGecko public-treasury data, as of '+fmtDate(M.as_of)+'. The price line is green when BTC traded above Strategy’s average cost, red when below.</p>'; }
     setRead('Strategy (formerly MicroStrategy) holds <b>'+Math.round(M.holdings).toLocaleString()+' BTC</b>, about <b>'+M.pct_supply+'%</b> of all the bitcoin that will ever exist, bought for <b>'+mny(M.cost_usd)+'</b> at an average of <b>'+fmtUSD(M.avg_cost)+'</b> each. At '+fmtUSD(M.btc_price)+' the stack is worth <b>'+mny(M.value_usd)+'</b>, '+(M.pnl_usd>=0?'an unrealized <b style="color:#4ec97a">profit</b> of ':'an unrealized <b style="color:#e2574a">loss</b> of ')+'<b>'+mny(Math.abs(M.pnl_usd))+'</b> ('+(M.pnl_pct>=0?'+':'')+M.pnl_pct+'%).', M.pnl_usd>=0); return ch; };
 
+  // Celebrity coin tracker: one bar per coin (% down from its all-time high, or what $1,000 at the top is worth now), cards, sortable table
+  R.celebcoins = D => { const CC=D.charts.celebcoins; if(!CC) return null; const S=CC.stats, rows=CC.coins.slice(); let view='drop', ch=null;
+    const col=c=> -c.from_ath>=99 ? C.red : -c.from_ath>=90 ? C.orange : C.muted;
+    const px=v=>{ if(v>=1) return '$'+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); if(v>=0.01) return '$'+v.toFixed(3); if(v>=0.0001) return '$'+v.toFixed(5);
+      const z=-Math.floor(Math.log10(v))-1; return '$'+v.toFixed(Math.min(z+3,20)); };
+    const pxT=px;
+    const k$=k=> k>=100 ? '$'+Math.round(k).toLocaleString() : '$'+k.toFixed(2);
+    const pct=v=> v.toFixed(2)+'%';
+    const cap1=t=> t.charAt(0).toUpperCase()+t.slice(1);
+    const narrow=()=> window.innerWidth<640;
+    const wrap=$('chart').parentNode; wrap.style.height=(rows.length*(narrow()?40:32)+70)+'px';
+    const endLabels={ id:'ccend', afterDatasetsDraw(c){ const g=c.ctx, a=c.chartArea, m=c.getDatasetMeta(0); g.save(); g.font='700 12px -apple-system,sans-serif'; g.textBaseline='middle';
+      m.data.forEach((b,i)=>{ const r=rows[i], t= view==='drop' ? pct(r.from_ath) : k$(r.k1000), w=g.measureText(t).width, out=a.right-b.x>w+14;
+        g.fillStyle= out ? C.text : '#0b0e14'; g.textAlign= out ? 'left' : 'right'; g.fillText(t, out ? b.x+7 : b.x-7, b.y); }); g.restore(); } };
+    function build(){ if(ch) ch.destroy();
+      const labels=rows.map(r=> narrow() ? [r.symbol, r.short] : r.symbol+'  \u00b7  '+r.short);
+      const drop=view==='drop';
+      const x= drop ? { min:0, max:100, grid:{color:C.line}, ticks:{color:C.muted,font:{size:12},stepSize:narrow()?25:20,maxRotation:0,callback:v=>v+'%'},
+                        title:{display:true,text:'down from the all-time high',color:C.muted,font:{size:12}} }
+                    : { type:'logarithmic', min:0.1, max:1000, grid:{color:C.line},
+                        ticks:{color:C.muted,font:{size:12},callback:v=>({0.1:'$0.10',1:'$1',10:'$10',100:'$100',1000:'$1,000'})[v]||''},
+                        afterBuildTicks:sc=>{ sc.ticks=[0.1,1,10,100,1000].map(v=>({value:v})); },
+                        title:{display:true,text:'what $1,000 at the peak is worth today (log scale)',color:C.muted,font:{size:12}} };
+      ch=new Chart($('chart'), { type:'bar', data:{ labels, datasets:[{ data:rows.map(r=> drop ? -r.from_ath : Math.max(r.k1000,0.1)),
+          backgroundColor:rows.map(col), borderRadius:4, barPercentage:.78, categoryPercentage:.9 }] },
+        options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, animation:false, layout:{padding:{right:6}},
+          plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#0b0e14', borderColor:'rgba(255,255,255,.12)', borderWidth:1, padding:10,
+            callbacks:{ title:it=>{ const r=rows[it[0].dataIndex]; return r.symbol+' ('+r.celebrity+')'; },
+              label:it=>{ const r=rows[it.dataIndex]; return ['Peak '+pxT(r.ath)+' on '+fmtDate(r.ath_date), 'Today '+pxT(r.price)+', '+pct(r.from_ath),
+                '$1,000 at the peak is now '+k$(r.k1000)]; } } } },
+          scales:{ x, y:{ grid:{display:false}, ticks:{color:C.text,font:{size:12,weight:'600'},autoSkip:false} } } },
+        plugins:[watermark, endLabels] }); }
+    const vt=$('cc_view');
+    if(vt) vt.querySelectorAll('[data-v]').forEach(btn=>{ btn.onclick=()=>{ view=btn.dataset.v; vt.querySelectorAll('[data-v]').forEach(b=>b.classList.toggle('active',b===btn)); build(); }; });
+    build();
+    const cards=[
+      ['Coins tracked', String(S.n), 'launched or promoted by celebrities', ''],
+      ['Down 90% or more', S.down90+'/'+S.n, Math.round(100*S.down90/S.n)+'% of the coins tracked', 'neg'],
+      ['Down 99% or more', S.down99+'/'+S.n, Math.round(100*S.down99/S.n)+'% of the coins tracked', 'neg'],
+      ['Typical drop', '-'+S.median_drop+'%', 'the median, from the all-time high', 'neg'],
+      ['Best result', k$(S.best_k), 'left of $1,000 at the top ('+S.best+', '+S.best_who+')', ''],
+      ['Worst result', k$(S.worst_k), 'left of $1,000 at the top ('+S.worst+', '+S.worst_who+')', 'neg'] ];
+    const cb=$('cc_cards'); if(cb) cb.innerHTML=cards.map(c=>'<div class="ch-stat"><div class="l">'+c[0]+'</div><div class="n '+c[3]+'">'+c[1]+'</div><div class="s">'+c[2]+'</div></div>').join('')
+      +'<p class="ch-hint" style="grid-column:1/-1;margin:2px 0 0">Prices from CoinMarketCap (CoinGecko for coins it no longer tracks), as of '+fmtDate(CC.as_of)+'. The peak is each coin\u2019s all-time high.</p>';
+    const COLS=[['symbol','Coin'],['celebrity','Celebrity'],['tie','Tie'],['launched','Launched'],['ath_date','Peak day'],['ath','Peak price'],['price','Price today'],['from_ath','From the peak'],['k1000','$1,000 at the peak']];
+    let sk='from_ath', sd=1;
+    function table(){ const tb=$('cc_table'); if(!tb) return;
+      const T=CC.coins.slice().sort((a,b)=>{ const x=a[sk], y=b[sk]; return (typeof x==='string' ? x.localeCompare(y) : x-y)*sd; });
+      tb.innerHTML='<thead><tr>'+COLS.map(c=>'<th data-k="'+c[0]+'">'+c[1]+(c[0]===sk?(sd>0?' \u25B2':' \u25BC'):'')+'</th>').join('')+'</tr></thead><tbody>'
+        +T.map(r=>'<tr><td><b>'+r.symbol+'</b></td><td>'+r.celebrity+'</td><td>'+cap1(r.tie)+'</td><td>'+fmtDate(r.launched)+'</td><td>'+fmtDate(r.ath_date)+'</td><td>'+px(r.ath)+'</td><td>'+px(r.price)
+          +'</td><td class="cc-neg">'+pct(r.from_ath)+'</td><td>'+k$(r.k1000)+'</td></tr>').join('')+'</tbody>';
+      tb.querySelectorAll('th').forEach(th=>{ th.onclick=()=>{ const k=th.dataset.k; if(k===sk) sd=-sd; else { sk=k; sd=(k==='launched'||k==='ath_date')?-1:1; } table(); }; }); }
+    table();
+    setRead('Of the <b>'+S.n+'</b> celebrity coins on this tracker, <b>'+S.down90+'/'+S.n+'</b> are down 90% or more from their all-time high and <b>'+S.down99+'/'+S.n
+      +'</b> are down 99% or more. The typical one is down <b>'+S.median_drop+'%</b>. The best result, <b>'+S.best+'</b> ('+S.best_who+'), turned $1,000 at the top into <b>'+k$(S.best_k)+'</b>.', false);
+    return null; };
+
   R.halving_corr = D => { const H=D.charts.halving_corr, cyc=H.cycles; let curPhase='full'; const BB=H.bear_bottoms;
     const COL={'2012':'#5b9bd5','2016':'#a06cd5','2020':'#2dd4bf','2024':'#f7931a'};
     const ds=cyc.map(cy=>({ label:cy.name+(cy.current?' (now)':''), data:cy.path.map(p=>({x:p.day,y:p.roi})),
@@ -972,6 +1029,7 @@
       case 'pmi_vs_btc': return 'corr '+c.corr_mom+', near zero';
       case 'sp500_vs_btc': return 'avg corr '+c.full_avg+', not 0.87';
       case 'halving_eta': return c.days_remaining+' days to go';
+      case 'celebcoins': return c.stats.down90+'/'+c.stats.n+' down 90%+ from the peak';
       case 'block_clock': { const w=c.windows.bottom; return w.state==='before' ? w.blocks_to_open.toLocaleString()+' blocks to the bottom band' : (w.state==='inside' ? 'inside the bottom band' : 'past the bottom band'); }
       default: return ''; } }
 
