@@ -331,10 +331,11 @@
     function table(){ const tb=$('cc_table'); if(!tb) return;
       const T=CC.coins.slice().sort((a,b)=>{ const x=a[sk], y=b[sk]; return (typeof x==='string' ? x.localeCompare(y) : x-y)*sd; });
       tb.innerHTML='<thead><tr>'+COLS.map(c=>'<th data-k="'+c[0]+'">'+c[1]+(c[0]===sk?(sd>0?' \u25B2':' \u25BC'):'')+'</th>').join('')+'</tr></thead><tbody>'
-        +T.map(r=>'<tr><td><b>'+r.symbol+'</b></td><td>'+r.celebrity+'</td><td>'+cap1(r.tie)+'</td><td>'+fmtDate(r.launched)+'</td><td>'+fmtDate(r.ath_date)+'</td><td>'+px(r.ath)+'</td><td>'+px(r.price)
+        +T.map(r=>'<tr><td><b>'+r.symbol+'</b>'+(r.note?'<sup>*</sup>':'')+'</td><td>'+r.celebrity+'</td><td>'+cap1(r.tie)+'</td><td>'+fmtDate(r.launched)+'</td><td>'+fmtDate(r.ath_date)+'</td><td>'+px(r.ath)+'</td><td>'+px(r.price)
           +'</td><td class="cc-neg">'+pct(r.from_ath)+'</td><td>'+k$(r.k1000)+'</td></tr>').join('')+'</tbody>';
       tb.querySelectorAll('th').forEach(th=>{ th.onclick=()=>{ const k=th.dataset.k; if(k===sk) sd=-sd; else { sk=k; sd=(k==='launched'||k==='ath_date')?-1:1; } table(); }; }); }
     table();
+    const nb=$('cc_notes'); if(nb){ const N=CC.coins.filter(r=>r.note); nb.innerHTML=N.length ? '<p class="cc-nh"><sup>*</sup> Notes</p><ul>'+N.map(r=>'<li><b>'+r.symbol+'</b> '+r.note+'</li>').join('')+'</ul>' : ''; }
     setRead('Of the <b>'+S.n+'</b> celebrity coins on this tracker, <b>'+S.down90+'/'+S.n+'</b> are down 90% or more from their all-time high and <b>'+S.down99+'/'+S.n
       +'</b> are down 99% or more. The typical one is down <b>'+S.median_drop+'%</b>. The best result, <b>'+S.best+'</b> ('+S.best_who+'), turned $1,000 at the top into <b>'+k$(S.best_k)+'</b>.', false);
     return null; };

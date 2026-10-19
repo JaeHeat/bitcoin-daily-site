@@ -196,3 +196,9 @@
 .cc-table th:nth-child(2), .cc-table th:nth-child(3), .cc-table td:nth-child(3) { text-align: left; }
 .cc-table td.cc-neg { color: #e2574a; font-weight: 700; }
 
+.cc-table sup { color: var(--accent); margin-left: 1px; }
+.cc-notes { margin-top: 12px; color: var(--muted); font-size: .86rem; line-height: 1.5; }
+.cc-notes .cc-nh { margin: 0 0 4px; font-weight: 700; color: var(--muted); }
+.cc-notes ul { margin: 0; padding-left: 18px; }
+.cc-notes li { margin: 2px 0; }
+.cc-notes b { color: var(--text); }
