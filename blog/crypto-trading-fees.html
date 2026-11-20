@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Crypto Trading Fees: Why a Winning System Still Loses | Bitcoin Daily</title>
+  <meta name="description" content="Crypto trading fees look tiny. I ran the math on a trader who wins 55 out of 100. Fees turned a 10% gain into a 10% loss. Here is the fix." />
+  <link rel="canonical" href="https://bitcoin-daily.com/blog/crypto-trading-fees.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Crypto Trading Fees: Why a Winning System Still Loses" />
+  <meta property="og:description" content="Win 55 trades out of 100 and still lose money. I ran the math on the fee nobody checks." />
+  <meta property="og:url" content="https://bitcoin-daily.com/blog/crypto-trading-fees.html" />
+  <meta property="og:image" content="https://bitcoin-daily.com/assets/blog/crypto-trading-fees.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Crypto Trading Fees: Why a Winning System Still Loses" />
+  <meta name="twitter:description" content="Win 55 trades out of 100 and still lose money. I ran the math on the fee nobody checks." />
+  <meta name="twitter:image" content="https://bitcoin-daily.com/assets/blog/crypto-trading-fees.png" />
+  <link rel="stylesheet" href="/styles.css?v=2" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Crypto Trading Fees: Why a Winning System Still Loses",
+    "image": "https://bitcoin-daily.com/assets/blog/crypto-trading-fees.png",
+    "description": "Crypto trading fees look tiny. I ran the math on a trader who wins 55 out of 100. Fees turned a 10% gain into a 10% loss. Here is the fix.",
+    "datePublished": "2026-11-20",
+    "dateModified": "2026-11-20",
+    "mainEntityOfPage": "https://bitcoin-daily.com/blog/crypto-trading-fees.html",
+    "author": { "@type": "Person", "@id": "https://joshmolnar.com/#person", "name": "Josh Molnar", "url": "https://joshmolnar.com/" },
+    "publisher": { "@id": "https://bitcoin-daily.com/#organization" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How much are crypto trading fees?", "acceptedAnswer": {"@type": "Answer", "text": "On the biggest crypto futures exchanges the starting rate is about 0.05% for a market order and about 0.02% for a limit order. Buying actual coins at the largest exchange starts at about 0.10% each way, and rates differ by exchange and country."}}, {"@type": "Question", "name": "Do you pay crypto trading fees on a losing trade?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. The exchange charges you on the way in and on the way out, whether the trade wins or loses."}}, {"@type": "Question", "name": "Are crypto trading fees charged on the full position when you use leverage?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. If you put up $1,000 and borrow the rest to hold a $20,000 position, the fee is charged on the full $20,000."}}, {"@type": "Question", "name": "Why does my trading strategy lose money after fees?", "acceptedAnswer": {"@type": "Answer", "text": "Tight stops mean bigger trades, and bigger trades mean bigger fees. With a 0.5% stop and market orders, fees eat 20% of your risk on every trade, so a system that wins 55 out of 100 goes from up 10% to down 10%."}}, {"@type": "Question", "name": "How can I lower my crypto trading fees?", "acceptedAnswer": {"@type": "Answer", "text": "Use limit orders for your entry and your target, give your stop more room so the trade is smaller, trade less often, and always include fees when you test a system."}}]}
+  </script>
+  <!-- Cloudflare Web Analytics --><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "a646682a2f904c8b90a2f706d30c760f"}'></script><!-- End Cloudflare Web Analytics -->
+</head>
+<body>
+  <header class="site">
+    <div class="wrap nav">
+      <a class="brand" href="/">Bitcoin <span>Daily</span></a>
+      <button class="menu-toggle" aria-label="Menu" onclick="document.getElementById('nav').classList.toggle('open')">&#9776;</button>
+      <ul id="nav">
+        <li><a href="/cycle/">Cycle</a></li>
+        <li><a href="/charts/">Charts</a></li>
+        <li><a href="/blog/" class="active">Blog</a></li>
+        <li><a href="https://bitcoindaily.vip" rel="noopener">Community</a></li>
+        <li><a href="https://bitcoindaily.app" rel="noopener">Consulting</a></li>
+        <li><a href="https://joshmolnar.com/" rel="noopener">Founder</a></li>
+        <li><a class="cta" href="https://bitcoindaily.vip" rel="noopener">Join the Community</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+    <section class="block" style="border-bottom:none">
+      <div class="wrap">
+        <article class="post">
+          <h1>Crypto Trading Fees: Why a Winning System Still Loses</h1>
+          <div class="meta">By <a href="https://joshmolnar.com/" rel="noopener">Josh Molnar</a> &middot; November 2026 &middot; 5 min read</div>
+
+          <figure class="post-hero">
+            <img src="/assets/blog/crypto-trading-fees.png" alt="Live Bitcoin price chart from November 2026, the kind of fast market where crypto trading fees on tight stops quietly add up" />
+          </figure>
+<p>Picture a trader who wins 55 trades out of every 100. The wins and the losses are the same size. On paper that is a money printer. In a real account, the same trades can lose money every single month. Nothing is wrong with the system. The leak is <strong>crypto trading fees</strong>, and almost nobody runs the math on them. The number that decides everything is not the fee itself. It is how close your stop sits to your entry.</p>
+
+<h2>How crypto trading fees actually work</h2>
+<p>Every time you buy or sell, the exchange takes a small cut. On the biggest crypto futures exchanges, the starting rate is about 0.05% when you click the market button and about 0.02% when you place a limit order and wait. Buying the actual coins usually costs more. The standard starting rate at the largest exchange is about 0.10% each way. Rates change and differ by exchange and country, so check your own fee page.</p>
+<p>Three details make that cut bigger than it looks.</p>
+<ul>
+<li><strong>You pay twice.</strong> Once on the way in and once on the way out.</li>
+<li><strong>You pay on the full size of the trade.</strong> If you put up $1,000 and borrow the rest to hold a $20,000 position, the fee is charged on the $20,000.</li>
+<li><strong>You pay win or lose.</strong> The exchange gets its cut on your best trade and on your worst one.</li>
+</ul>
+
+<h2>The math: crypto trading fees vs your risk</h2>
+<p>Stop measuring fees against the size of the trade. Measure them against the amount you are risking.</p>
+<p>Say you have a $10,000 account and you risk 1% a trade, which is $100. How big the trade is depends on your stop. A stop that sits 2% away from your entry means a $5,000 trade. A stop only 0.5% away means a $20,000 trade, because a tighter stop lets you hold more for the same $100 of risk. Using market orders both ways at 0.05%, here is what one trade costs.</p>
+<ul>
+<li><strong>Stop 2% away.</strong> $5,000 trade. $5 in fees. That is 5% of your risk.</li>
+<li><strong>Stop 1% away.</strong> $10,000 trade. $10 in fees. That is 10% of your risk.</li>
+<li><strong>Stop 0.5% away.</strong> $20,000 trade. $20 in fees. That is 20% of your risk.</li>
+<li><strong>Stop 0.25% away.</strong> $40,000 trade. $40 in fees. That is 40% of your risk.</li>
+</ul>
+<p>Same account, same $100 at risk. The fee went from a rounding error to almost half the bet, and the only thing that changed was how tight the stop was.</p>
+
+<h2>How fees turn a winning system into a losing one</h2>
+<p>Back to the trader who wins 55 out of 100. The target is the same size as the risk, so each win makes $100 and each loss costs $100. Over 100 trades that is $5,500 won and $4,500 lost. Up $1,000 on paper.</p>
+<p>Now use the 0.5% stop and pay the $20 on every trade. A win is really $80. A loss is really $120.</p>
+<ul>
+<li>55 wins at $80 is $4,400.</li>
+<li>45 losses at $120 is $5,400.</li>
+</ul>
+<p>The account is down $1,000. Same entries. Same exits. A 10% gain became a 10% loss, and the trader never made a single bad call. With those fees, this system has to win 60 out of 100 just to break even. With the 0.25% stop it has to win 70.</p>
+<p>That is why a <a href="/blog/what-is-a-good-win-rate-in-trading.html">good win rate</a> tells you nothing until you know what each trade costs. It is also why so many systems look great in testing and fall apart with real money. I covered that trap in <a href="/blog/how-to-backtest-crypto-strategy.html">how to backtest a crypto strategy</a>.</p>
+
+<h2>The trading costs that never show on the fee page</h2>
+<p>The listed fee is only the first bill.</p>
+<ul>
+<li><strong>The gap.</strong> There is always a small space between what buyers offer and what sellers ask. A market order pays that gap every time.</li>
+<li><strong>The slip.</strong> In a fast move, price can jump before your order lands. You fill a little worse than the number on your screen.</li>
+<li><strong>The holding charge.</strong> On the most popular kind of crypto futures, traders on one side pay the other side a small amount, usually every eight hours. Hold a position for days and it adds up. I explained it in <a href="/blog/bitcoin-funding-rate-explained.html">the Bitcoin funding rate</a>.</li>
+</ul>
+
+<h2>How to lower your crypto trading fees</h2>
+<p>Here is what I would change, in order.</p>
+<ol>
+<li><strong>Use limit orders where you can.</strong> A limit order in and a limit order out at your target costs $8 on that $20,000 trade instead of $20. Keep the stop as a market order, because getting out of a loser fast matters more than the fee. That one change takes the same trader from down $1,000 to down about $70. The full breakdown is in <a href="/blog/limit-order-vs-market-order-crypto.html">limit order vs market order</a>.</li>
+<li><strong>Give your stop room.</strong> Move from a 0.5% stop to a 1% stop and the trade is half the size, so the fee is half the size. Your target has to sit farther away too, which means fewer and slower trades. Do this together with the limit orders and the same 55 wins out of 100 finishes up about $465.</li>
+<li><strong>Trade less.</strong> Every trade you skip is a fee you never pay. I take about 18 trades a month and pass on far more than I take.</li>
+<li><strong>Put fees in your test.</strong> If a system only makes money with zero fees, it does not make money.</li>
+</ol>
+
+<h2>The takeaway on crypto trading fees</h2>
+<p>You cannot control whether the next trade wins. You can control what it costs.</p>
+<p>So before you blame your system, add up what you paid the exchange last month and put it next to what you made or lost. If you are down this year, that one number might explain more than any chart. You may not have a bad system. You may have a good one with an expensive habit.</p>
+          <h2>Common questions</h2>
+          <h3>How much are crypto trading fees?</h3>
+          <p>On the biggest crypto futures exchanges the starting rate is about 0.05% for a market order and about 0.02% for a limit order. Buying actual coins at the largest exchange starts at about 0.10% each way, and rates differ by exchange and country.</p>
+          <h3>Do you pay crypto trading fees on a losing trade?</h3>
+          <p>Yes. The exchange charges you on the way in and on the way out, whether the trade wins or loses.</p>
+          <h3>Are crypto trading fees charged on the full position when you use leverage?</h3>
+          <p>Yes. If you put up $1,000 and borrow the rest to hold a $20,000 position, the fee is charged on the full $20,000.</p>
+          <h3>Why does my trading strategy lose money after fees?</h3>
+          <p>Tight stops mean bigger trades, and bigger trades mean bigger fees. With a 0.5% stop and market orders, fees eat 20% of your risk on every trade, so a system that wins 55 out of 100 goes from up 10% to down 10%.</p>
+          <h3>How can I lower my crypto trading fees?</h3>
+          <p>Use limit orders for your entry and your target, give your stop more room so the trade is smaller, trade less often, and always include fees when you test a system.</p>
+          <h2>Keep reading</h2>
+          <ul>
+            <li><a href="/blog/limit-order-vs-market-order-crypto.html">Limit Order vs Market Order in Crypto: The Hidden Cost</a></li>
+            <li><a href="/blog/what-is-a-good-win-rate-in-trading.html">What Is a Good Win Rate in Crypto Trading?</a></li>
+          </ul>
+          <p>We break down the market like this every day, free on <a href="https://www.instagram.com/bitcoin.daily/" rel="noopener">Instagram</a> and <a href="https://www.youtube.com/@BitcoinDailyTV" rel="noopener">YouTube</a>, and in depth inside the <a href="https://bitcoindaily.vip" rel="noopener">community</a>.</p>
+          <p><em>Education, not financial advice. Trading involves real risk.</em></p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site">
+    <div class="wrap row">
+      <div>&copy; 2026 Bitcoin Daily &middot; Founded by <a href="https://joshmolnar.com/" rel="noopener">Josh Molnar</a></div>
+      <div><a href="/cycle/">Cycle</a> &middot; <a href="/charts/">Charts</a> &middot; <a href="/blog/">Blog</a> &middot; <a href="https://bitcoindaily.vip" rel="noopener">Community</a> &middot; <a href="mailto:info@bitcoin-daily.com">info@bitcoin-daily.com</a></div>
+    </div>
+  </footer>
+</body>
+</html>
