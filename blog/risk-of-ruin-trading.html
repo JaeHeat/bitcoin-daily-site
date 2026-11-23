@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Risk of Ruin in Trading: The Math That Ends Accounts | Bitcoin Daily</title>
+  <meta name="description" content="Risk of ruin in trading is why winning traders still go broke. I ran the math on 200 trades. Bet size alone moved the odds from 38% to near zero." />
+  <link rel="canonical" href="https://bitcoin-daily.com/blog/risk-of-ruin-trading.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Risk of Ruin in Trading: The Math That Ends Accounts" />
+  <meta property="og:description" content="A trader who wins 55% of the time has a 38% chance of losing half the account. I ran the math on why." />
+  <meta property="og:url" content="https://bitcoin-daily.com/blog/risk-of-ruin-trading.html" />
+  <meta property="og:image" content="https://bitcoin-daily.com/assets/blog/risk-of-ruin-trading.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Risk of Ruin in Trading: The Math That Ends Accounts" />
+  <meta name="twitter:description" content="A trader who wins 55% of the time has a 38% chance of losing half the account. I ran the math on why." />
+  <meta name="twitter:image" content="https://bitcoin-daily.com/assets/blog/risk-of-ruin-trading.png" />
+  <link rel="stylesheet" href="/styles.css?v=2" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Risk of Ruin in Trading: The Math That Ends Accounts",
+    "image": "https://bitcoin-daily.com/assets/blog/risk-of-ruin-trading.png",
+    "description": "Risk of ruin in trading is why winning traders still go broke. I ran the math on 200 trades. Bet size alone moved the odds from 38% to near zero.",
+    "datePublished": "2026-11-23",
+    "dateModified": "2026-11-23",
+    "mainEntityOfPage": "https://bitcoin-daily.com/blog/risk-of-ruin-trading.html",
+    "author": { "@type": "Person", "@id": "https://joshmolnar.com/#person", "name": "Josh Molnar", "url": "https://joshmolnar.com/" },
+    "publisher": { "@id": "https://bitcoin-daily.com/#organization" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What is risk of ruin in trading?", "acceptedAnswer": {"@type": "Answer", "text": "Risk of ruin is the chance your account takes a loss so deep you cannot realistically recover, before your wins have time to add up. It depends on how often you win, how big your wins are next to your losses, and how much you risk per trade."}}, {"@type": "Question", "name": "Can a profitable trader still blow up an account?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. A trader who wins 55 out of 100 trades and risks 10% per trade has about a 38% chance of losing half the account within 200 trades. Losses arrive in clumps, and big bets cannot survive a clump."}}, {"@type": "Question", "name": "How much should I risk per trade?", "acceptedAnswer": {"@type": "Answer", "text": "Small enough that a long losing run cannot end you. At 1% risk it takes 69 losses in a row to cut an account in half, and at 20% risk it takes only 4."}}, {"@type": "Question", "name": "What is a good risk of ruin?", "acceptedAnswer": {"@type": "Answer", "text": "As close to zero as you can get. In my test, a winning trader risking 1% per trade had less than a 1 in a million chance of losing half the account in 200 trades."}}, {"@type": "Question", "name": "How do you lower your risk of ruin?", "acceptedAnswer": {"@type": "Answer", "text": "Cut your bet size first, because it is the one input you fully control. Then use a stop on every trade and never raise your size to win back a loss."}}]}
+  </script>
+  <!-- Cloudflare Web Analytics --><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "a646682a2f904c8b90a2f706d30c760f"}'></script><!-- End Cloudflare Web Analytics -->
+</head>
+<body>
+  <header class="site">
+    <div class="wrap nav">
+      <a class="brand" href="/">Bitcoin <span>Daily</span></a>
+      <button class="menu-toggle" aria-label="Menu" onclick="document.getElementById('nav').classList.toggle('open')">&#9776;</button>
+      <ul id="nav">
+        <li><a href="/cycle/">Cycle</a></li>
+        <li><a href="/charts/">Charts</a></li>
+        <li><a href="/blog/" class="active">Blog</a></li>
+        <li><a href="https://bitcoindaily.vip" rel="noopener">Community</a></li>
+        <li><a href="https://bitcoindaily.app" rel="noopener">Consulting</a></li>
+        <li><a href="https://joshmolnar.com/" rel="noopener">Founder</a></li>
+        <li><a class="cta" href="https://bitcoindaily.vip" rel="noopener">Join the Community</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+    <section class="block" style="border-bottom:none">
+      <div class="wrap">
+        <article class="post">
+          <h1>Risk of Ruin in Trading: The Math That Ends Accounts</h1>
+          <div class="meta">By <a href="https://joshmolnar.com/" rel="noopener">Josh Molnar</a> &middot; November 2026 &middot; 5 min read</div>
+
+          <figure class="post-hero">
+            <img src="/assets/blog/risk-of-ruin-trading.png" alt="Live Bitcoin price chart from November 2026, showing the sharp swings that make risk of ruin a real threat to traders who bet too big" />
+          </figure>
+<p>Here is a number most traders never see. Take a trader who wins 55 trades out of every 100. That is a real winning system. Now let that trader risk 10% of the account on every trade. Over the next 200 trades, there is a 38% chance the account gets cut in half. Same trader. Same wins. Same market. This is called <strong>risk of ruin</strong>, and it is the reason good traders still go broke.</p>
+
+<h2>What risk of ruin means in trading</h2>
+<p>Risk of ruin is the chance your account takes a hit so deep you cannot realistically come back from it, before your wins have had time to add up. Some people define ruin as hitting zero. I use a tougher line. I count an account as ruined when it has been cut in half.</p>
+<p>Why half? Because the climb back is brutal. Lose 50% and you need to double what is left just to see your starting balance again. Lose 90% and you need to make ten times your money. Most people never make that climb. They quit, or they start swinging bigger to speed it up, and that finishes the job.</p>
+<p>Only three things decide your risk of ruin.</p>
+<ul>
+<li><strong>How often you win.</strong></li>
+<li><strong>How big your wins are next to your losses.</strong></li>
+<li><strong>How much of your account you put at risk on each trade.</strong></li>
+</ul>
+<p>The first two take years to improve. The third one you can change before your next trade. It also happens to matter the most.</p>
+
+<h2>The risk of ruin math, by size of bet</h2>
+<p>I kept the test simple so the lesson is easy to see. One trader wins 55 out of every 100 trades. Every win makes exactly what a loss costs. The trader risks the same percent of whatever is in the account each time. Then I counted every possible order of wins and losses across 200 trades. At my pace of about 18 trades a month, 200 trades is roughly 11 months of trading.</p>
+<p>Here is the chance the account gets cut in half at some point along the way.</p>
+<ul>
+<li><strong>Risk 1% a trade.</strong> Less than 1 in a million.</li>
+<li><strong>Risk 2% a trade.</strong> About 1 in 3,500.</li>
+<li><strong>Risk 5% a trade.</strong> About 8%.</li>
+<li><strong>Risk 10% a trade.</strong> About 38%.</li>
+<li><strong>Risk 20% a trade.</strong> About 79%.</li>
+</ul>
+<p>Read that list again. Nothing about the trader changed from the top line to the bottom line. The system wins just as often. The only thing that moved was the size of the bet. At 1% the bad ending basically cannot happen. At 20% it is the most likely ending.</p>
+
+<h2>Why a winning system can still go broke</h2>
+<p>A winning system wins over many trades. It does not win in order. The wins and losses arrive in clumps, and a clump of losses always shows up sooner or later. I covered how common those runs are in <a href="/blog/losing-streak-in-trading.html">how many losses in a row is normal</a>.</p>
+<p>Your bet size decides how big a clump it takes to end you. Here is how many losses in a row it takes to cut an account in half.</p>
+<ul>
+<li>At 1% risk, 69 losses in a row.</li>
+<li>At 2% risk, 35 in a row.</li>
+<li>At 5% risk, 14 in a row.</li>
+<li>At 10% risk, 7 in a row.</li>
+<li>At 20% risk, 4 in a row.</li>
+</ul>
+<p>Four losses in a row is a normal Tuesday. Sixty-nine in a row is something you will never see in your life. And the losses do not even need to be back to back. A rough month with a few small wins mixed in does the same damage.</p>
+<p>Now the uncomfortable part. Most traders do not really win 55 out of 100. So I ran the same test on a trader whose results are a coin flip. At 5% risk, the chance of losing half the account in 200 trades jumps to 43%. At 10% risk, it is 80%. Big bets do not forgive an average trader. They barely forgive a good one.</p>
+<p>My test is also kinder than real life. Real trades pay fees. Real stops sometimes fill a little worse than planned. Both push the true odds a bit higher than the numbers above.</p>
+
+<h2>How to lower your risk of ruin</h2>
+<p>You do not need a better strategy to fix this. You need a smaller bet and a few rules you set while you are calm.</p>
+<ul>
+<li><strong>Risk a small, fixed slice.</strong> I risk 1% of my account on every trade, and my biggest loss on any single trade has stayed capped at that amount. I explain how to set it up in <a href="/blog/position-sizing-crypto.html">the 1% rule for position sizing</a>.</li>
+<li><strong>Use a stop on every trade.</strong> The math above only works if a loss costs what you planned. One trade with no stop can do the work of twenty losses.</li>
+<li><strong>Never raise your size to win money back.</strong> Betting bigger after a loss moves you down that list at the worst possible time. That habit has its own name, and I ran the numbers on it in <a href="/blog/revenge-trading-crypto.html">the math behind revenge trading</a>.</li>
+<li><strong>Find out your real win rate.</strong> Write down every trade. If your true number is closer to a coin flip than you hoped, small size is the only thing keeping you in the game while you improve.</li>
+</ul>
+
+<h2>Risk of ruin is the one number you control</h2>
+<p>You cannot control the next trade. You cannot control when the losing run arrives. You can control how much it costs you when it does.</p>
+<p>Small size feels slow. I get it. But slow is the price of still being here next year. A trader risking 1% can be wrong for weeks and keep going. A trader risking 20% can be right about almost everything and still be gone by spring. The strategy was never the difference between them. The bet size was.</p>
+          <h2>Common questions</h2>
+          <h3>What is risk of ruin in trading?</h3>
+          <p>Risk of ruin is the chance your account takes a loss so deep you cannot realistically recover, before your wins have time to add up. It depends on how often you win, how big your wins are next to your losses, and how much you risk per trade.</p>
+          <h3>Can a profitable trader still blow up an account?</h3>
+          <p>Yes. A trader who wins 55 out of 100 trades and risks 10% per trade has about a 38% chance of losing half the account within 200 trades. Losses arrive in clumps, and big bets cannot survive a clump.</p>
+          <h3>How much should I risk per trade?</h3>
+          <p>Small enough that a long losing run cannot end you. At 1% risk it takes 69 losses in a row to cut an account in half, and at 20% risk it takes only 4.</p>
+          <h3>What is a good risk of ruin?</h3>
+          <p>As close to zero as you can get. In my test, a winning trader risking 1% per trade had less than a 1 in a million chance of losing half the account in 200 trades.</p>
+          <h3>How do you lower your risk of ruin?</h3>
+          <p>Cut your bet size first, because it is the one input you fully control. Then use a stop on every trade and never raise your size to win back a loss.</p>
+          <h2>Keep reading</h2>
+          <ul>
+            <li><a href="/blog/position-sizing-crypto.html">Position Sizing in Crypto: The 1% Rule That Protects Your Account</a></li>
+            <li><a href="/blog/losing-streak-in-trading.html">Losing Streak in Trading: How Many Losses Is Normal?</a></li>
+          </ul>
+          <p>We break down the market like this every day, free on <a href="https://www.instagram.com/bitcoin.daily/" rel="noopener">Instagram</a> and <a href="https://www.youtube.com/@BitcoinDailyTV" rel="noopener">YouTube</a>, and in depth inside the <a href="https://bitcoindaily.vip" rel="noopener">community</a>.</p>
+          <p><em>Education, not financial advice. Trading involves real risk.</em></p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site">
+    <div class="wrap row">
+      <div>&copy; 2026 Bitcoin Daily &middot; Founded by <a href="https://joshmolnar.com/" rel="noopener">Josh Molnar</a></div>
+      <div><a href="/cycle/">Cycle</a> &middot; <a href="/charts/">Charts</a> &middot; <a href="/blog/">Blog</a> &middot; <a href="https://bitcoindaily.vip" rel="noopener">Community</a> &middot; <a href="mailto:info@bitcoin-daily.com">info@bitcoin-daily.com</a></div>
+    </div>
+  </footer>
+</body>
+</html>
